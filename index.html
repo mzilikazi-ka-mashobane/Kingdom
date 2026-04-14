@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mzilikazi Kingdom Platform</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --primary: #1f3c2f;
+    --muted: #6b7280;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Inter, sans-serif;
+}
+
+/* ================= HOME BACKGROUND (COWHIDE BASE) ================= */
+body {
+    background: url('back1.jpg') center/cover no-repeat fixed;
+    overflow-x: hidden;
+}
+
+/* DARK GLOBAL OVERLAY */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.25);
+    z-index: 0;
+}
+
+/* ================= LAYER SYSTEM ================= */
+.topbar, .hero, .page, .nav {
+    position: relative;
+    z-index: 2;
+}
+
+/* ================= TOP BAR ================= */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 18px;
+
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(12px);
+
+    position: sticky;
+    top: 0;
+}
+
+.topbar img {
+    height: 38px;
+}
+
+.topbar h2 {
+    font-size: 16px;
+    color: var(--primary);
+}
+
+/* ================= HERO ================= */
+.hero {
+    margin: 15px;
+    padding: 20px;
+    border-radius: 18px;
+
+    background: rgba(31,60,47,0.55);
+    backdrop-filter: blur(10px);
+    color: white;
+}
+
+/* ================= PAGE SYSTEM ================= */
+.page {
+    display: none;
+    padding: 15px;
+    min-height: 100vh;
+    animation: fadeIn 0.5s ease;
+}
+
+.page.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================= GLASS CARDS ================= */
+.card {
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(14px);
+
+    padding: 15px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* BUTTON */
+.btn {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+
+    background: var(--primary);
+    color: white;
+}
+
+/* INPUT */
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.6);
+}
+
+/* ================= NAV ================= */
+.nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(12px);
+}
+
+.nav div {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.nav div.active {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+/* ================= PAGE BACKGROUNDS ================= */
+
+/* HOME = NONE (uses body cowhide) */
+
+/* SUBMIT */
+#submit {
+    background: url('back1.jpg') center/cover no-repeat;
+}
+
+/* CITIZEN */
+#citizen {
+    background: url('back2.jpg') center/cover no-repeat;
+}
+
+/* INVESTOR */
+#investor {
+    background: url('back3.jpg') center/cover no-repeat;
+}
+
+/* CONTACT (YOU REQUESTED BACK1.JPG) */
+#contact {
+    background: url('back1.jpg') center/cover no-repeat;
+}
+
+/* DARK OVERLAY FOR READABILITY */
+#submit::before,
+#citizen::before,
+#investor::before,
+#contact::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 0;
+}
+
+/* ENSURE CARDS ABOVE BACKGROUND */
+.card {
+    position: relative;
+    z-index: 2;
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <img src="logo.png">
+    <h2>Mzilikazi Kingdom</h2>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+    <h1>Kingdom Economic Infrastructure</h1>
+    <p>Investment • Mining • Smart City • Cultural Assets</p>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="home">
+    <div class="card"><h3>Mining Projects</h3><p>Industrial extraction & development pipeline</p><button class="btn">Open</button></div>
+    <div class="card"><h3>Smart City Program</h3><p>Urban infrastructure & modernization</p><button class="btn">Open</button></div>
+    <div class="card"><h3>Royal Marketplace</h3><p>Luxury exports & cultural commerce</p><button class="btn">Open</button></div>
+</div>
+
+<!-- SUBMIT -->
+<div class="page" id="submit">
+    <div class="card">
+        <h3>Submit Project</h3>
+        <input placeholder="Project Name">
+        <input placeholder="Sector">
+        <textarea placeholder="Description"></textarea>
+        <input placeholder="Funding Required">
+        <button class="btn">Submit</button>
+    </div>
+</div>
+
+<!-- CITIZEN -->
+<div class="page" id="citizen">
+    <div class="card">
+        <h3>Digital Citizenship</h3>
+        <p>Register identity system</p>
+        <button class="btn">Register</button>
+    </div>
+</div>
+
+<!-- INVESTOR -->
+<div class="page" id="investor">
+    <div class="card">
+        <h3>Investor Portal</h3>
+        <p>Verified opportunities</p>
+        <button class="btn">Enter</button>
+    </div>
+</div>
+
+<!-- CONTACT -->
+<div class="page" id="contact">
+    <div class="card">
+        <h3>About Mzilikazi Kingdom</h3>
+        <p>Sovereign digital infrastructure for investment, mining, culture and smart development.</p>
+    </div>
+
+    <div class="card">
+        <h3>Contact</h3>
+
+        <p><b>WhatsApp:</b> +39 340 122 2601</p>
+        <a href="https://wa.me/393401222601">
+            <button class="btn">WhatsApp</button>
+        </a>
+
+        <p style="margin-top:10px;"><b>Email:</b> umzilikazi.kamashobane.za@gmail.com</p>
+        <a href="mailto:umzilikazi.kamashobane.za@gmail.com">
+            <button class="btn">Email</button>
+        </a>
+    </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+    <div class="active" onclick="go('home', this)">Home</div>
+    <div onclick="go('submit', this)">Submit</div>
+    <div onclick="go('citizen', this)">Citizen</div>
+    <div onclick="go('investor', this)">Invest</div>
+    <div onclick="go('contact', this)">Contact</div>
+</div>
+
+<script>
+function go(page, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(page).classList.add('active');
+
+    document.querySelectorAll('.nav div').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+}
+</script>
+
+</body>
+</html>
