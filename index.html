@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mzilikazi Kingdom Platform</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --primary: #1f3c2f;
+    --accent: #c6a34a;
+    --text: #111;
+    --muted: #6b7280;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Inter, sans-serif;
+}
+
+body {
+    background: var(--bg);
+}
+
+/* TOP BAR */
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px;
+    background: white;
+}
+
+.topbar img {
+    height: 38px;
+}
+
+.topbar h2 {
+    font-size: 16px;
+    color: var(--primary);
+}
+
+/* HERO */
+.hero {
+    margin: 15px;
+    padding: 20px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #1f3c2f, #2e5b45);
+    color: white;
+}
+
+.hero h1 {
+    font-size: 18px;
+}
+
+.hero p {
+    opacity: 0.8;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* PAGE WRAPPER */
+.page {
+    display: none;
+    padding: 15px;
+}
+
+.page.active {
+    display: block;
+}
+
+/* CARD */
+.card {
+    background: var(--card);
+    padding: 15px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.card h3 {
+    font-size: 15px;
+    margin-bottom: 5px;
+}
+
+.card p {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+/* BUTTON FIXED (THIS WAS PART OF THE ISSUE) */
+.btn {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+/* INPUTS */
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+/* BOTTOM NAV FIXED */
+.nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    background: white;
+    border-top: 1px solid #eee;
+    z-index: 10;
+}
+
+.nav div {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.nav div.active {
+    color: var(--primary);
+    font-weight: 600;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+    <img src="logo.png">
+    <h2>Mzilikazi Kingdom</h2>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+    <h1>Kingdom Economic Infrastructure</h1>
+    <p>Investment • Mining • Smart City • Cultural Assets</p>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="home">
+
+    <div class="card">
+        <h3>Mining Projects</h3>
+        <p>Industrial extraction & resource development pipeline</p>
+        <button class="btn">Open</button>
+    </div>
+
+    <div class="card">
+        <h3>Smart City Program</h3>
+        <p>Urban infrastructure & modernization framework</p>
+        <button class="btn">Open</button>
+    </div>
+
+    <div class="card">
+        <h3>Royal Marketplace</h3>
+        <p>Export luxury goods & cultural commerce</p>
+        <button class="btn">Open</button>
+    </div>
+
+</div>
+
+<!-- SUBMIT -->
+<div class="page" id="submit">
+
+    <div class="card">
+        <h3>Submit Project</h3>
+
+        <input placeholder="Project Name">
+        <input placeholder="Sector">
+        <textarea placeholder="Description"></textarea>
+        <input placeholder="Funding Required">
+
+        <button class="btn">Submit Proposal</button>
+    </div>
+
+</div>
+
+<!-- CITIZEN -->
+<div class="page" id="citizen">
+
+    <div class="card">
+        <h3>Digital Citizenship</h3>
+        <p>Register for official identity system</p>
+        <button class="btn">Register</button>
+    </div>
+
+    <div class="card">
+        <h3>Cultural Vault</h3>
+        <p>Heritage, language & historical archives</p>
+        <button class="btn">Access</button>
+    </div>
+
+</div>
+
+<!-- INVESTOR -->
+<div class="page" id="investor">
+
+    <div class="card">
+        <h3>Investor Portal</h3>
+        <p>Verified kingdom investment opportunities</p>
+        <button class="btn">Enter</button>
+    </div>
+
+</div>
+
+<!-- NAV (FIXED ACTIVE STATE LOGIC) -->
+<div class="nav">
+    <div class="active" onclick="go('home', this)">Home</div>
+    <div onclick="go('submit', this)">Submit</div>
+    <div onclick="go('citizen', this)">Citizen</div>
+    <div onclick="go('investor', this)">Invest</div>
+</div>
+
+<script>
+function go(page, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(page).classList.add('active');
+
+    document.querySelectorAll('.nav div').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+}
+</script>
+
+</body>
+</html>
