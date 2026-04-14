@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kingdom Economic System</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Poppins:wght@300;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --primary: #0f3d2e;
+    --accent: #c9a227;
+    --glass: rgba(255,255,255,0.05);
+    --neon: #00ffcc;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #050505, #0f3d2e);
+    color: white;
+}
+
+/* NAVBAR */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+}
+
+nav img {
+    height: 50px;
+}
+
+nav h1 {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--accent);
+}
+
+/* HERO */
+.hero {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.hero h2 {
+    font-size: 2.5rem;
+    color: var(--neon);
+}
+
+.hero p {
+    margin-top: 10px;
+    opacity: 0.8;
+}
+
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 40px;
+}
+
+/* CARD */
+.card {
+    background: var(--glass);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(12px);
+    transition: 0.3s;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--neon);
+}
+
+.card h3 {
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+
+.card p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* BUTTON */
+button {
+    margin-top: 15px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    background: var(--neon);
+    color: black;
+    cursor: pointer;
+}
+
+/* FORM */
+.form-container {
+    padding: 40px;
+}
+
+input, textarea {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    opacity: 0.6;
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+    <img src="logo.png" alt="Kingdom Logo">
+    <h1>Mzilikazi Economic Hub</h1>
+</nav>
+
+<section class="hero">
+    <h2>Future of Kingdom Development</h2>
+    <p>Industrialisation • Investment • Cultural Sovereignty</p>
+</section>
+
+<section class="grid">
+
+<div class="card">
+    <h3>Project Submissions</h3>
+    <p>Submit projects for funding under Mzilikazi Development Funds.</p>
+    <button onclick="scrollToForm()">Submit Project</button>
+</div>
+
+<div class="card">
+    <h3>Investor Portal</h3>
+    <p>Access verified kingdom-approved opportunities and ventures.</p>
+    <button>Access</button>
+</div>
+
+<div class="card">
+    <h3>Royal Marketplace</h3>
+    <p>Global access to curated high-value cultural exports.</p>
+    <button>Explore</button>
+</div>
+
+<div class="card">
+    <h3>Digital Citizenship</h3>
+    <p>Register for official identity and access kingdom services.</p>
+    <button>Register</button>
+</div>
+
+<div class="card">
+    <h3>Cultural Vault</h3>
+    <p>Preserve and access oral history, language, and heritage.</p>
+    <button>Access</button>
+</div>
+
+<div class="card">
+    <h3>Summits & Events</h3>
+    <p>Engage in international forums and economic summits.</p>
+    <button>View</button>
+</div>
+
+</section>
+
+<section class="form-container" id="projectForm">
+    <h2>Submit Project Proposal</h2>
+
+    <input type="text" placeholder="Project Name">
+    <input type="text" placeholder="Sector (Mining, Smart City, etc)">
+    <textarea rows="5" placeholder="Project Description"></textarea>
+    <input type="number" placeholder="Funding Required (USD)">
+    <button>Submit</button>
+</section>
+
+<footer>
+    © 2026 Kingdom Economic System | Built for Sovereign Growth
+</footer>
+
+<script>
+function scrollToForm() {
+    document.getElementById("projectForm").scrollIntoView({behavior: "smooth"});
+}
+</script>
+
+</body>
+</html>
