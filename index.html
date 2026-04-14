@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mzilikazi Kingdom Platform</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --primary: #1f3c2f;
+}
+
+/* ================= BASE BACKGROUND (COWHIDE GLOBAL) ================= */
+body {
+    margin: 0;
+    font-family: Inter, sans-serif;
+    background: url('back1.jpg') center/cover no-repeat fixed;
+}
+
+/* subtle cinematic dark overlay */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.28);
+    z-index: 0;
+}
+
+/* ensure content above background */
+.topbar, .hero, .page, .nav {
+    position: relative;
+    z-index: 2;
+}
+
+/* ================= TOP BAR (GLASS) ================= */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 18px;
+
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(16px);
+
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.topbar img {
+    height: 38px;
+}
+
+.topbar h2 {
+    font-size: 16px;
+    color: white;
+}
+
+/* ================= HERO (NOW BLACK GLASS LIKE CONTACT CARDS) ================= */
+.hero {
+    margin: 15px;
+    padding: 20px;
+    border-radius: 16px;
+
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(16px);
+
+    border: 1px solid rgba(255,255,255,0.12);
+
+    color: white;
+}
+
+/* ================= PAGES ================= */
+.page {
+    display: none;
+    padding: 15px;
+    min-height: 100vh;
+}
+
+.page.active {
+    display: block;
+}
+
+/* ================= BLACK GLASS CARDS (GLOBAL STYLE) ================= */
+.card {
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(16px);
+
+    border: 1px solid rgba(255,255,255,0.12);
+
+    padding: 15px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+
+    color: white;
+}
+
+/* TEXT */
+.card p {
+    color: rgba(255,255,255,0.75);
+}
+
+/* ================= INPUTS ================= */
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+
+    background: rgba(0,0,0,0.4);
+    color: white;
+}
+
+/* ================= BUTTONS ================= */
+.btn {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+
+    background: rgba(255,255,255,0.12);
+    color: white;
+}
+
+/* ================= NAV ================= */
+.nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(16px);
+
+    border-top: 1px solid rgba(255,255,255,0.12);
+}
+
+.nav div {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+}
+
+.nav div.active {
+    color: white;
+    font-weight: bold;
+}
+
+/* ================= PAGE ANIMATION ================= */
+.page {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <img src="logo.png">
+    <h2>Mzilikazi Kingdom</h2>
+</div>
+
+<!-- HERO (NOW MATCHES CONTACT STYLE) -->
+<div class="hero">
+    <h1>Kingdom Economic Infrastructure</h1>
+    <p>Investment • Mining • Smart City • Cultural Assets</p>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="home">
+    <div class="card">
+        <h3>Mining Projects</h3>
+        <p>Industrial extraction pipeline</p>
+        <button class="btn">Open</button>
+    </div>
+
+    <div class="card">
+        <h3>Smart City Program</h3>
+        <p>Urban development systems</p>
+        <button class="btn">Open</button>
+    </div>
+
+    <div class="card">
+        <h3>Royal Marketplace</h3>
+        <p>Luxury exports & commerce</p>
+        <button class="btn">Open</button>
+    </div>
+</div>
+
+<!-- SUBMIT -->
+<div class="page" id="submit">
+    <div class="card">
+        <h3>Submit Project</h3>
+        <input placeholder="Project Name">
+        <input placeholder="Sector">
+        <textarea placeholder="Description"></textarea>
+        <input placeholder="Funding Required">
+        <button class="btn">Submit</button>
+    </div>
+</div>
+
+<!-- CITIZEN -->
+<div class="page" id="citizen">
+    <div class="card">
+        <h3>Digital Citizenship</h3>
+        <p>Identity registration system</p>
+        <button class="btn">Register</button>
+    </div>
+</div>
+
+<!-- INVESTOR -->
+<div class="page" id="investor">
+    <div class="card">
+        <h3>Investor Portal</h3>
+        <p>Verified opportunities</p>
+        <button class="btn">Enter</button>
+    </div>
+</div>
+
+<!-- CONTACT (NO TEXT CONTACT INFO, ONLY BUTTONS) -->
+<div class="page" id="contact">
+    <div class="card">
+        <h3>About Mzilikazi Kingdom</h3>
+        <p>Sovereign digital infrastructure for investment, mining, culture and development.</p>
+    </div>
+
+    <div class="card">
+        <h3>Contact Actions</h3>
+
+        <a href="https://wa.me/393401222601">
+            <button class="btn">WhatsApp</button>
+        </a>
+
+        <a href="mailto:umzilikazi.kamashobane.za@gmail.com">
+            <button class="btn">Email</button>
+        </a>
+    </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+    <div class="active" onclick="go('home', this)">Home</div>
+    <div onclick="go('submit', this)">Submit</div>
+    <div onclick="go('citizen', this)">Citizen</div>
+    <div onclick="go('investor', this)">Invest</div>
+    <div onclick="go('contact', this)">Contact</div>
+</div>
+
+<script>
+function go(page, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(page).classList.add('active');
+
+    document.querySelectorAll('.nav div').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+}
+</script>
+
+</body>
+</html>
