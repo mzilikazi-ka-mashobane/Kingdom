@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mzilikazi Kingdom</title>
+
+<meta property="og:title" content="Mzilikazi Kingdom">
+<meta property="og:image" content="https://mzilikazi-ka-mashobane.github.io/Kingdom/back1.jpg">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif;}
+
+body{
+background:#000;
+overflow-x:hidden;
+}
+
+/* HEADER */
+.topbar{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:12px 16px;
+background:rgba(255,255,255,0.95);
+backdrop-filter:blur(10px);
+position:sticky;
+top:0;
+z-index:1000;
+}
+
+.topbar img{
+height:32px;
+cursor:pointer;
+}
+
+.topbar h2{
+font-size:14px;
+color:#111;
+white-space:nowrap;
+}
+
+/* PAGE */
+.page{
+display:none;
+min-height:100vh;
+padding:15px;
+position:relative;
+animation:fadeIn .4s ease;
+}
+
+.page.active{display:block;}
+
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+/* BACKGROUND */
+.bg{
+position:absolute;
+inset:0;
+background-size:cover;
+background-position:center;
+transform:scale(1.1);
+animation:bgMove 20s infinite alternate;
+z-index:0;
+}
+
+@keyframes bgMove{
+from{transform:scale(1.1) translateX(-8px);}
+to{transform:scale(1.15) translateX(8px);}
+}
+
+.page::after{
+content:"";
+position:absolute;
+inset:0;
+background:rgba(0,0,0,0.35);
+z-index:1;
+}
+
+/* CONTENT */
+.content{position:relative;z-index:2;}
+
+/* CARD */
+.card{
+background:rgba(0,0,0,0.30);
+backdrop-filter:blur(18px);
+border:1px solid rgba(255,255,255,0.1);
+padding:15px;
+border-radius:16px;
+margin-bottom:12px;
+color:#fff;
+}
+
+/* INPUT */
+input,textarea{
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:10px;
+border:1px solid rgba(255,255,255,0.15);
+background:rgba(0,0,0,0.25);
+color:#fff;
+}
+
+/* BUTTON */
+.btn{
+margin-top:10px;
+padding:10px;
+width:100%;
+border-radius:10px;
+border:1px solid rgba(255,255,255,0.2);
+background:rgba(255,255,255,0.12);
+color:#fff;
+cursor:pointer;
+}
+
+.btn:active{transform:scale(0.96);}
+
+/* NAV */
+.nav{
+position:fixed;
+bottom:0;
+width:100%;
+display:flex;
+background:rgba(0,0,0,0.55);
+backdrop-filter:blur(14px);
+z-index:999;
+}
+
+.nav div{
+flex:1;
+text-align:center;
+padding:12px;
+color:rgba(255,255,255,0.7);
+cursor:pointer;
+}
+
+.nav div.active{
+color:#fff;
+font-weight:bold;
+}
+
+/* MODALS */
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.85);
+backdrop-filter:blur(10px);
+justify-content:center;
+align-items:center;
+z-index:2000;
+}
+
+.modal img{
+max-width:85%;
+max-height:85%;
+border-radius:14px;
+}
+
+.infoBox{
+background:rgba(0,0,0,0.7);
+color:#fff;
+padding:20px;
+border-radius:12px;
+max-width:300px;
+text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="topbar">
+<img src="logo.png" id="logo" onclick="logoTap()">
+<h2>Mzilikazi Kingdom</h2>
+</div>
+
+<!-- LOGO MODAL -->
+<div class="modal" id="logoModal" onclick="closeLogo(event)">
+<img src="logo.png">
+</div>
+
+<!-- INFO MODAL -->
+<div class="modal" id="infoModal" onclick="closeInfo(event)">
+<div class="infoBox">
+<h3>Mzilikazi Kingdom</h3>
+<p>Economic sovereignty platform focused on mining, smart cities, trade, and cultural heritage systems.</p>
+</div>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="home">
+<div class="bg" style="background-image:url('back1.jpg')"></div>
+<div class="content">
+
+<div class="card">
+<h3>Mining Projects</h3>
+<button class="btn" onclick="location.href='index2.html'">Open</button>
+</div>
+
+<div class="card">
+<h3>Smart City Program</h3>
+<button class="btn" onclick="location.href='index3.html'">Open</button>
+</div>
+
+<div class="card">
+<h3>Royal Marketplace</h3>
+<button class="btn" onclick="location.href='index4.html'">Open</button>
+</div>
+
+</div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+<div class="active" onclick="go('home',this)">Home</div>
+</div>
+
+<script>
+let tapCount=0;
+let tapTimer=null;
+
+/* PAGE NAV */
+function go(id,el){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+
+document.querySelectorAll('.nav div').forEach(n=>n.classList.remove('active'));
+el.classList.add('active');
+}
+
+/* LOGO TAP SYSTEM */
+function logoTap(){
+tapCount++;
+
+if(tapCount===1){
+setTimeout(()=>tapCount=0,400);
+}
+
+if(tapCount===2){
+openAdmin();
+tapCount=0;
+return;
+}
+
+tapTimer=setTimeout(()=>{
+if(tapCount===1){
+openLogo();
+}
+tapCount=0;
+},300);
+}
+
+/* OPEN LOGO */
+function openLogo(){
+document.getElementById('logoModal').style.display='flex';
+}
+
+/* CLOSE LOGO */
+function closeLogo(e){
+if(e.target.id==='logoModal'){
+document.getElementById('logoModal').style.display='none';
+}
+}
+
+/* LONG PRESS */
+let pressTimer;
+document.getElementById('logo').addEventListener('touchstart',()=>{
+pressTimer=setTimeout(openInfo,700);
+});
+document.getElementById('logo').addEventListener('touchend',()=>{
+clearTimeout(pressTimer);
+});
+
+function openInfo(){
+document.getElementById('infoModal').style.display='flex';
+}
+
+function closeInfo(e){
+if(e.target.id==='infoModal'){
+document.getElementById('infoModal').style.display='none';
+}
+}
+
+/* ADMIN PANEL */
+function openAdmin(){
+let pass=prompt("Enter Admin Code:");
+if(pass==="kingdom"){
+alert("Access Granted — Admin Mode (future backend panel)");
+}else{
+alert("Access Denied");
+}
+}
+</script>
+
+</body>
+</html>
