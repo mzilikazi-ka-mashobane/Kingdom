@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Marketplace – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif;}
+body{background:#000;overflow-x:hidden;padding-bottom:80px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px;background:white;position:sticky;top:0;z-index:1000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:16px;color:#1f3c2f;}
+.back-btn{background:none;border:none;color:#1f3c2f;font-size:22px;cursor:pointer;padding:4px 8px;}
+.hero{position:relative;height:180px;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:url('back3.jpg') center/cover;filter:brightness(0.4);}
+.hero-text{position:relative;z-index:1;color:#fff;padding:40px 20px 0;}
+.hero-text h1{font-size:24px;font-weight:600;}
+.hero-text p{font-size:13px;opacity:0.8;margin-top:6px;}
+.section{padding:16px;}
+.card{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);padding:16px;border-radius:16px;margin-bottom:12px;color:#fff;}
+.card h3{font-size:15px;font-weight:600;margin-bottom:6px;}
+.card p{font-size:13px;opacity:0.85;line-height:1.5;}
+.badge{display:inline-block;background:#1f3c2f;color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;margin-top:8px;}
+.badge.gold{background:#8B6914;}
+.badge.avail{background:#1a5c2f;}
+input,textarea,select{width:100%;padding:11px;margin-top:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.2);color:#fff;font-size:13px;}
+select option{background:#111;color:#fff;}
+textarea{min-height:80px;resize:vertical;}
+.btn{margin-top:12px;padding:12px;width:100%;border-radius:10px;border:none;background:#1f3c2f;color:white;font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.2s;}
+.btn:hover{opacity:0.85;}
+.tab-bar{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;}
+.tab{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);cursor:pointer;white-space:nowrap;}
+.tab.active{background:#1f3c2f;color:#fff;border-color:#1f3c2f;}
+.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.product{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;color:#fff;cursor:pointer;}
+.product .icon{font-size:28px;margin-bottom:6px;}
+.product .pname{font-size:12px;font-weight:600;}
+.product .price{font-size:13px;color:#c8a44a;margin-top:3px;}
+.toast{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1f3c2f;color:#fff;padding:12px 24px;border-radius:30px;font-size:13px;z-index:9999;}
+.toast.show{display:block;}
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:white;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:14px;font-size:12px;color:#6b7280;cursor:pointer;}
+.nav div.active{color:#1f3c2f;font-weight:600;}
+label{font-size:12px;color:rgba(255,255,255,0.55);margin-top:12px;display:block;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" onclick="history.back()">&#8592;</button>
+  <img src="logo.png" alt="MKM">
+  <h2>Royal Marketplace</h2>
+</div>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-text">
+    <h1>🛍️ Royal Marketplace</h1>
+    <p>Export goods, authentic crafts and Kingdom trade systems</p>
+  </div>
+</div>
+
+<div class="section">
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('browse',this)">Browse</div>
+    <div class="tab" onclick="switchTab('list',this)">List a Product</div>
+    <div class="tab" onclick="switchTab('export',this)">Export Trade</div>
+  </div>
+
+  <!-- BROWSE -->
+  <div id="tab-browse">
+    <div class="card" style="padding:12px;">
+      <p style="font-size:12px;opacity:0.6;">Authenticated Kingdom exports · Commission-based sales · Global shipping</p>
+    </div>
+
+    <div class="product-grid">
+      <div class="product"><div class="icon">⌚</div><div class="pname">Luxury Timepieces</div><div class="price">From R8,500</div><span class="badge avail">Available</span></div>
+      <div class="product"><div class="icon">🧵</div><div class="pname">Artisanal Fashion</div><div class="price">From R650</div><span class="badge avail">Available</span></div>
+      <div class="product"><div class="icon">🪆</div><div class="pname">Traditional Crafts</div><div class="price">From R280</div><span class="badge avail">Available</span></div>
+      <div class="product"><div class="icon">💎</div><div class="pname">Jewellery</div><div class="price">From R1,200</div><span class="badge gold">Premium</span></div>
+      <div class="product"><div class="icon">🎨</div><div class="pname">Fine Art</div><div class="price">From R3,000</div><span class="badge gold">Premium</span></div>
+      <div class="product"><div class="icon">🌿</div><div class="pname">Botanicals</div><div class="price">From R120</div><span class="badge avail">Available</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Enquire About a Product</h3>
+      <input id="b_product" placeholder="Product you're interested in">
+      <input id="b_email" type="email" placeholder="Your email address">
+      <input id="b_qty" placeholder="Quantity">
+      <button class="btn" onclick="submitEnquiry()">📩 Send Enquiry</button>
+    </div>
+  </div>
+
+  <!-- LIST -->
+  <div id="tab-list" style="display:none;">
+    <div class="card">
+      <h3>List Your Kingdom Product</h3>
+      <p style="font-size:12px;opacity:0.7;margin-bottom:4px;">All listings are curated. Platform earns 10–15% commission per sale.</p>
+
+      <label>Seller / Artisan Name *</label>
+      <input id="l_seller" placeholder="Your name or brand">
+
+      <label>Email *</label>
+      <input id="l_email" type="email" placeholder="seller@email.com">
+
+      <label>Product Name *</label>
+      <input id="l_product" placeholder="Name of your product">
+
+      <label>Category *</label>
+      <select id="l_category">
+        <option value="">Select category</option>
+        <option>Luxury Timepieces</option>
+        <option>Artisanal Fashion</option>
+        <option>Traditional Crafts</option>
+        <option>Jewellery & Adornment</option>
+        <option>Fine Art</option>
+        <option>Food & Botanicals</option>
+        <option>Cultural Artefacts</option>
+        <option>Other</option>
+      </select>
+
+      <label>Asking Price (ZAR) *</label>
+      <input id="l_price" type="number" placeholder="0.00">
+
+      <label>Product Description *</label>
+      <textarea id="l_desc" placeholder="Describe the product, materials, cultural significance…"></textarea>
+
+      <label>Product Image</label>
+      <input type="file" id="l_file" accept="image/*,.pdf">
+
+      <button class="btn" onclick="submitListing()">🛍️ Submit Listing</button>
+    </div>
+  </div>
+
+  <!-- EXPORT -->
+  <div id="tab-export" style="display:none;">
+    <div class="card">
+      <h3>Kingdom Export Trade Programme</h3>
+      <p>Formalise your export of authentic Kingdom goods to international markets. The Kingdom provides trade certification, packaging standards and logistics support.</p>
+      <span class="badge gold">Active Programme</span>
+    </div>
+
+    <div class="card">
+      <h3>Register as Exporter</h3>
+      <label>Business / Entity Name *</label>
+      <input id="e_name" placeholder="Company or cooperative name">
+      <label>Email *</label>
+      <input id="e_email" type="email" placeholder="contact@business.com">
+      <label>Target Export Markets</label>
+      <input id="e_markets" placeholder="e.g. UK, Germany, USA">
+      <label>Product Range</label>
+      <textarea id="e_products" placeholder="List products you wish to export…"></textarea>
+      <button class="btn" onclick="submitExport()">📦 Register for Export</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <div onclick="location.href='index.html'">🏠 Home</div>
+  <div class="active">🛍️ Market</div>
+  <div onclick="location.href='index5.html'">👤 Citizen</div>
+  <div onclick="location.href='index6.html'">💼 Invest</div>
+  <div onclick="location.href='helpdesk.html'">🆘 Help</div>
+</div>
+
+<div class="toast" id="toast">Submitted successfully!</div>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3cpb5rUI2uzst5cphvS5GsRCOedqazwoT2NNSSSKlamBAm8kcFtiLlBKKjT7-8G8IJw/exec";
+
+function switchTab(name,el){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+async function post(payload){
+  await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+}
+
+async function submitEnquiry(){
+  const product=document.getElementById('b_product').value.trim();
+  const email=document.getElementById('b_email').value.trim();
+  if(!product||!email){alert('Please fill in product and email.');return;}
+  try{await post({action:'marketplace',type:'enquiry',product,email,qty:document.getElementById('b_qty').value});showToast();}catch(e){alert('Failed. Please try again.');}
+}
+
+async function submitListing(){
+  const seller=document.getElementById('l_seller').value.trim();
+  const email=document.getElementById('l_email').value.trim();
+  const product=document.getElementById('l_product').value.trim();
+  const category=document.getElementById('l_category').value;
+  const price=document.getElementById('l_price').value.trim();
+  const desc=document.getElementById('l_desc').value.trim();
+  if(!seller||!email||!product||!category||!price||!desc){alert('Please fill in all required fields.');return;}
+  const fileInput=document.getElementById('l_file');
+  let fileData='',fileName='';
+  if(fileInput.files.length>0){const file=fileInput.files[0];fileName=file.name;fileData=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});}
+  try{await post({action:'marketplace',type:'listing',seller,email,product,category,price,description:desc,fileName,fileData});showToast();document.querySelectorAll('#tab-list input,#tab-list textarea,#tab-list select').forEach(el=>{if(el.type!=='file')el.value='';});}catch(e){alert('Failed. Please try again.');}
+}
+
+async function submitExport(){
+  const name=document.getElementById('e_name').value.trim();
+  const email=document.getElementById('e_email').value.trim();
+  if(!name||!email){alert('Please fill in name and email.');return;}
+  try{await post({action:'marketplace',type:'export',name,email,markets:document.getElementById('e_markets').value,products:document.getElementById('e_products').value});showToast();}catch(e){alert('Failed. Please try again.');}
+}
+</script>
+</body>
+</html>
