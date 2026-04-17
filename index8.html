@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Siyafuya – Livestock | Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif;}
+body{background:#000;overflow-x:hidden;padding-bottom:80px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px;background:white;position:sticky;top:0;z-index:1000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:16px;color:#1f3c2f;}
+.back-btn{background:none;border:none;color:#1f3c2f;font-size:22px;cursor:pointer;padding:4px 8px;}
+.hero{position:relative;height:180px;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:url('back1.jpg') center/cover;filter:brightness(0.3) sepia(0.3);}
+.hero-text{position:relative;z-index:1;color:#fff;padding:40px 20px 0;}
+.hero-text h1{font-size:24px;font-weight:600;}
+.hero-text p{font-size:13px;opacity:0.8;margin-top:6px;}
+.section{padding:16px;}
+.card{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);padding:16px;border-radius:16px;margin-bottom:12px;color:#fff;}
+.card h3{font-size:15px;font-weight:600;margin-bottom:6px;}
+.card p{font-size:13px;opacity:0.85;line-height:1.5;}
+.badge{display:inline-block;background:#1f3c2f;color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;margin-top:8px;}
+.badge.gold{background:#8B6914;}
+input,textarea,select{width:100%;padding:11px;margin-top:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.2);color:#fff;font-size:13px;}
+select option{background:#111;color:#fff;}
+textarea{min-height:80px;resize:vertical;}
+.btn{margin-top:12px;padding:12px;width:100%;border-radius:10px;border:none;background:#1f3c2f;color:white;font-size:14px;font-weight:600;cursor:pointer;}
+.tab-bar{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;}
+.tab{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);cursor:pointer;white-space:nowrap;}
+.tab.active{background:#1f3c2f;color:#fff;border-color:#1f3c2f;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.stat{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;text-align:center;}
+.stat .num{font-size:18px;font-weight:600;color:#c8a44a;}
+.stat .lbl{font-size:10px;color:rgba(255,255,255,0.55);margin-top:3px;}
+.animal-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.animal{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;text-align:center;color:#fff;}
+.animal .icon{font-size:24px;margin-bottom:4px;}
+.animal .name{font-size:11px;opacity:0.75;}
+.toast{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1f3c2f;color:#fff;padding:12px 24px;border-radius:30px;font-size:13px;z-index:9999;}
+.toast.show{display:block;}
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:white;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:14px;font-size:12px;color:#6b7280;cursor:pointer;}
+.nav div.active{color:#1f3c2f;font-weight:600;}
+label{font-size:12px;color:rgba(255,255,255,0.55);margin-top:12px;display:block;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" onclick="history.back()">&#8592;</button>
+  <img src="logo.png" alt="MKM">
+  <h2>Siyafuya 🐄</h2>
+</div>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-text">
+    <h1>🐄 Siyafuya</h1>
+    <p>Livestock & Farming Systems – Mzilikazi Kingdom</p>
+  </div>
+</div>
+
+<div class="section">
+
+  <div class="stat-row">
+    <div class="stat"><div class="num">6,800</div><div class="lbl">Head of Cattle</div></div>
+    <div class="stat"><div class="num">32</div><div class="lbl">Farmers</div></div>
+    <div class="stat"><div class="num">5</div><div class="lbl">Species</div></div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
+    <div class="tab" onclick="switchTab('register',this)">Register</div>
+    <div class="tab" onclick="switchTab('support',this)">Support</div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="tab-overview">
+    <div class="card">
+      <h3>About Siyafuya</h3>
+      <p>"Siyafuya" means "We are raising." This programme coordinates livestock operations, breeding programmes and market linkage for Kingdom farmers and community cooperatives.</p>
+      <span class="badge">Active Programme</span>
+    </div>
+
+    <div class="animal-grid">
+      <div class="animal"><div class="icon">🐄</div><div class="name">Cattle</div></div>
+      <div class="animal"><div class="icon">🐐</div><div class="name">Goats</div></div>
+      <div class="animal"><div class="icon">🐑</div><div class="name">Sheep</div></div>
+      <div class="animal"><div class="icon">🐷</div><div class="name">Pigs</div></div>
+      <div class="animal"><div class="icon">🐓</div><div class="name">Poultry</div></div>
+      <div class="animal"><div class="icon">🐇</div><div class="name">Rabbits</div></div>
+    </div>
+
+    <div class="card"><h3>Nguni Cattle Breeding Programme</h3><p>Heritage breed conservation and commercial breeding. 1,200 Nguni herd. Export-grade beef production.</p><span class="badge gold">Investor Ready</span></div>
+    <div class="card"><h3>Poultry Production – 50,000 Birds/month</h3><p>Broiler and layer operations. Processing facility linked. Supply to local retailers.</p><span class="badge">Active</span></div>
+    <div class="card"><h3>Goat Farming Cooperative</h3><p>Community-based goat farming. Meat and milk production. 2,400 head across 18 cooperatives.</p><span class="badge">Active</span></div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="tab-register" style="display:none;">
+    <div class="card">
+      <h3>Register Livestock Operation</h3>
+
+      <label>Farmer / Entity Name *</label>
+      <input id="lv_name" placeholder="Your name or cooperative">
+
+      <label>Email *</label>
+      <input id="lv_email" type="email" placeholder="farmer@email.com">
+
+      <label>Phone *</label>
+      <input id="lv_phone" placeholder="+27 000 000 0000">
+
+      <label>Location *</label>
+      <input id="lv_location" placeholder="Province / Farm area">
+
+      <label>Primary Animal Type *</label>
+      <select id="lv_animal">
+        <option value="">Select animal</option>
+        <option>Cattle (Beef)</option>
+        <option>Cattle (Dairy)</option>
+        <option>Cattle (Mixed)</option>
+        <option>Nguni Cattle</option>
+        <option>Goats</option>
+        <option>Sheep</option>
+        <option>Pigs</option>
+        <option>Broiler Chickens</option>
+        <option>Layer Chickens</option>
+        <option>Rabbits</option>
+        <option>Other</option>
+      </select>
+
+      <label>Quantity *</label>
+      <input id="lv_qty" type="number" placeholder="Number of animals">
+
+      <label>Breed</label>
+      <input id="lv_breed" placeholder="e.g. Nguni, Brahman, Ross 308…">
+
+      <label>Primary Purpose *</label>
+      <select id="lv_purpose">
+        <option value="">Select purpose</option>
+        <option>Meat Production</option>
+        <option>Dairy Production</option>
+        <option>Breeding</option>
+        <option>Eggs</option>
+        <option>Mixed</option>
+      </select>
+
+      <label>Monthly Output (kg / litres / units)</label>
+      <input id="lv_output" placeholder="e.g. 2,000kg beef / month">
+
+      <label>Funding Required? (ZAR)</label>
+      <input id="lv_funding" type="number" placeholder="0 if no funding needed">
+
+      <label>Notes / Additional Information</label>
+      <textarea id="lv_notes" placeholder="Describe your operation, challenges, growth plans…"></textarea>
+
+      <button class="btn" onclick="submitLivestock()">🐄 Register Operation</button>
+    </div>
+  </div>
+
+  <!-- SUPPORT -->
+  <div id="tab-support" style="display:none;">
+    <div class="card">
+      <h3>Livestock Support Programme</h3>
+      <ul style="font-size:13px;opacity:0.85;padding-left:16px;margin-top:8px;line-height:2;">
+        <li>Veterinary services and health clinics</li>
+        <li>Feed subsidies for registered farmers</li>
+        <li>Breeding programme access</li>
+        <li>Abattoir & processing linkage</li>
+        <li>Market access and retail connections</li>
+        <li>Export certification support</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Request Support</h3>
+      <input id="ss_name" placeholder="Your name">
+      <input id="ss_email" type="email" placeholder="Email address">
+      <select id="ss_type">
+        <option value="">Type of support needed</option>
+        <option>Veterinary / Health</option>
+        <option>Feed & Inputs</option>
+        <option>Breeding Programme</option>
+        <option>Processing / Abattoir</option>
+        <option>Market Access</option>
+        <option>Funding</option>
+        <option>Training</option>
+        <option>Other</option>
+      </select>
+      <textarea id="ss_detail" placeholder="Describe what support you need…"></textarea>
+      <button class="btn" onclick="submitSupport()">📩 Request Support</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <div onclick="location.href='index.html'">🏠 Home</div>
+  <div class="active">🐄 Livestock</div>
+  <div onclick="location.href='index5.html'">👤 Citizen</div>
+  <div onclick="location.href='index6.html'">💼 Invest</div>
+  <div onclick="location.href='helpdesk.html'">🆘 Help</div>
+</div>
+
+<div class="toast" id="toast">Submitted successfully!</div>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3cpb5rUI2uzst5cphvS5GsRCOedqazwoT2NNSSSKlamBAm8kcFtiLlBKKjT7-8G8IJw/exec";
+function switchTab(name,el){document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none');document.getElementById('tab-'+name).style.display='block';document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+async function post(p){await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});}
+async function submitLivestock(){
+  const name=document.getElementById('lv_name').value.trim(),email=document.getElementById('lv_email').value.trim(),animal=document.getElementById('lv_animal').value,qty=document.getElementById('lv_qty').value.trim(),purpose=document.getElementById('lv_purpose').value;
+  if(!name||!email||!animal||!qty||!purpose){alert('Please fill in all required fields.');return;}
+  try{await post({action:'registerLivestock',name,email,phone:document.getElementById('lv_phone').value,location:document.getElementById('lv_location').value,animalType:animal,quantity:qty,breed:document.getElementById('lv_breed').value,purpose,monthlyOutput:document.getElementById('lv_output').value,fundingRequired:document.getElementById('lv_funding').value,notes:document.getElementById('lv_notes').value,timestamp:new Date().toISOString()});showToast();}catch(e){alert('Submission failed.');}
+}
+async function submitSupport(){
+  const name=document.getElementById('ss_name').value.trim(),email=document.getElementById('ss_email').value.trim();
+  if(!name||!email){alert('Please enter name and email.');return;}
+  try{await post({action:'livestockSupport',name,email,supportType:document.getElementById('ss_type').value,detail:document.getElementById('ss_detail').value});showToast();}catch(e){alert('Submission failed.');}
+}
+</script>
+</body>
+</html>
