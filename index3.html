@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart City – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif;}
+body{background:#000;overflow-x:hidden;padding-bottom:80px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px;background:white;position:sticky;top:0;z-index:1000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:16px;color:#1f3c2f;}
+.back-btn{background:none;border:none;color:#1f3c2f;font-size:22px;cursor:pointer;padding:4px 8px;}
+.hero{position:relative;height:180px;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:url('back2.jpg') center/cover;filter:brightness(0.4);}
+.hero-text{position:relative;z-index:1;color:#fff;padding:40px 20px 0;}
+.hero-text h1{font-size:24px;font-weight:600;}
+.hero-text p{font-size:13px;opacity:0.8;margin-top:6px;}
+.section{padding:16px;}
+.card{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);padding:16px;border-radius:16px;margin-bottom:12px;color:#fff;}
+.card h3{font-size:15px;font-weight:600;margin-bottom:6px;}
+.card p{font-size:13px;opacity:0.85;line-height:1.5;}
+.badge{display:inline-block;background:#1f3c2f;color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;margin-top:8px;}
+.badge.blue{background:#1a3a6b;}
+.badge.gold{background:#8B6914;}
+input,textarea,select{width:100%;padding:11px;margin-top:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.2);color:#fff;font-size:13px;}
+select option{background:#111;color:#fff;}
+textarea{min-height:80px;resize:vertical;}
+.btn{margin-top:12px;padding:12px;width:100%;border-radius:10px;border:none;background:#1f3c2f;color:white;font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.2s;}
+.btn:hover{opacity:0.85;}
+.btn.outline{background:transparent;border:1.5px solid #1f3c2f;color:#7dba9c;}
+.tab-bar{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;}
+.tab{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);cursor:pointer;white-space:nowrap;}
+.tab.active{background:#1f3c2f;color:#fff;border-color:#1f3c2f;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;text-align:center;}
+.stat .num{font-size:22px;font-weight:600;color:#7dba9c;}
+.stat .lbl{font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px;}
+.pillar-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.pillar{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;text-align:center;color:#fff;}
+.pillar .icon{font-size:26px;margin-bottom:6px;}
+.pillar .name{font-size:12px;opacity:0.8;}
+.toast{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1f3c2f;color:#fff;padding:12px 24px;border-radius:30px;font-size:13px;z-index:9999;}
+.toast.show{display:block;}
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:white;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:14px;font-size:12px;color:#6b7280;cursor:pointer;}
+.nav div.active{color:#1f3c2f;font-weight:600;}
+label{font-size:12px;color:rgba(255,255,255,0.55);margin-top:12px;display:block;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" onclick="history.back()">&#8592;</button>
+  <img src="logo.png" alt="MKM">
+  <h2>Smart City Program</h2>
+</div>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-text">
+    <h1>🏙️ Smart City Program</h1>
+    <p>Urban infrastructure and modernisation framework</p>
+  </div>
+</div>
+
+<div class="section">
+
+  <div class="stat-row">
+    <div class="stat"><div class="num">7</div><div class="lbl">Active Zones</div></div>
+    <div class="stat"><div class="num">R8.1B</div><div class="lbl">Infrastructure Target</div></div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
+    <div class="tab" onclick="switchTab('pillars',this)">Pillars</div>
+    <div class="tab" onclick="switchTab('submit',this)">Submit Project</div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="tab-overview">
+    <div class="card">
+      <h3>Vision</h3>
+      <p>Transform Kingdom land into interconnected smart zones with clean energy, digital infrastructure, housing, and economic clusters — anchored by sovereignty and community ownership.</p>
+      <span class="badge blue">Phase 1 Active</span>
+    </div>
+
+    <div class="card">
+      <h3>Housing Development – Zone A</h3>
+      <p>2,400 mixed-use housing units across 3 phases. Social, affordable and commercial tiers. Solar-powered grid integration.</p>
+      <span class="badge">Under Development</span>
+    </div>
+
+    <div class="card">
+      <h3>Digital Connectivity Network</h3>
+      <p>Fibre optic backbone across 6 Kingdom zones. Covers 85,000 projected residents. ISP partnership model.</p>
+      <span class="badge gold">Investor Ready</span>
+    </div>
+
+    <div class="card">
+      <h3>Clean Energy Hub</h3>
+      <p>200MW solar + battery storage facility. Powers Kingdom zones, schools, hospitals and commercial parks.</p>
+      <span class="badge gold">Investor Ready</span>
+    </div>
+
+    <div class="card">
+      <h3>Economic Cluster – Zone B</h3>
+      <p>Light manufacturing, logistics hub and agro-processing facilities. 1,200 direct job creation target.</p>
+      <span class="badge">Under Review</span>
+    </div>
+  </div>
+
+  <!-- PILLARS -->
+  <div id="tab-pillars" style="display:none;">
+    <div class="pillar-grid">
+      <div class="pillar"><div class="icon">🏠</div><div class="name">Housing</div></div>
+      <div class="pillar"><div class="icon">⚡</div><div class="name">Clean Energy</div></div>
+      <div class="pillar"><div class="icon">📡</div><div class="name">Connectivity</div></div>
+      <div class="pillar"><div class="icon">🏫</div><div class="name">Education</div></div>
+      <div class="pillar"><div class="icon">🏥</div><div class="name">Healthcare</div></div>
+      <div class="pillar"><div class="icon">🚌</div><div class="name">Transport</div></div>
+      <div class="pillar"><div class="icon">💧</div><div class="name">Water & Sanitation</div></div>
+      <div class="pillar"><div class="icon">🏭</div><div class="name">Industry</div></div>
+    </div>
+    <div class="card">
+      <h3>Programme Timeline</h3>
+      <p><strong>Phase 1 (2024–2026):</strong> Infrastructure backbone, housing zone A, energy grid.<br><br>
+      <strong>Phase 2 (2026–2029):</strong> Digital network, economic cluster, healthcare facility.<br><br>
+      <strong>Phase 3 (2029–2033):</strong> Full smart city integration, autonomous systems.</p>
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div id="tab-submit" style="display:none;">
+    <div class="card">
+      <h3>Submit a Smart City Project</h3>
+      <p style="font-size:12px;opacity:0.7;margin-bottom:4px;">Citizens submit free · Non-citizens: R690 development fee applies</p>
+
+      <label>Project Name *</label>
+      <input id="sc_name" placeholder="e.g. Solar Micro-Grid – Zone C">
+
+      <label>Smart City Pillar *</label>
+      <select id="sc_pillar">
+        <option value="">Select pillar</option>
+        <option>Housing</option>
+        <option>Clean Energy</option>
+        <option>Connectivity</option>
+        <option>Education</option>
+        <option>Healthcare</option>
+        <option>Transport</option>
+        <option>Water & Sanitation</option>
+        <option>Industry & Manufacturing</option>
+        <option>Other</option>
+      </select>
+
+      <label>Location / Zone</label>
+      <input id="sc_location" placeholder="Zone / Province / Area">
+
+      <label>Capital Required (ZAR) *</label>
+      <input id="sc_capital" type="number" placeholder="e.g. 15000000">
+
+      <label>ROI Projection (%)</label>
+      <input id="sc_roi" placeholder="e.g. 22%">
+
+      <label>Timeline</label>
+      <input id="sc_timeline" placeholder="e.g. 24 months">
+
+      <label>Project Description *</label>
+      <textarea id="sc_desc" placeholder="Describe the project, scope, community impact, employment numbers…"></textarea>
+
+      <label>Upload Supporting Document</label>
+      <input type="file" id="sc_file" accept=".pdf,.doc,.docx">
+
+      <button class="btn" onclick="submitSmartCity()">🏙️ Submit Project</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <div onclick="location.href='index.html'">🏠 Home</div>
+  <div class="active">🏙️ Smart City</div>
+  <div onclick="location.href='index5.html'">👤 Citizen</div>
+  <div onclick="location.href='index6.html'">💼 Invest</div>
+  <div onclick="location.href='helpdesk.html'">🆘 Help</div>
+</div>
+
+<div class="toast" id="toast">Project submitted successfully!</div>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3cpb5rUI2uzst5cphvS5GsRCOedqazwoT2NNSSSKlamBAm8kcFtiLlBKKjT7-8G8IJw/exec";
+
+function switchTab(name,el){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function submitSmartCity(){
+  const name=document.getElementById('sc_name').value.trim();
+  const pillar=document.getElementById('sc_pillar').value;
+  const capital=document.getElementById('sc_capital').value.trim();
+  const desc=document.getElementById('sc_desc').value.trim();
+  if(!name||!pillar||!capital||!desc){alert('Please fill in all required fields.');return;}
+  const fileInput=document.getElementById('sc_file');
+  let fileData='',fileName='';
+  if(fileInput.files.length>0){const file=fileInput.files[0];fileName=file.name;fileData=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});}
+  const payload={action:'submitProject',name,sector:'Smart City – '+pillar,description:desc,funding:capital,roi:document.getElementById('sc_roi').value,timeline:document.getElementById('sc_timeline').value,location:document.getElementById('sc_location').value,fileName,fileData};
+  try{
+    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+    document.querySelectorAll('input,textarea,select').forEach(el=>{if(el.type!=='file')el.value='';});
+  }catch(e){alert('Submission failed. Please try again.');}
+}
+</script>
+</body>
+</html>
