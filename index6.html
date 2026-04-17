@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investor Portal – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif;}
+body{background:#000;overflow-x:hidden;padding-bottom:80px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px;background:white;position:sticky;top:0;z-index:1000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:16px;color:#1f3c2f;}
+.back-btn{background:none;border:none;color:#1f3c2f;font-size:22px;cursor:pointer;padding:4px 8px;}
+.hero{position:relative;height:180px;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:url('back4.jpg') center/cover;filter:brightness(0.35);}
+.hero-text{position:relative;z-index:1;color:#fff;padding:40px 20px 0;}
+.hero-text h1{font-size:24px;font-weight:600;}
+.hero-text p{font-size:13px;opacity:0.8;margin-top:6px;}
+.section{padding:16px;}
+.card{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);padding:16px;border-radius:16px;margin-bottom:12px;color:#fff;}
+.card h3{font-size:15px;font-weight:600;margin-bottom:6px;}
+.card p{font-size:13px;opacity:0.85;line-height:1.5;}
+.badge{display:inline-block;background:#1f3c2f;color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;margin-top:8px;}
+.badge.gold{background:#8B6914;}
+.badge.pend{background:#4a3a10;}
+input,textarea,select{width:100%;padding:11px;margin-top:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.2);color:#fff;font-size:13px;}
+select option{background:#111;color:#fff;}
+textarea{min-height:80px;resize:vertical;}
+.btn{margin-top:12px;padding:12px;width:100%;border-radius:10px;border:none;background:#1f3c2f;color:white;font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.2s;}
+.btn:hover{opacity:0.85;}
+.btn.outline{background:transparent;border:1.5px solid #1f3c2f;color:#7dba9c;}
+.tab-bar{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;}
+.tab{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);cursor:pointer;white-space:nowrap;}
+.tab.active{background:#1f3c2f;color:#fff;border-color:#1f3c2f;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;text-align:center;}
+.stat .num{font-size:22px;font-weight:600;color:#c8a44a;}
+.stat .lbl{font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px;}
+.project-item{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:10px;}
+.project-item h4{font-size:14px;font-weight:600;color:#fff;}
+.project-item p{font-size:12px;color:rgba(255,255,255,0.65);margin-top:4px;}
+.project-meta{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.meta-chip{font-size:11px;background:rgba(255,255,255,0.08);padding:3px 10px;border-radius:12px;color:rgba(255,255,255,0.7);}
+.lock-overlay{text-align:center;padding:30px 0;}
+.lock-overlay .lock{font-size:40px;margin-bottom:10px;}
+.lock-overlay p{font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:12px;}
+.toast{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1f3c2f;color:#fff;padding:12px 24px;border-radius:30px;font-size:13px;z-index:9999;}
+.toast.show{display:block;}
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:white;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:14px;font-size:12px;color:#6b7280;cursor:pointer;}
+.nav div.active{color:#1f3c2f;font-weight:600;}
+label{font-size:12px;color:rgba(255,255,255,0.55);margin-top:12px;display:block;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" onclick="history.back()">&#8592;</button>
+  <img src="logo.png" alt="MKM">
+  <h2>Investor Portal</h2>
+</div>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-text">
+    <h1>💼 Investor Portal</h1>
+    <p>Verified access to Kingdom development opportunities</p>
+  </div>
+</div>
+
+<div class="section">
+
+  <div class="stat-row">
+    <div class="stat"><div class="num">24</div><div class="lbl">Approved Projects</div></div>
+    <div class="stat"><div class="num">R12.4B</div><div class="lbl">Total Pipeline</div></div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('projects',this)">Projects</div>
+    <div class="tab" onclick="switchTab('apply',this)">Apply as Investor</div>
+    <div class="tab" onclick="switchTab('sectors',this)">Sectors</div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div id="tab-projects">
+    <div class="card" style="padding:12px;">
+      <p style="font-size:12px;color:rgba(255,255,255,0.55);">Full financial models, legal documents and ROI projections are visible to verified investors only. Register below to apply for access.</p>
+    </div>
+
+    <div class="project-item">
+      <h4>Ferrochrome Beneficiation Plant – Limpopo</h4>
+      <p>Chrome processing facility with export licence. Community JV structure.</p>
+      <div class="project-meta">
+        <span class="meta-chip">Mining</span>
+        <span class="meta-chip">R12M</span>
+        <span class="meta-chip">34% ROI / 5yr</span>
+      </div>
+      <span class="badge gold">Investor Ready</span>
+    </div>
+
+    <div class="project-item">
+      <h4>PGM Royalty Structure – Platinum Belt</h4>
+      <p>Platinum group metals. Kingdom land + royalty model. Min R25M commitment.</p>
+      <div class="project-meta">
+        <span class="meta-chip">Mining</span>
+        <span class="meta-chip">R25M+</span>
+        <span class="meta-chip">Royalty Deal</span>
+      </div>
+      <span class="badge gold">Investor Ready</span>
+    </div>
+
+    <div class="project-item">
+      <h4>200MW Solar Energy Hub</h4>
+      <p>Utility-scale solar + battery storage. Powers Kingdom zones and commercial grid.</p>
+      <div class="project-meta">
+        <span class="meta-chip">Energy</span>
+        <span class="meta-chip">R180M</span>
+        <span class="meta-chip">22% ROI / 7yr</span>
+      </div>
+      <span class="badge gold">Investor Ready</span>
+    </div>
+
+    <div class="project-item">
+      <h4>Smart City Housing – Zone A (2,400 Units)</h4>
+      <p>Mixed-income housing development. Government partnership pipeline active.</p>
+      <div class="project-meta">
+        <span class="meta-chip">Smart City</span>
+        <span class="meta-chip">R320M</span>
+        <span class="meta-chip">30yr Lease Model</span>
+      </div>
+      <span class="badge gold">Investor Ready</span>
+    </div>
+
+    <div class="project-item">
+      <h4>Agro-Processing Facility</h4>
+      <p>Value-add processing for Kingdom crop production. Cold storage + distribution.</p>
+      <div class="project-meta">
+        <span class="meta-chip">Agriculture</span>
+        <span class="meta-chip">R8.5M</span>
+        <span class="meta-chip">18% ROI / 4yr</span>
+      </div>
+      <span class="badge">Under Review</span>
+    </div>
+
+    <div class="lock-overlay">
+      <div class="lock">🔒</div>
+      <p>Full project details, financials and legal documents require verified investor status.</p>
+      <button class="btn" style="max-width:260px;margin:0 auto;" onclick="switchTab('apply', document.querySelectorAll('.tab')[1])">Apply for Investor Access</button>
+    </div>
+  </div>
+
+  <!-- APPLY -->
+  <div id="tab-apply" style="display:none;">
+    <div class="card">
+      <h3>Investor Application</h3>
+      <p style="font-size:12px;opacity:0.7;margin-bottom:8px;">Admin approval required. You will be contacted within 5 business days.</p>
+
+      <label>Full Name *</label>
+      <input id="i_name" placeholder="Your full name">
+
+      <label>Organisation / Company</label>
+      <input id="i_org" placeholder="Organisation name (if applicable)">
+
+      <label>Email *</label>
+      <input id="i_email" type="email" placeholder="investor@company.com">
+
+      <label>Phone *</label>
+      <input id="i_phone" type="tel" placeholder="+27 000 000 0000">
+
+      <label>Country</label>
+      <input id="i_country" placeholder="Country">
+
+      <label>Capital Range *</label>
+      <select id="i_capital">
+        <option value="">Select capital range</option>
+        <option>R500K – R2M</option>
+        <option>R2M – R10M</option>
+        <option>R10M – R50M</option>
+        <option>R50M – R200M</option>
+        <option>R200M+</option>
+      </select>
+
+      <label>Sector Interest *</label>
+      <select id="i_sector">
+        <option value="">Select sector</option>
+        <option>Mining & Resources</option>
+        <option>Smart City & Infrastructure</option>
+        <option>Agriculture</option>
+        <option>Clean Energy</option>
+        <option>Education & Training</option>
+        <option>Trade & Marketplace</option>
+        <option>All Sectors</option>
+      </select>
+
+      <label>Investment Type</label>
+      <select id="i_type">
+        <option value="">Select type</option>
+        <option>Equity Investment</option>
+        <option>Debt / Loan Financing</option>
+        <option>Joint Venture</option>
+        <option>Royalty Structure</option>
+        <option>Grant / Development Funding</option>
+      </select>
+
+      <label>Brief Overview of Investment Mandate</label>
+      <textarea id="i_mandate" placeholder="Describe your investment focus, experience and what you are looking for…"></textarea>
+
+      <label>Verification Documents (ID / Company Registration)</label>
+      <input type="file" id="i_docs" accept=".pdf,.doc,.docx,.jpg,.png">
+
+      <button class="btn" onclick="submitInvestor()">💼 Submit Application</button>
+    </div>
+  </div>
+
+  <!-- SECTORS -->
+  <div id="tab-sectors" style="display:none;">
+    <div class="card">
+      <h3>Investment Sectors</h3>
+      <p>The Kingdom offers investment opportunities across 6 core sectors, all within a sovereign economic framework with Kingdom land security.</p>
+    </div>
+    <div class="card"><h3>⛏️ Mining & Resources</h3><p>Coal, chrome, platinum, rare earth minerals. ROI: 28–40%. Timeline: 3–7 years.</p></div>
+    <div class="card"><h3>🏙️ Smart City & Infrastructure</h3><p>Housing, energy, connectivity, transport. ROI: 18–30%. Timeline: 5–15 years.</p></div>
+    <div class="card"><h3>🌱 Agriculture & Food Security</h3><p>Crop production, agro-processing, cold chain. ROI: 15–25%. Timeline: 2–5 years.</p></div>
+    <div class="card"><h3>⚡ Clean Energy</h3><p>Solar, battery storage, green hydrogen. ROI: 20–28%. Timeline: 7–12 years.</p></div>
+    <div class="card"><h3>🎓 Education & Training</h3><p>Academy infrastructure, online platforms, skills centres. ROI: 12–18%. Timeline: 3–8 years.</p></div>
+    <div class="card"><h3>🛍️ Trade & Marketplace</h3><p>Export infrastructure, logistics, e-commerce. ROI: 20–35%. Timeline: 2–5 years.</p></div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <div onclick="location.href='index.html'">🏠 Home</div>
+  <div onclick="location.href='index.html'">📋 Submit</div>
+  <div onclick="location.href='index5.html'">👤 Citizen</div>
+  <div class="active">💼 Invest</div>
+  <div onclick="location.href='helpdesk.html'">🆘 Help</div>
+</div>
+
+<div class="toast" id="toast">✅ Application submitted! Our team will review and contact you within 5 business days.</div>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3cpb5rUI2uzst5cphvS5GsRCOedqazwoT2NNSSSKlamBAm8kcFtiLlBKKjT7-8G8IJw/exec";
+
+function switchTab(name,el){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function submitInvestor(){
+  const name=document.getElementById('i_name').value.trim();
+  const email=document.getElementById('i_email').value.trim();
+  const phone=document.getElementById('i_phone').value.trim();
+  const capital=document.getElementById('i_capital').value;
+  const sector=document.getElementById('i_sector').value;
+  if(!name||!email||!phone||!capital||!sector){alert('Please fill in all required fields.');return;}
+  const fileInput=document.getElementById('i_docs');
+  let fileData='',fileName='';
+  if(fileInput.files.length>0){const file=fileInput.files[0];fileName=file.name;fileData=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});}
+  const payload={action:'registerInvestor',name,org:document.getElementById('i_org').value,email,phone,country:document.getElementById('i_country').value,capitalRange:capital,sectorInterest:sector,investmentType:document.getElementById('i_type').value,mandate:document.getElementById('i_mandate').value,status:'Pending Verification',fileName,fileData,timestamp:new Date().toISOString()};
+  try{
+    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),4000);
+    document.querySelectorAll('#tab-apply input,#tab-apply textarea,#tab-apply select').forEach(el=>{if(el.type!=='file')el.value='';});
+  }catch(e){alert('Submission failed. Please try again.');}
+}
+</script>
+</body>
+</html>
