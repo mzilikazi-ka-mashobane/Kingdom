@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mining Projects – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif;}
+body{background:#000;overflow-x:hidden;padding-bottom:80px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px;background:white;position:sticky;top:0;z-index:1000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:16px;color:#1f3c2f;}
+.back-btn{background:none;border:none;color:#1f3c2f;font-size:22px;cursor:pointer;padding:4px 8px;}
+.hero{position:relative;height:180px;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:url('back1.jpg') center/cover;filter:brightness(0.45);}
+.hero-text{position:relative;z-index:1;color:#fff;padding:40px 20px 0;}
+.hero-text h1{font-size:24px;font-weight:600;}
+.hero-text p{font-size:13px;opacity:0.8;margin-top:6px;}
+.section{padding:16px;}
+.card{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);padding:16px;border-radius:16px;margin-bottom:12px;color:#fff;}
+.card h3{font-size:15px;font-weight:600;margin-bottom:6px;}
+.card p{font-size:13px;opacity:0.85;line-height:1.5;}
+.badge{display:inline-block;background:#1f3c2f;color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;margin-top:8px;}
+.badge.gold{background:#8B6914;}
+.badge.red{background:#7a1c1c;}
+input,textarea,select{width:100%;padding:11px;margin-top:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.2);color:#fff;font-size:13px;}
+select option{background:#111;color:#fff;}
+textarea{min-height:80px;resize:vertical;}
+.btn{margin-top:12px;padding:12px;width:100%;border-radius:10px;border:none;background:#1f3c2f;color:white;font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.2s;}
+.btn:hover{opacity:0.85;}
+.btn.outline{background:transparent;border:1.5px solid #1f3c2f;color:#7dba9c;}
+.tab-bar{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;}
+.tab{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);cursor:pointer;white-space:nowrap;}
+.tab.active{background:#1f3c2f;color:#fff;border-color:#1f3c2f;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;text-align:center;}
+.stat .num{font-size:22px;font-weight:600;color:#7dba9c;}
+.stat .lbl{font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px;}
+.divider{border:none;border-top:1px solid rgba(255,255,255,0.08);margin:14px 0;}
+.toast{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1f3c2f;color:#fff;padding:12px 24px;border-radius:30px;font-size:13px;z-index:9999;}
+.toast.show{display:block;}
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:white;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:14px;font-size:12px;color:#6b7280;cursor:pointer;}
+.nav div.active{color:#1f3c2f;font-weight:600;}
+label{font-size:12px;color:rgba(255,255,255,0.55);margin-top:12px;display:block;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" onclick="history.back()">&#8592;</button>
+  <img src="logo.png" alt="MKM">
+  <h2>Mining Projects</h2>
+</div>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-text">
+    <h1>⛏️ Mining & Resources</h1>
+    <p>Industrial extraction and resource development pipeline</p>
+  </div>
+</div>
+
+<div class="section">
+
+  <div class="stat-row">
+    <div class="stat"><div class="num">12</div><div class="lbl">Active Projects</div></div>
+    <div class="stat"><div class="num">R4.2B</div><div class="lbl">Pipeline Value</div></div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
+    <div class="tab" onclick="switchTab('submit',this)">Submit Project</div>
+    <div class="tab" onclick="switchTab('opportunities',this)">Opportunities</div>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div id="tab-overview">
+    <div class="card">
+      <h3>About Mining Development</h3>
+      <p>The Mzilikazi Kingdom Mining Division focuses on sustainable, community-centred extraction across coal, platinum, chrome, and rare earth minerals within the Kingdom's land footprint.</p>
+      <span class="badge">Strategic Sector</span>
+    </div>
+
+    <div class="card">
+      <h3>Coal Extraction – Mpumalanga</h3>
+      <p>Community coal mining initiative targeting 200 tonnes/month. Partnership with local cooperatives.</p>
+      <span class="badge">Active</span>
+    </div>
+
+    <div class="card">
+      <h3>Chrome Processing Plant</h3>
+      <p>Ferrochrome beneficiation facility. Capital required: R12M. ROI projected at 34% over 5 years.</p>
+      <span class="badge gold">Investor Ready</span>
+    </div>
+
+    <div class="card">
+      <h3>Rare Earth Minerals Survey</h3>
+      <p>Geological survey of 4,200 hectares for rare earth mineral mapping. Phase 1 complete.</p>
+      <span class="badge">Under Review</span>
+    </div>
+
+    <div class="card">
+      <h3>Platinum Group Metals</h3>
+      <p>JV opportunity with verified mining houses. Royalty structure available for Kingdom land holders.</p>
+      <span class="badge gold">Investor Ready</span>
+    </div>
+  </div>
+
+  <!-- SUBMIT TAB -->
+  <div id="tab-submit" style="display:none;">
+    <div class="card">
+      <h3>Submit a Mining Project</h3>
+      <p style="font-size:12px;opacity:0.7;margin-bottom:4px;">Citizens submit free · Non-citizens: R690 development fee applies</p>
+
+      <label>Project Name *</label>
+      <input id="m_name" placeholder="e.g. Chrome Beneficiation – Limpopo">
+
+      <label>Mineral / Resource Type *</label>
+      <select id="m_mineral">
+        <option value="">Select mineral</option>
+        <option>Coal</option>
+        <option>Chrome</option>
+        <option>Platinum</option>
+        <option>Gold</option>
+        <option>Rare Earth Minerals</option>
+        <option>Iron Ore</option>
+        <option>Other</option>
+      </select>
+
+      <label>Location *</label>
+      <input id="m_location" placeholder="Province / Area">
+
+      <label>Capital Required (ZAR) *</label>
+      <input id="m_capital" type="number" placeholder="e.g. 5000000">
+
+      <label>ROI Projection (%)</label>
+      <input id="m_roi" placeholder="e.g. 28%">
+
+      <label>Timeline</label>
+      <input id="m_timeline" placeholder="e.g. 36 months">
+
+      <label>Project Description *</label>
+      <textarea id="m_desc" placeholder="Describe the project, scope, community impact…"></textarea>
+
+      <label>Upload Supporting Document</label>
+      <input type="file" id="m_file" accept=".pdf,.doc,.docx">
+
+      <button class="btn" onclick="submitMining()">⛏️ Submit Project</button>
+    </div>
+  </div>
+
+  <!-- OPPORTUNITIES TAB -->
+  <div id="tab-opportunities" style="display:none;">
+    <div class="card">
+      <h3>🔒 Verified Investor Access Required</h3>
+      <p>Detailed project financials, legal documents and ROI models are available to verified investors only.</p>
+      <button class="btn outline" onclick="location.href='index6.html'">Apply as Investor →</button>
+    </div>
+
+    <div class="card">
+      <h3>Chrome JV – R12M Opportunity</h3>
+      <p>Ferrochrome plant. 34% ROI over 5yr. Land secured. Environmental approval pending.</p>
+      <span class="badge gold">Investor Ready</span>
+    </div>
+
+    <div class="card">
+      <h3>PGM Royalty Structure</h3>
+      <p>Platinum group metals. Kingdom land lease + royalty model. Min investment R25M.</p>
+      <span class="badge gold">Investor Ready</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="nav">
+  <div onclick="location.href='index.html'">🏠 Home</div>
+  <div class="active">⛏️ Mining</div>
+  <div onclick="location.href='index5.html'">👤 Citizen</div>
+  <div onclick="location.href='index6.html'">💼 Invest</div>
+  <div onclick="location.href='helpdesk.html'">🆘 Help</div>
+</div>
+
+<div class="toast" id="toast">Project submitted successfully!</div>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3cpb5rUI2uzst5cphvS5GsRCOedqazwoT2NNSSSKlamBAm8kcFtiLlBKKjT7-8G8IJw/exec";
+
+function switchTab(name, el){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function submitMining(){
+  const name = document.getElementById('m_name').value.trim();
+  const mineral = document.getElementById('m_mineral').value;
+  const location = document.getElementById('m_location').value.trim();
+  const capital = document.getElementById('m_capital').value.trim();
+  const desc = document.getElementById('m_desc').value.trim();
+
+  if(!name||!mineral||!location||!capital||!desc){alert('Please fill in all required fields.');return;}
+
+  const fileInput = document.getElementById('m_file');
+  let fileData='', fileName='';
+  if(fileInput.files.length>0){
+    const file=fileInput.files[0];
+    fileName=file.name;
+    fileData=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
+  }
+
+  const payload={
+    action:'submitProject',
+    name,
+    sector:'Mining – '+mineral,
+    description:desc,
+    funding:capital,
+    roi:document.getElementById('m_roi').value,
+    timeline:document.getElementById('m_timeline').value,
+    location,
+    fileName,fileData
+  };
+
+  try{
+    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+    document.querySelectorAll('input,textarea,select').forEach(el=>{if(el.type!=='file')el.value='';});
+  }catch(e){alert('Submission failed. Please try again.');}
+}
+</script>
+</body>
+</html>
