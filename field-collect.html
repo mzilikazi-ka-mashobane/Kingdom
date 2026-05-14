@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Field Collection – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif;}
+
+:root{
+  --green:#1f3c2f;
+  --green-light:#2d5440;
+  --gold:#c9a84c;
+  --glass:rgba(0,0,0,0.35);
+  --glass-border:rgba(255,255,255,0.10);
+}
+
+body{background:#0a0f0d;overflow-x:hidden;padding-bottom:80px;}
+
+/* TOPBAR */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;background:white;position:sticky;top:0;z-index:3000;
+}
+.topbar img{height:38px;}
+.topbar h2{font-size:15px;color:var(--green);font-weight:600;}
+
+/* PAGE HEADER */
+.page-header{
+  background:linear-gradient(135deg,var(--green) 0%,#0d1f17 100%);
+  padding:18px;
+  border-bottom:1px solid rgba(201,168,76,0.3);
+}
+.page-header h1{color:#fff;font-size:17px;font-weight:600;margin-bottom:3px;}
+.page-header p{color:rgba(255,255,255,0.55);font-size:12px;}
+
+/* GPS BANNER */
+.gps-banner{
+  margin:14px;
+  background:rgba(31,60,47,0.5);
+  border:1px solid rgba(201,168,76,0.3);
+  border-radius:14px;
+  padding:13px 15px;
+  display:flex;align-items:center;gap:12px;
+}
+.gps-icon{font-size:22px;flex-shrink:0;}
+.gps-info{flex:1;}
+.gps-info .label{font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:2px;}
+.gps-info .coords{font-size:13px;color:#c9a84c;font-weight:600;letter-spacing:0.3px;}
+.gps-btn{
+  padding:7px 12px;border-radius:10px;border:1px solid var(--gold);
+  background:transparent;color:var(--gold);font-size:12px;
+  font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;
+}
+.gps-btn:active{background:rgba(201,168,76,0.15);}
+
+/* SECTION LABEL */
+.section-label{
+  padding:0 14px 8px;
+  font-size:11px;font-weight:600;color:rgba(255,255,255,0.35);
+  letter-spacing:1px;text-transform:uppercase;
+  margin-top:16px;
+}
+
+/* CARD */
+.card{
+  background:var(--glass);
+  backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);
+  padding:15px;border-radius:16px;
+  margin:0 14px 12px;color:#fff;
+}
+
+/* FIELD */
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.field label{
+  display:block;font-size:11px;color:rgba(255,255,255,0.5);
+  margin-bottom:5px;font-weight:600;letter-spacing:0.5px;
+  text-transform:uppercase;
+}
+.field label .req{color:var(--gold);}
+
+input,textarea,select{
+  width:100%;padding:11px 12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(0,0,0,0.25);
+  color:#fff;font-family:Inter,sans-serif;font-size:13px;
+  outline:none;transition:border-color 0.2s;
+  -webkit-appearance:none;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:rgba(201,168,76,0.5);
+}
+select option{background:#111;color:#fff;}
+textarea{resize:vertical;min-height:80px;line-height:1.5;}
+
+/* CONDITION SELECTOR */
+.condition-row{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:7px;
+}
+.cond-btn{
+  padding:9px 4px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);
+  background:rgba(0,0,0,0.25);color:rgba(255,255,255,0.5);
+  font-size:11px;font-weight:600;cursor:pointer;text-align:center;
+  transition:all 0.2s;font-family:Inter,sans-serif;
+}
+.cond-btn.good.selected{background:rgba(34,197,94,0.25);border-color:#22c55e;color:#4ade80;}
+.cond-btn.fair.selected{background:rgba(245,158,11,0.25);border-color:#f59e0b;color:#fbbf24;}
+.cond-btn.poor.selected{background:rgba(239,68,68,0.25);border-color:#ef4444;color:#f87171;}
+.cond-btn.critical.selected{background:rgba(168,85,247,0.25);border-color:#a855f7;color:#c084fc;}
+
+/* PHOTO CAPTURE */
+.photo-area{
+  border:1.5px dashed rgba(255,255,255,0.15);
+  border-radius:12px;padding:18px;text-align:center;cursor:pointer;
+  transition:border-color 0.2s;position:relative;overflow:hidden;
+}
+.photo-area:active{border-color:var(--gold);}
+.photo-area input[type=file]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;
+  width:100%;height:100%;border:none;background:none;padding:0;
+}
+.photo-area .icon{font-size:28px;margin-bottom:6px;}
+.photo-area .hint{font-size:12px;color:rgba(255,255,255,0.4);}
+.photo-area .hint strong{color:rgba(255,255,255,0.7);}
+#photoPreview{
+  display:none;width:100%;border-radius:10px;margin-top:10px;
+  max-height:180px;object-fit:cover;
+}
+
+/* TIMESTAMP */
+.timestamp-row{
+  display:flex;gap:8px;
+}
+.timestamp-row input{flex:1;}
+
+/* SUBMIT */
+.submit-btn{
+  width:calc(100% - 28px);margin:4px 14px 0;
+  padding:14px;border-radius:12px;border:none;
+  background:var(--gold);color:#000;
+  font-size:14px;font-weight:600;font-family:Inter,sans-serif;
+  cursor:pointer;letter-spacing:0.3px;
+  transition:opacity 0.2s;
+}
+.submit-btn:active{opacity:0.85;}
+.submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* BACK BTN */
+.back-btn{
+  display:flex;align-items:center;gap:6px;
+  margin:14px 14px 0;padding:10px 14px;
+  border-radius:10px;border:1px solid var(--glass-border);
+  background:var(--glass);color:rgba(255,255,255,0.5);
+  font-size:13px;cursor:pointer;font-family:Inter,sans-serif;
+  width:fit-content;
+}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:85px;left:50%;transform:translateX(-50%);
+  background:var(--green);color:#fff;padding:11px 22px;
+  border-radius:30px;font-size:13px;z-index:9999;
+  max-width:88vw;text-align:center;display:none;
+  border:1px solid rgba(201,168,76,0.4);
+}
+
+/* SUCCESS OVERLAY */
+#successScreen{
+  display:none;position:fixed;inset:0;background:#0a0f0d;
+  z-index:5000;flex-direction:column;align-items:center;
+  justify-content:center;padding:30px;text-align:center;
+}
+#successScreen.show{display:flex;}
+.success-icon{font-size:56px;margin-bottom:16px;}
+.success-title{color:#fff;font-size:20px;font-weight:600;margin-bottom:8px;}
+.success-sub{color:rgba(255,255,255,0.5);font-size:13px;line-height:1.6;margin-bottom:28px;}
+.success-ref{
+  background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);
+  border-radius:10px;padding:10px 18px;color:var(--gold);
+  font-size:13px;font-weight:600;margin-bottom:24px;
+}
+.success-btn{
+  padding:13px 32px;border-radius:12px;border:none;
+  background:var(--green);color:#fff;font-size:14px;
+  font-weight:600;font-family:Inter,sans-serif;cursor:pointer;
+  margin-bottom:12px;width:100%;
+}
+.success-btn.outline{
+  background:transparent;border:1px solid var(--glass-border);
+  color:rgba(255,255,255,0.5);
+}
+
+/* NAV */
+.nav{
+  position:fixed;bottom:0;width:100%;display:flex;
+  background:white;border-top:1px solid #ddd;z-index:2000;
+}
+.nav div{
+  flex:1;text-align:center;padding:14px;font-size:13px;
+  color:#6b7280;cursor:pointer;
+}
+.nav div.active{color:var(--green);font-weight:600;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <img src="logo.png" alt="Mzilikazi Kingdom">
+  <h2>Mzilikazi Kingdom</h2>
+</div>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <h1>&#x1F4CD;&#xFE0E; Field Data Collection</h1>
+  <p>On-site GIS data capture · Syncs to Kingdom database</p>
+</div>
+
+<!-- GPS BANNER -->
+<div class="gps-banner">
+  <div class="gps-icon">&#x1F6F0;&#xFE0E;</div>
+  <div class="gps-info">
+    <div class="label">GPS Coordinates</div>
+    <div class="coords" id="coordsDisplay">Tap to capture location</div>
+  </div>
+  <button class="gps-btn" onclick="captureGPS()">&#x25B6;&#xFE0E; Capture</button>
+</div>
+
+<!-- SECTION: OFFICER INFO -->
+<div class="section-label">Field Officer</div>
+<div class="card">
+  <div class="field">
+    <label>Full Name <span class="req">*</span></label>
+    <input id="officerName" placeholder="Your full name" autocomplete="name">
+  </div>
+  <div class="field">
+    <label>Officer ID / Badge</label>
+    <input id="officerId" placeholder="e.g. MK-2024-007">
+  </div>
+  <div class="timestamp-row">
+    <div class="field" style="flex:1;margin-bottom:0;">
+      <label>Date</label>
+      <input type="date" id="fieldDate">
+    </div>
+    <div class="field" style="flex:1;margin-bottom:0;">
+      <label>Time</label>
+      <input type="time" id="fieldTime">
+    </div>
+  </div>
+</div>
+
+<!-- SECTION: ZONE INFO -->
+<div class="section-label">Zone Details</div>
+<div class="card">
+  <div class="field">
+    <label>Zone Type <span class="req">*</span></label>
+    <select id="zoneType">
+      <option value="">Select zone type</option>
+      <option>Mining Zone</option>
+      <option>Agricultural Zone (Siyatshala)</option>
+      <option>Farming Zone (Siyafuya)</option>
+      <option>Land Parcel</option>
+      <option>Smart City Node</option>
+      <option>Infrastructure</option>
+      <option>Environmental Buffer</option>
+      <option>Other</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Site / Zone Name <span class="req">*</span></label>
+    <input id="siteName" placeholder="e.g. Platreef Mining Corridor">
+  </div>
+  <div class="field">
+    <label>Province / Area</label>
+    <select id="province">
+      <option value="">Select province</option>
+      <option>Limpopo</option>
+      <option>Mpumalanga</option>
+      <option>Gauteng</option>
+      <option>North West</option>
+      <option>Free State</option>
+      <option>KwaZulu-Natal</option>
+      <option>Northern Cape</option>
+      <option>Western Cape</option>
+      <option>Eastern Cape</option>
+      <option>Cross-border / International</option>
+    </select>
+  </div>
+</div>
+
+<!-- SECTION: OBSERVATION -->
+<div class="section-label">Observation</div>
+<div class="card">
+  <div class="field">
+    <label>Observation Type <span class="req">*</span></label>
+    <select id="obsType">
+      <option value="">Select type</option>
+      <option>Site Survey</option>
+      <option>Environmental Check</option>
+      <option>Infrastructure Inspection</option>
+      <option>Soil / Ground Sample</option>
+      <option>Water Quality Check</option>
+      <option>Vegetation Assessment</option>
+      <option>Boundary Verification</option>
+      <option>Incident Report</option>
+      <option>Progress Monitoring</option>
+      <option>Other</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Site Condition <span class="req">*</span></label>
+    <div class="condition-row">
+      <button class="cond-btn good"   onclick="selectCondition('Good',this)">Good</button>
+      <button class="cond-btn fair"   onclick="selectCondition('Fair',this)">Fair</button>
+      <button class="cond-btn poor"   onclick="selectCondition('Poor',this)">Poor</button>
+      <button class="cond-btn critical" onclick="selectCondition('Critical',this)">Critical</button>
+    </div>
+    <input type="hidden" id="condition">
+  </div>
+
+  <div class="field">
+    <label>Field Notes <span class="req">*</span></label>
+    <textarea id="fieldNotes" placeholder="Describe what you observed on site. Include any notable features, concerns, measurements or recommendations."></textarea>
+  </div>
+
+  <div class="field">
+    <label>Recommended Action</label>
+    <select id="recAction">
+      <option value="">None / No action required</option>
+      <option>Follow-up inspection</option>
+      <option>Environmental remediation</option>
+      <option>Infrastructure repair</option>
+      <option>Escalate to management</option>
+      <option>Update GIS layer</option>
+      <option>Submit to regulatory authority</option>
+    </select>
+  </div>
+</div>
+
+<!-- SECTION: PHOTO -->
+<div class="section-label">Site Photo</div>
+<div class="card">
+  <div class="photo-area" onclick="document.getElementById('photoInput').click()">
+    <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="previewPhoto(this)">
+    <div class="icon">&#x1F4F7;&#xFE0E;</div>
+    <div class="hint"><strong>Tap to take photo</strong> or upload from gallery</div>
+    <img id="photoPreview" alt="Site photo preview">
+  </div>
+</div>
+
+<!-- SUBMIT -->
+<button class="submit-btn" id="submitBtn" onclick="submitData()">
+  &#x1F4E4;&#xFE0E; Submit Field Report
+</button>
+
+<div class="back-btn" onclick="location.href='gis-portal.html'">
+  &#x2190;&#xFE0E; Back to GIS Portal
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- SUCCESS SCREEN -->
+<div id="successScreen">
+  <div class="success-icon">&#x2705;&#xFE0E;</div>
+  <div class="success-title">Report Submitted</div>
+  <div class="success-sub">Your field data has been captured and synced to the Kingdom GIS database.</div>
+  <div class="success-ref" id="refNumber">Ref: MK-FIELD-000000</div>
+  <button class="success-btn" onclick="resetForm()">&#x2B;&#xFE0E; Submit Another Report</button>
+  <button class="success-btn outline" onclick="location.href='gis-portal.html'">&#x1F5FA;&#xFE0E; Back to Map Portal</button>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div onclick="location.href='index.html'">Home</div>
+  <div onclick="location.href='index.html'">Submit</div>
+  <div onclick="location.href='index.html'">Citizen</div>
+  <div onclick="location.href='index.html'">Invest</div>
+  <div class="active">GIS</div>
+</div>
+
+<script>
+/* ── APPS SCRIPT ── */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3cpb5rUI2uzst5cphvS5GsRCOedqazwoT2NNSSSKlamBAm8kcFtiLlBKKjT7-8G8IJw/exec";
+
+/* ── AUTO FILL DATE & TIME ── */
+const now = new Date();
+document.getElementById('fieldDate').value = now.toISOString().split('T')[0];
+document.getElementById('fieldTime').value = now.toTimeString().slice(0,5);
+
+/* ── GPS CAPTURE ── */
+let gpsLat = '', gpsLng = '', gpsAccuracy = '';
+
+function captureGPS(){
+  const display = document.getElementById('coordsDisplay');
+  display.textContent = 'Locating...';
+  if(!navigator.geolocation){
+    display.textContent = 'GPS not supported on this device';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      gpsLat      = pos.coords.latitude.toFixed(6);
+      gpsLng      = pos.coords.longitude.toFixed(6);
+      gpsAccuracy = Math.round(pos.coords.accuracy) + 'm';
+      display.textContent = `${gpsLat}, ${gpsLng}  (&#177;${gpsAccuracy})`;
+      display.innerHTML   = `${gpsLat}, ${gpsLng} <span style="font-size:10px;opacity:0.6">&plusmn;${gpsAccuracy}</span>`;
+      toast('&#x2705;&#xFE0E; GPS captured successfully');
+    },
+    err => {
+      display.textContent = 'Could not get location. Check permissions.';
+    },
+    {enableHighAccuracy:true, timeout:10000}
+  );
+}
+
+/* ── CONDITION SELECT ── */
+function selectCondition(val, el){
+  document.querySelectorAll('.cond-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('condition').value = val;
+}
+
+/* ── PHOTO PREVIEW ── */
+function previewPhoto(input){
+  if(!input.files.length) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('photoPreview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+/* ── TOAST ── */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.style.display = 'block';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=> t.style.display = 'none', 3000);
+}
+
+/* ── READ FILE AS BASE64 ── */
+async function readFile(input){
+  if(!input.files.length) return {fileData:'', fileName:''};
+  const file = input.files[0];
+  const fileData = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload  = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+  return {fileData, fileName: file.name};
+}
+
+/* ── GENERATE REF ── */
+function genRef(){
+  return 'MK-FIELD-' + Date.now().toString().slice(-6);
+}
+
+/* ── SUBMIT ── */
+async function submitData(){
+  const officerName = document.getElementById('officerName').value.trim();
+  const siteName    = document.getElementById('siteName').value.trim();
+  const zoneType    = document.getElementById('zoneType').value;
+  const obsType     = document.getElementById('obsType').value;
+  const fieldNotes  = document.getElementById('fieldNotes').value.trim();
+  const condition   = document.getElementById('condition').value;
+
+  if(!officerName || !siteName || !zoneType || !obsType || !fieldNotes || !condition){
+    toast('&#x26A0;&#xFE0E; Please fill in all required fields');
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const {fileData, fileName} = await readFile(document.getElementById('photoInput'));
+  const ref = genRef();
+
+  const payload = {
+    action:       'fieldReport',
+    ref,
+    officerName,
+    officerId:    document.getElementById('officerId').value,
+    fieldDate:    document.getElementById('fieldDate').value,
+    fieldTime:    document.getElementById('fieldTime').value,
+    zoneType,
+    siteName,
+    province:     document.getElementById('province').value,
+    obsType,
+    condition,
+    fieldNotes,
+    recAction:    document.getElementById('recAction').value,
+    gpsLat,
+    gpsLng,
+    gpsAccuracy,
+    fileName,
+    fileData,
+    timestamp:    new Date().toISOString()
+  };
+
+  try{
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    document.getElementById('refNumber').textContent = 'Ref: ' + ref;
+    document.getElementById('successScreen').classList.add('show');
+  } catch(e){
+    toast('&#x274C;&#xFE0E; Submission failed. Check your connection.');
+    btn.disabled = false;
+    btn.textContent = '&#x1F4E4;&#xFE0E; Submit Field Report';
+  }
+}
+
+/* ── RESET ── */
+function resetForm(){
+  document.getElementById('successScreen').classList.remove('show');
+  document.getElementById('officerName').value  = '';
+  document.getElementById('officerId').value    = '';
+  document.getElementById('siteName').value     = '';
+  document.getElementById('zoneType').value     = '';
+  document.getElementById('province').value     = '';
+  document.getElementById('obsType').value      = '';
+  document.getElementById('fieldNotes').value   = '';
+  document.getElementById('recAction').value    = '';
+  document.getElementById('condition').value    = '';
+  document.getElementById('photoPreview').style.display = 'none';
+  document.querySelectorAll('.cond-btn').forEach(b => b.classList.remove('selected'));
+  gpsLat = gpsLng = gpsAccuracy = '';
+  document.getElementById('coordsDisplay').textContent = 'Tap to capture location';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false;
+  btn.textContent = '&#x1F4E4;&#xFE0E; Submit Field Report';
+  const now = new Date();
+  document.getElementById('fieldDate').value = now.toISOString().split('T')[0];
+  document.getElementById('fieldTime').value = now.toTimeString().slice(0,5);
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
