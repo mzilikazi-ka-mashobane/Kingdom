@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invest – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --green:#1f3c2f;--gold:#c9a84c;--border:rgba(201,168,76,0.2);
+  --muted:rgba(255,255,255,0.45);--ink:#0a0f0d;--glass:rgba(15,26,19,0.6);
+}
+body{background:var(--ink);font-family:'Syne',sans-serif;overflow-x:hidden;padding-bottom:80px;}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#fff;position:sticky;top:0;z-index:3000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:15px;color:var(--green);font-weight:700;}
+
+/* HERO */
+.hero{
+  background:linear-gradient(160deg,#0d2018,#000 70%,#1a2c10);
+  padding:28px 20px 22px;border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.hero::after{
+  content:'MZL';position:absolute;right:-20px;bottom:-20px;
+  font-size:100px;font-weight:800;color:rgba(201,168,76,0.05);
+  letter-spacing:-6px;pointer-events:none;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(201,168,76,0.1);border:1px solid var(--border);
+  border-radius:20px;padding:4px 12px;font-size:10px;color:var(--gold);
+  font-family:'DM Mono',monospace;margin-bottom:12px;
+}
+.hero-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3;}}
+.hero h1{font-size:24px;font-weight:800;color:#fff;letter-spacing:-0.8px;line-height:1.15;margin-bottom:8px;}
+.hero h1 span{color:var(--gold);}
+.hero p{font-size:12px;color:var(--muted);line-height:1.7;max-width:340px;}
+
+/* OPPORTUNITY CARDS */
+.opp-row{display:flex;gap:8px;padding:14px;overflow-x:auto;scrollbar-width:none;}
+.opp-row::-webkit-scrollbar{display:none;}
+.opp-card{
+  flex-shrink:0;width:160px;background:var(--glass);border:1px solid var(--border);
+  border-radius:12px;padding:13px;
+}
+.opp-icon{font-size:22px;margin-bottom:6px;}
+.opp-name{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;}
+.opp-val{font-size:13px;font-weight:800;color:var(--gold);}
+.opp-lbl{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* FORM */
+.section-lbl{
+  padding:14px 14px 6px;font-size:10px;font-weight:700;
+  color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;
+  font-family:'DM Mono',monospace;
+}
+.card{margin:0 14px 12px;background:var(--glass);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.field{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.field:last-child{border-bottom:none;}
+.field label{display:block;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;}
+.field label .req{color:var(--gold);}
+input,select,textarea{
+  width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);
+  border-radius:8px;padding:11px 12px;color:#fff;font-size:13px;
+  font-family:'Syne',sans-serif;outline:none;-webkit-appearance:none;
+  transition:border-color 0.2s;
+}
+input:focus,select:focus,textarea:focus{border-color:rgba(201,168,76,0.5);}
+select option{background:#111;}
+textarea{min-height:90px;resize:vertical;line-height:1.6;}
+input::placeholder,textarea::placeholder{color:rgba(255,255,255,0.2);}
+
+/* INTEREST TYPE */
+.interest-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px;}
+.int-btn{
+  padding:11px 8px;border-radius:10px;border:1px solid var(--border);
+  background:rgba(0,0,0,0.3);color:rgba(255,255,255,0.5);
+  font-size:11px;font-weight:600;cursor:pointer;text-align:center;
+  font-family:'Syne',sans-serif;transition:all 0.2s;line-height:1.5;
+}
+.int-btn .ii{font-size:18px;display:block;margin-bottom:3px;}
+.int-btn.selected{background:rgba(201,168,76,0.12);border-color:var(--gold);color:var(--gold);}
+
+/* BUDGET SLIDER */
+.budget-display{
+  text-align:center;padding:10px 0 4px;
+  font-size:22px;font-weight:800;color:var(--gold);font-family:'DM Mono',monospace;
+}
+.budget-lbl{text-align:center;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:12px;}
+input[type=range]{
+  -webkit-appearance:none;background:rgba(255,255,255,0.1);
+  border-radius:4px;height:4px;border:none;padding:0;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+  background:var(--gold);cursor:pointer;border:2px solid #fff;
+}
+
+/* SUBMIT */
+.submit-btn{
+  width:calc(100% - 28px);margin:0 14px;padding:15px;border-radius:12px;
+  border:none;background:var(--gold);color:#000;font-size:14px;font-weight:700;
+  font-family:'Syne',sans-serif;cursor:pointer;transition:opacity 0.2s;
+}
+.submit-btn:active{opacity:0.85;}
+.submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* SUCCESS */
+#successScreen{
+  display:none;position:fixed;inset:0;background:var(--ink);z-index:5000;
+  flex-direction:column;align-items:center;justify-content:center;
+  padding:30px;text-align:center;
+}
+#successScreen.show{display:flex;}
+.s-icon{font-size:56px;margin-bottom:16px;}
+.s-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;}
+.s-sub{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:20px;max-width:300px;}
+.s-ref{
+  background:rgba(201,168,76,0.1);border:1px solid var(--border);
+  border-radius:10px;padding:10px 20px;color:var(--gold);
+  font-size:13px;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:24px;
+}
+.s-btn{
+  width:100%;padding:13px;border-radius:12px;border:none;
+  background:var(--green);color:#fff;font-size:14px;font-weight:700;
+  font-family:'Syne',sans-serif;cursor:pointer;margin-bottom:10px;
+}
+.s-btn.outline{background:transparent;border:1px solid var(--border);color:rgba(255,255,255,0.4);}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:85px;left:50%;transform:translateX(-50%);
+  background:var(--green);color:#fff;padding:11px 20px;border-radius:30px;
+  font-size:12px;z-index:9999;display:none;border:1px solid var(--border);
+  max-width:88vw;text-align:center;
+}
+
+/* NAV */
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:#fff;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:14px;font-size:13px;color:#6b7280;cursor:pointer;font-family:'Syne',sans-serif;}
+.nav div.active{color:var(--green);font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="logo.png" alt="Mzilikazi Kingdom">
+  <h2>Mzilikazi Kingdom</h2>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Active Opportunity</div>
+  <h1>Invest in the <span>Kingdom</span></h1>
+  <p>Blue Ridge Platinum — 6 500ha · R2.8B infrastructure · 9.14M PGM oz resource. Restart-ready. Seeking strategic partners.</p>
+</div>
+
+<!-- OPPORTUNITY CARDS -->
+<div class="opp-row">
+  <div class="opp-card">
+    <div class="opp-icon">&#x26CF;&#xFE0E;</div>
+    <div class="opp-name">PGM Resource</div>
+    <div class="opp-val">9.14M oz</div>
+    <div class="opp-lbl">4E Platinum Group</div>
+  </div>
+  <div class="opp-card">
+    <div class="opp-icon">&#x1F3ED;&#xFE0E;</div>
+    <div class="opp-name">Infrastructure</div>
+    <div class="opp-val">R2.8B</div>
+    <div class="opp-lbl">In-place · Restart ready</div>
+  </div>
+  <div class="opp-card">
+    <div class="opp-icon">&#x1F4C5;&#xFE0E;</div>
+    <div class="opp-name">Mine Life</div>
+    <div class="opp-val">18–25 yrs</div>
+    <div class="opp-lbl">@ 120 000 tpm</div>
+  </div>
+  <div class="opp-card">
+    <div class="opp-icon">&#x1F465;&#xFE0E;</div>
+    <div class="opp-name">Employment</div>
+    <div class="opp-val">1 600</div>
+    <div class="opp-lbl">Jobs at steady state</div>
+  </div>
+  <div class="opp-card">
+    <div class="opp-icon">&#x1F4B0;&#xFE0E;</div>
+    <div class="opp-name">Share Capital</div>
+    <div class="opp-val">100%</div>
+    <div class="opp-lbl">Available for acquisition</div>
+  </div>
+</div>
+
+<!-- INTEREST TYPE -->
+<div class="section-lbl">I am interested in</div>
+<div class="card" style="border-radius:14px;">
+  <div class="interest-grid">
+    <button class="int-btn selected" onclick="selectInterest('Mining Equity',this)">
+      <span class="ii">&#x26CF;&#xFE0E;</span>Mining Equity
+    </button>
+    <button class="int-btn" onclick="selectInterest('Land Partnership',this)">
+      <span class="ii">&#x1F4D0;&#xFE0E;</span>Land Partnership
+    </button>
+    <button class="int-btn" onclick="selectInterest('Agricultural Investment',this)">
+      <span class="ii">&#x1F33E;&#xFE0E;</span>Agriculture
+    </button>
+    <button class="int-btn" onclick="selectInterest('Smart City Development',this)">
+      <span class="ii">&#x1F3D9;&#xFE0E;</span>Smart City
+    </button>
+    <button class="int-btn" onclick="selectInterest('GIS Technology Services',this)">
+      <span class="ii">&#x1F5FA;&#xFE0E;</span>GIS Services
+    </button>
+    <button class="int-btn" onclick="selectInterest('Full Portfolio',this)">
+      <span class="ii">&#x1F4BC;&#xFE0E;</span>Full Portfolio
+    </button>
+  </div>
+  <input type="hidden" id="interestType" value="Mining Equity">
+</div>
+
+<!-- INVESTOR DETAILS -->
+<div class="section-lbl">Your Details</div>
+<div class="card">
+  <div class="field">
+    <label>Full Name <span class="req">*</span></label>
+    <input id="iName" placeholder="Your full name" autocomplete="name">
+  </div>
+  <div class="field">
+    <label>Organisation / Company</label>
+    <input id="iOrg" placeholder="Company or fund name (optional)">
+  </div>
+  <div class="field">
+    <label>Email Address <span class="req">*</span></label>
+    <input type="email" id="iEmail" placeholder="your@email.com" autocomplete="email">
+  </div>
+  <div class="field">
+    <label>Phone Number <span class="req">*</span></label>
+    <input type="tel" id="iPhone" placeholder="+27 __ ___ ____" autocomplete="tel">
+  </div>
+  <div class="field">
+    <label>Country / Jurisdiction</label>
+    <select id="iCountry">
+      <option value="">Select country</option>
+      <option>South Africa</option>
+      <option>Zimbabwe</option>
+      <option>Botswana</option>
+      <option>Zambia</option>
+      <option>Angola</option>
+      <option>Mozambique</option>
+      <option>Namibia</option>
+      <option>United Kingdom</option>
+      <option>United States</option>
+      <option>United Arab Emirates</option>
+      <option>China</option>
+      <option>Other</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Investor Type</label>
+    <select id="iType">
+      <option value="">Select type</option>
+      <option>Private Investor (Individual)</option>
+      <option>Family Office</option>
+      <option>Private Equity / Venture Capital</option>
+      <option>Institutional Fund</option>
+      <option>Sovereign Wealth Fund</option>
+      <option>Mining Company / Operator</option>
+      <option>Development Finance Institution</option>
+      <option>Strategic Partner</option>
+      <option>Other</option>
+    </select>
+  </div>
+</div>
+
+<!-- INVESTMENT BUDGET -->
+<div class="section-lbl">Investment Appetite</div>
+<div class="card">
+  <div class="field">
+    <div class="budget-display" id="budgetDisplay">R 50M</div>
+    <div class="budget-lbl">Drag to set indicative investment range</div>
+    <input type="range" id="budgetSlider" min="0" max="10" value="3" oninput="updateBudget(this.value)">
+    <input type="hidden" id="budgetValue" value="R50M – R100M">
+  </div>
+  <div class="field">
+    <label>Investment Timeline</label>
+    <select id="iTimeline">
+      <option>Immediate (0–3 months)</option>
+      <option>Short term (3–6 months)</option>
+      <option>Medium term (6–12 months)</option>
+      <option>Long term (12+ months)</option>
+      <option>Exploring only</option>
+    </select>
+  </div>
+</div>
+
+<!-- MESSAGE -->
+<div class="section-lbl">Message to the Team</div>
+<div class="card">
+  <div class="field">
+    <label>Tell us about your interest</label>
+    <textarea id="iMessage" placeholder="Share any specific questions, requirements, or context about your investment interest. What would you like to know more about?"></textarea>
+  </div>
+  <div class="field">
+    <label>How did you hear about us?</label>
+    <select id="iSource">
+      <option value="">Select source</option>
+      <option>Referral</option>
+      <option>LinkedIn</option>
+      <option>Facebook</option>
+      <option>Government / DMRE</option>
+      <option>Mining publication</option>
+      <option>Conference / Event</option>
+      <option>Direct outreach</option>
+      <option>Other</option>
+    </select>
+  </div>
+</div>
+
+<button class="submit-btn" id="submitBtn" onclick="submitInterest()">
+  &#x1F4E4;&#xFE0E; Submit Investment Interest
+</button>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- SUCCESS -->
+<div id="successScreen">
+  <div class="s-icon">&#x2705;&#xFE0E;</div>
+  <div class="s-title">Interest Submitted</div>
+  <div class="s-sub">Thank you. Zamanyathi Lisetti and the Mzilikazi Kingdom team will be in touch within 48 hours. Please ensure ring-fenced proof of funds is available for follow-up.</div>
+  <div class="s-ref" id="sRef">REF: MZL-INV-000000</div>
+  <button class="s-btn" onclick="location.href='gis-portal.html'">&#x1F5FA;&#xFE0E; Explore GIS Portal</button>
+  <button class="s-btn" onclick="location.href='gis-report.html'">&#x1F4CA;&#xFE0E; Download Investor Report</button>
+  <button class="s-btn outline" onclick="location.href='index.html'">Back to Home</button>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div onclick="location.href='index.html'">Home</div>
+  <div onclick="location.href='field-collect.html'">Field</div>
+  <div onclick="location.href='gis-report.html'">Reports</div>
+  <div class="active">Invest</div>
+  <div onclick="location.href='client-portal.html'">Portal</div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3cpb5rUI2uzst5cphvS5GsRCOedqazwoT2NNSSSKlamBAm8kcFtiLlBKKjT7-8G8IJw/exec';
+
+const budgetLabels = [
+  'Under R5M','R5M – R20M','R20M – R50M','R50M – R100M',
+  'R100M – R250M','R250M – R500M','R500M – R1B',
+  'R1B – R2B','R2B – R5B','R5B – R10B','R10B+'
+];
+
+function updateBudget(v){
+  document.getElementById('budgetDisplay').textContent = budgetLabels[v];
+  document.getElementById('budgetValue').value = budgetLabels[v];
+}
+
+function selectInterest(val, btn){
+  document.querySelectorAll('.int-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('interestType').value = val;
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.style.display = 'block';
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.style.display='none', 3000);
+}
+
+function genRef(){ return 'MZL-INV-' + Date.now().toString().slice(-6); }
+
+async function submitInterest(){
+  const name    = document.getElementById('iName').value.trim();
+  const email   = document.getElementById('iEmail').value.trim();
+  const phone   = document.getElementById('iPhone').value.trim();
+
+  if(!name || !email || !phone){
+    toast('&#x26A0;&#xFE0E; Please fill in name, email and phone');
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const ref = genRef();
+  const payload = {
+    action:       'investmentInterest',
+    ref,
+    name,
+    organisation: document.getElementById('iOrg').value,
+    email,
+    phone,
+    country:      document.getElementById('iCountry').value,
+    investorType: document.getElementById('iType').value,
+    interestType: document.getElementById('interestType').value,
+    budget:       document.getElementById('budgetValue').value,
+    timeline:     document.getElementById('iTimeline').value,
+    message:      document.getElementById('iMessage').value,
+    source:       document.getElementById('iSource').value,
+    timestamp:    new Date().toISOString()
+  };
+
+  try{
+    await fetch(APPS_SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    document.getElementById('sRef').textContent = 'REF: ' + ref;
+    document.getElementById('successScreen').classList.add('show');
+  } catch(e){
+    toast('&#x274C;&#xFE0E; Submission failed. Check connection and try again.');
+    btn.disabled = false;
+    btn.textContent = '&#x1F4E4;&#xFE0E; Submit Investment Interest';
+  }
+}
+</script>
+</body>
+</html>
