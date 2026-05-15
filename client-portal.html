@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Portal – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --green:#1f3c2f;--gold:#c9a84c;--border:rgba(201,168,76,0.2);
+  --muted:rgba(255,255,255,0.45);--glass:rgba(15,26,19,0.6);
+  --ink:#0a0f0d;
+}
+body{background:var(--ink);font-family:'Syne',sans-serif;overflow-x:hidden;min-height:100vh;}
+
+/* ── LOGIN SCREEN ── */
+#loginScreen{
+  min-height:100vh;display:flex;flex-direction:column;
+  background:linear-gradient(160deg,#0d2018 0%,#000 60%,#0d1a10 100%);
+  padding:0 0 40px;
+}
+.login-bg{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:40px 28px 20px;
+}
+.login-logo{
+  width:72px;height:72px;border-radius:20px;background:var(--green);
+  border:2px solid var(--border);display:flex;align-items:center;
+  justify-content:center;font-size:30px;margin-bottom:18px;
+}
+.login-title{
+  font-size:24px;font-weight:800;color:#fff;text-align:center;
+  letter-spacing:-0.5px;margin-bottom:4px;
+}
+.login-sub{
+  font-size:11px;color:var(--muted);text-align:center;
+  font-family:'DM Mono',monospace;margin-bottom:32px;
+}
+
+.login-card{
+  width:100%;max-width:360px;background:rgba(15,26,19,0.8);
+  border:1px solid var(--border);border-radius:18px;padding:24px;
+}
+.login-card h3{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;}
+.login-card p{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:20px;}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px;text-transform:uppercase;}
+input{
+  width:100%;background:rgba(0,0,0,0.4);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;
+  font-family:'Syne',sans-serif;outline:none;-webkit-appearance:none;
+  transition:border-color 0.2s;
+}
+input:focus{border-color:rgba(201,168,76,0.6);}
+input::placeholder{color:rgba(255,255,255,0.2);}
+
+.login-btn{
+  width:100%;padding:13px;border-radius:10px;border:none;
+  background:var(--gold);color:#000;font-size:14px;font-weight:700;
+  font-family:'Syne',sans-serif;cursor:pointer;margin-top:4px;
+  transition:opacity 0.2s;
+}
+.login-btn:active{opacity:0.85;}
+
+.login-error{
+  background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+  border-radius:8px;padding:10px 12px;color:#f87171;font-size:12px;
+  margin-bottom:12px;display:none;font-family:'DM Mono',monospace;
+}
+.login-error.show{display:block;}
+
+.demo-hint{
+  margin-top:16px;padding:12px;background:rgba(201,168,76,0.06);
+  border:1px solid rgba(201,168,76,0.15);border-radius:10px;
+  font-size:10px;color:rgba(255,255,255,0.3);font-family:'DM Mono',monospace;
+  text-align:center;line-height:1.8;
+}
+.demo-hint strong{color:rgba(201,168,76,0.6);}
+
+/* ── DASHBOARD ── */
+#dashboard{display:none;padding-bottom:80px;}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#fff;position:sticky;top:0;z-index:3000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:15px;color:var(--green);font-weight:700;}
+
+/* WELCOME BANNER */
+.welcome-banner{
+  background:linear-gradient(135deg,var(--green),#0d2018);
+  padding:18px;border-bottom:1px solid var(--border);
+}
+.welcome-banner .greeting{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:2px;}
+.welcome-banner h2{font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.3px;}
+.welcome-banner .client-ref{
+  display:inline-block;margin-top:6px;padding:3px 10px;
+  background:rgba(201,168,76,0.12);border:1px solid var(--border);
+  border-radius:6px;font-size:10px;color:var(--gold);font-family:'DM Mono',monospace;
+}
+
+/* STAT CARDS */
+.stat-row{display:flex;background:#0f1a13;border-bottom:1px solid var(--border);}
+.stat-box{flex:1;padding:13px 8px;text-align:center;border-right:1px solid var(--border);}
+.stat-box:last-child{border-right:none;}
+.stat-box .v{font-size:17px;font-weight:800;color:var(--gold);}
+.stat-box .l{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;}
+
+/* SECTION */
+.section-lbl{
+  padding:14px 14px 6px;font-size:10px;font-weight:700;
+  color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;
+  font-family:'DM Mono',monospace;
+}
+
+/* MINI MAP */
+#clientMap{width:100%;height:220px;background:#0f1a13;}
+.map-label{
+  padding:8px 14px;background:#0f1a13;border-bottom:1px solid var(--border);
+  font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;
+  display:flex;justify-content:space-between;
+}
+.map-label span{color:var(--gold);}
+
+/* PARCEL CARDS */
+.p-card{
+  margin:0 14px 10px;border-radius:12px;border:1px solid var(--border);
+  background:var(--glass);overflow:hidden;
+}
+.p-card-top{padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start;}
+.p-card-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.p-card-loc{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+.status-pill{
+  font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;
+  border:1px solid;font-family:'DM Mono',monospace;flex-shrink:0;
+}
+.pill-dev{border-color:#3b82f6;color:#3b82f6;background:rgba(59,130,246,0.1);}
+.pill-avail{border-color:#22c55e;color:#22c55e;background:rgba(34,197,94,0.1);}
+.p-card-stats{display:flex;border-top:1px solid var(--border);}
+.pc-stat{flex:1;padding:8px;text-align:center;border-right:1px solid var(--border);}
+.pc-stat:last-child{border-right:none;}
+.pc-stat .v{font-size:12px;font-weight:700;color:var(--gold);}
+.pc-stat .l{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* ACTIVITY FEED */
+.activity-item{
+  display:flex;gap:10px;padding:11px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.activity-item:last-child{border-bottom:none;}
+.act-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;
+}
+.act-info{flex:1;}
+.act-title{font-size:12px;font-weight:600;color:#fff;margin-bottom:2px;}
+.act-meta{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* ACTION BUTTONS */
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px;}
+.action-card{
+  background:var(--glass);border:1px solid var(--border);border-radius:12px;
+  padding:14px;cursor:pointer;transition:border-color 0.2s;text-align:center;
+}
+.action-card:active{border-color:var(--gold);}
+.action-card .ai{font-size:24px;margin-bottom:6px;}
+.action-card .an{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;}
+.action-card .as{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* SIGN OUT */
+.signout-btn{
+  margin:14px;width:calc(100% - 28px);padding:12px;border-radius:10px;
+  border:1px solid rgba(255,255,255,0.1);background:transparent;
+  color:rgba(255,255,255,0.35);font-size:12px;font-family:'Syne',sans-serif;
+  cursor:pointer;font-weight:600;
+}
+
+/* NAV */
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:#fff;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:14px;font-size:13px;color:#6b7280;cursor:pointer;font-family:'Syne',sans-serif;}
+.nav div.active{color:var(--green);font-weight:700;}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="loginScreen">
+  <div class="login-bg">
+    <div class="login-logo">&#x1F5FA;&#xFE0E;</div>
+    <div class="login-title">Mzilikazi Kingdom</div>
+    <div class="login-sub">CLIENT PORTAL · GIS INTELLIGENCE PLATFORM</div>
+
+    <div class="login-card">
+      <h3>Sign in to your account</h3>
+      <p>Access your parcels, GIS data and reports</p>
+
+      <div class="login-error" id="loginError">Incorrect email or access code. Please try again.</div>
+
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Access Code</label>
+        <input type="password" id="loginCode" placeholder="Enter your access code" autocomplete="current-password">
+      </div>
+      <button class="login-btn" onclick="doLogin()">Sign In &#x2192;</button>
+
+      <div class="demo-hint">
+        <strong>Demo credentials</strong><br>
+        Email: <strong>investor@mzilikazi.co.za</strong><br>
+        Code: <strong>MZL2026</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashboard">
+  <div class="topbar">
+    <img src="logo.png" alt="Mzilikazi Kingdom">
+    <h2>Client Portal</h2>
+  </div>
+
+  <div class="welcome-banner">
+    <div class="greeting">Welcome back,</div>
+    <h2 id="clientName">Investor</h2>
+    <div class="client-ref" id="clientRef">REF: MZL-CLIENT-001</div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box"><div class="v">2</div><div class="l">My Parcels</div></div>
+    <div class="stat-box"><div class="v">6 500</div><div class="l">Total Ha</div></div>
+    <div class="stat-box"><div class="v">3</div><div class="l">Reports</div></div>
+    <div class="stat-box"><div class="v">Active</div><div class="l">Status</div></div>
+  </div>
+
+  <!-- MAP -->
+  <div class="section-lbl">My Parcels — Map View</div>
+  <div class="map-label">
+    <span>Sekhukhune District, Limpopo</span>
+    <span id="mapMode" onclick="toggleClientMap()" style="cursor:pointer;">&#x1F6F0;&#xFE0E; Satellite</span>
+  </div>
+  <div id="clientMap"></div>
+
+  <!-- PARCELS -->
+  <div class="section-lbl">Registered Parcels</div>
+  <div class="p-card">
+    <div class="p-card-top">
+      <div>
+        <div class="p-card-name">Blue Ridge Surface Rights</div>
+        <div class="p-card-loc">&#x1F4CD;&#xFE0E; Groblersdal, Sekhukhune · MZL-LP-001</div>
+      </div>
+      <span class="status-pill pill-dev">In Dev</span>
+    </div>
+    <div class="p-card-stats">
+      <div class="pc-stat"><div class="v">6 500</div><div class="l">Hectares</div></div>
+      <div class="pc-stat"><div class="v">R2.8B</div><div class="l">Infrastructure</div></div>
+      <div class="pc-stat"><div class="v">Mining</div><div class="l">Zoning</div></div>
+    </div>
+  </div>
+
+  <div class="p-card">
+    <div class="p-card-top">
+      <div>
+        <div class="p-card-name">Groblersdal Logistics Node</div>
+        <div class="p-card-loc">&#x1F4CD;&#xFE0E; Groblersdal, Limpopo · MZL-LP-003</div>
+      </div>
+      <span class="status-pill pill-avail">Reserved</span>
+    </div>
+    <div class="p-card-stats">
+      <div class="pc-stat"><div class="v">850</div><div class="l">Hectares</div></div>
+      <div class="pc-stat"><div class="v">N11</div><div class="l">Corridor</div></div>
+      <div class="pc-stat"><div class="v">Logistics</div><div class="l">Zoning</div></div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY -->
+  <div class="section-lbl">Recent Activity</div>
+  <div class="p-card">
+    <div class="activity-item">
+      <div class="act-dot" style="background:#22c55e;"></div>
+      <div class="act-info">
+        <div class="act-title">Field Report Submitted</div>
+        <div class="act-meta">Blue Ridge site survey · MK-FIELD-092341 · Today</div>
+      </div>
+    </div>
+    <div class="activity-item">
+      <div class="act-dot" style="background:#c9a84c;"></div>
+      <div class="act-info">
+        <div class="act-title">GIS Report Generated</div>
+        <div class="act-meta">Investor Summary · MZL-RPT-881234 · 12 May 2026</div>
+      </div>
+    </div>
+    <div class="activity-item">
+      <div class="act-dot" style="background:#3b82f6;"></div>
+      <div class="act-info">
+        <div class="act-title">Parcel Update</div>
+        <div class="act-meta">MZL-LP-001 coordinates verified · 08 May 2026</div>
+      </div>
+    </div>
+    <div class="activity-item">
+      <div class="act-dot" style="background:#a855f7;"></div>
+      <div class="act-info">
+        <div class="act-title">Account Created</div>
+        <div class="act-meta">Client portal access granted · 01 May 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="section-lbl">Quick Actions</div>
+  <div class="action-grid">
+    <div class="action-card" onclick="location.href='gis-portal.html'">
+      <div class="ai">&#x1F5FA;&#xFE0E;</div>
+      <div class="an">GIS Portal</div>
+      <div class="as">View live map</div>
+    </div>
+    <div class="action-card" onclick="location.href='field-collect.html'">
+      <div class="ai">&#x1F4CD;&#xFE0E;</div>
+      <div class="an">Field Form</div>
+      <div class="as">Submit site data</div>
+    </div>
+    <div class="action-card" onclick="location.href='gis-report.html'">
+      <div class="ai">&#x1F4CA;&#xFE0E;</div>
+      <div class="an">Reports</div>
+      <div class="as">Generate PDF</div>
+    </div>
+    <div class="action-card" onclick="location.href='land-map.html'">
+      <div class="ai">&#x1F4D0;&#xFE0E;</div>
+      <div class="an">Land Parcels</div>
+      <div class="as">View registry</div>
+    </div>
+  </div>
+
+  <button class="signout-btn" onclick="signOut()">&#x2190;&#xFE0E; Sign Out</button>
+
+  <div class="nav">
+    <div onclick="location.href='index.html'">Home</div>
+    <div onclick="location.href='field-collect.html'">Field</div>
+    <div onclick="location.href='gis-report.html'">Reports</div>
+    <div onclick="location.href='land-map.html'">Parcels</div>
+    <div class="active">Portal</div>
+  </div>
+</div>
+
+<script>
+/* ── CLIENT ACCOUNTS (demo) ── */
+const clients = {
+  'investor@mzilikazi.co.za': { code:'MZL2026', name:'MZL Investor', ref:'MZL-CLIENT-001' },
+  'zamanyathi@mzilikazi.co.za': { code:'LSETTI26', name:'Zamanyathi Lisetti', ref:'MZL-ADMIN-001' },
+  'phuthi@mzilikazi.co.za': { code:'PHUTHI26', name:'Phuthi Senyatsi', ref:'MZL-ADMIN-002' },
+};
+
+function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const code  = document.getElementById('loginCode').value.trim();
+  const err   = document.getElementById('loginError');
+
+  const client = clients[email];
+  if(client && client.code === code){
+    err.classList.remove('show');
+    localStorage.setItem('mzl_client', JSON.stringify({email, name:client.name, ref:client.ref}));
+    showDashboard(client);
+  } else {
+    err.classList.add('show');
+  }
+}
+
+document.getElementById('loginCode').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+function showDashboard(client){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display   = 'block';
+  document.getElementById('clientName').textContent = client.name;
+  document.getElementById('clientRef').textContent  = 'REF: ' + client.ref;
+  initClientMap();
+}
+
+function signOut(){
+  localStorage.removeItem('mzl_client');
+  document.getElementById('dashboard').style.display   = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+/* ── CHECK EXISTING SESSION ── */
+window.addEventListener('load', ()=>{
+  const saved = localStorage.getItem('mzl_client');
+  if(saved){ try{ showDashboard(JSON.parse(saved)); }catch(e){ localStorage.removeItem('mzl_client'); } }
+});
+
+/* ── CLIENT MAP ── */
+let cmap, darkTile, satTile, satOn = false;
+
+function initClientMap(){
+  if(cmap) return;
+  cmap = L.map('clientMap',{center:[-25.245,29.56],zoom:10,zoomControl:false});
+  darkTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    {attribution:'&copy; CARTO',subdomains:'abcd',maxZoom:19});
+  satTile  = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {attribution:'Esri',maxZoom:19});
+  darkTile.addTo(cmap);
+
+  const parcels = [
+    {coords:[[-25.22,29.53],[-25.22,29.59],[-25.27,29.59],[-25.27,29.53]],color:'#3b82f6',name:'Blue Ridge Surface Rights'},
+    {coords:[[-25.16,29.36],[-25.16,29.46],[-25.23,29.46],[-25.23,29.36]],color:'#22c55e',name:'Groblersdal Logistics Node'},
+  ];
+
+  const ts = document.createElement('style');
+  ts.textContent=`.leaflet-tooltip{background:rgba(10,15,13,0.92)!important;border:1px solid rgba(201,168,76,0.3)!important;color:#fff!important;border-radius:8px!important;padding:6px 10px!important;font-family:'Syne',sans-serif!important;font-size:11px!important;}.leaflet-tooltip::before{display:none!important;}`;
+  document.head.appendChild(ts);
+
+  parcels.forEach(p=>{
+    L.polygon(p.coords,{color:p.color,fillColor:p.color,fillOpacity:0.25,weight:2})
+      .bindTooltip(`<strong>${p.name}</strong>`,{sticky:true})
+      .addTo(cmap);
+  });
+}
+
+function toggleClientMap(){
+  satOn = !satOn;
+  document.getElementById('mapMode').innerHTML = satOn ? '&#x1F5FA;&#xFE0E; Map' : '&#x1F6F0;&#xFE0E; Satellite';
+  if(satOn){ cmap.removeLayer(darkTile); satTile.addTo(cmap); cmap.setZoom(14); }
+  else      { cmap.removeLayer(satTile); darkTile.addTo(cmap); cmap.setZoom(10); }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIS Report Generator – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --green:#1f3c2f;--gold:#c9a84c;--border:rgba(201,168,76,0.2);
+  --muted:rgba(255,255,255,0.45);--glass:rgba(15,26,19,0.6);
+}
+body{background:#0a0f0d;font-family:'Syne',sans-serif;overflow-x:hidden;padding-bottom:80px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#fff;position:sticky;top:0;z-index:3000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:15px;color:var(--green);font-weight:700;}
+
+.header{
+  background:linear-gradient(135deg,#0d1f17,#1a3828);
+  padding:20px 18px;border-bottom:1px solid var(--border);
+}
+.header h1{font-size:20px;font-weight:800;color:#fff;margin-bottom:2px;}
+.header p{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* FORM */
+.section-lbl{
+  padding:16px 14px 6px;font-size:10px;font-weight:700;
+  color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;
+  font-family:'DM Mono',monospace;
+}
+.card{
+  margin:0 14px 12px;background:var(--glass);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;
+}
+.field{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.field:last-child{border-bottom:none;}
+.field label{
+  display:block;font-size:10px;color:var(--muted);
+  font-family:'DM Mono',monospace;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;
+}
+input,select,textarea{
+  width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);
+  border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;
+  font-family:'Syne',sans-serif;outline:none;
+  -webkit-appearance:none;transition:border-color 0.2s;
+}
+input:focus,select:focus,textarea:focus{border-color:rgba(201,168,76,0.5);}
+select option{background:#111;}
+textarea{min-height:80px;resize:vertical;line-height:1.6;}
+
+/* REPORT TYPE SELECTOR */
+.report-types{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px;}
+.rt-btn{
+  padding:12px 8px;border-radius:10px;border:1px solid var(--border);
+  background:rgba(0,0,0,0.3);color:rgba(255,255,255,0.5);
+  font-size:11px;font-weight:600;cursor:pointer;text-align:center;
+  font-family:'Syne',sans-serif;transition:all 0.2s;line-height:1.4;
+}
+.rt-btn.selected{
+  background:rgba(201,168,76,0.15);border-color:var(--gold);color:var(--gold);
+}
+.rt-icon{font-size:20px;display:block;margin-bottom:4px;}
+
+/* INCLUDE SECTIONS */
+.check-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.check-row:last-child{border-bottom:none;}
+.check-label{font-size:12px;color:#fff;font-weight:600;}
+.check-sub{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:1px;}
+.toggle-switch{position:relative;width:40px;height:22px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-track{
+  position:absolute;inset:0;border-radius:11px;cursor:pointer;
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);
+  transition:all 0.25s;
+}
+.toggle-track::after{
+  content:'';position:absolute;width:16px;height:16px;border-radius:50%;
+  background:#fff;top:2px;left:2px;transition:transform 0.25s;
+}
+input:checked + .toggle-track{background:var(--gold);border-color:var(--gold);}
+input:checked + .toggle-track::after{transform:translateX(18px);}
+
+/* GENERATE BUTTON */
+.gen-btn{
+  width:calc(100% - 28px);margin:0 14px;padding:15px;
+  border-radius:12px;border:none;background:var(--gold);
+  color:#000;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;
+  cursor:pointer;letter-spacing:0.3px;transition:opacity 0.2s;
+}
+.gen-btn:active{opacity:0.85;}
+.gen-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* PROGRESS */
+#progressBar{
+  width:calc(100% - 28px);margin:12px 14px 0;
+  height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;display:none;
+}
+#progressFill{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width 0.4s ease;}
+#progressMsg{
+  text-align:center;padding:8px 0 0;font-size:11px;color:var(--muted);
+  font-family:'DM Mono',monospace;display:none;
+}
+
+/* RECENT REPORTS */
+.report-row{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;
+}
+.report-row:last-child{border-bottom:none;}
+.report-icon{font-size:22px;flex-shrink:0;}
+.report-info{flex:1;}
+.report-name{font-size:12px;font-weight:600;color:#fff;}
+.report-meta{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;}
+.report-dl{
+  padding:6px 12px;border-radius:8px;border:1px solid var(--border);
+  background:rgba(201,168,76,0.1);color:var(--gold);font-size:11px;
+  font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;
+}
+
+/* NAV */
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:#fff;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:14px;font-size:13px;color:#6b7280;cursor:pointer;font-family:'Syne',sans-serif;}
+.nav div.active{color:var(--green);font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="logo.png" alt="Mzilikazi Kingdom">
+  <h2>Mzilikazi Kingdom</h2>
+</div>
+
+<div class="header">
+  <h1>GIS Report Generator</h1>
+  <p>AUTO-GENERATE · PDF REPORTS · REGULATORY-READY</p>
+</div>
+
+<!-- REPORT TYPE -->
+<div class="section-lbl">Report Type</div>
+<div class="card" style="margin-bottom:0;border-radius:14px;">
+  <div class="report-types">
+    <button class="rt-btn selected" onclick="selectType('site',this)">
+      <span class="rt-icon">&#x26CF;&#xFE0E;</span>Site Survey
+    </button>
+    <button class="rt-btn" onclick="selectType('environmental',this)">
+      <span class="rt-icon">&#x1F33F;&#xFE0E;</span>Environmental
+    </button>
+    <button class="rt-btn" onclick="selectType('land',this)">
+      <span class="rt-icon">&#x1F4D0;&#xFE0E;</span>Land Parcel
+    </button>
+    <button class="rt-btn" onclick="selectType('investment',this)">
+      <span class="rt-icon">&#x1F4CA;&#xFE0E;</span>Investor Summary
+    </button>
+  </div>
+</div>
+
+<!-- ZONE / SITE INFO -->
+<div class="section-lbl">Zone / Site Details</div>
+<div class="card">
+  <div class="field">
+    <label>Zone / Project Name</label>
+    <input id="rZone" value="Blue Ridge Platinum Mine" placeholder="e.g. Blue Ridge Platinum Mine">
+  </div>
+  <div class="field">
+    <label>Location</label>
+    <input id="rLocation" value="Groblersdal, Greater Sekhukhune, Limpopo" placeholder="Province / District">
+  </div>
+  <div class="field">
+    <label>GPS Coordinates</label>
+    <input id="rGPS" value="25°14'38.77&quot;S, 29°33'29.75&quot;E" placeholder="Lat, Long">
+  </div>
+  <div class="field">
+    <label>Prepared By</label>
+    <input id="rAuthor" placeholder="Field officer / analyst name">
+  </div>
+  <div class="field">
+    <label>Prepared For</label>
+    <input id="rClient" placeholder="Client / stakeholder name">
+  </div>
+</div>
+
+<!-- REPORT SECTIONS TO INCLUDE -->
+<div class="section-lbl">Include Sections</div>
+<div class="card">
+  <div class="check-row">
+    <div><div class="check-label">Executive Summary</div><div class="check-sub">High level overview</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incSummary" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Mine / Zone Data</div><div class="check-sub">Verified Blue Ridge PDF data</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incMine" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Resource & Reserves</div><div class="check-sub">PGM, Chrome, tonnage</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incResource" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Infrastructure Summary</div><div class="check-sub">Power, water, plant, equipment</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incInfra" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">GIS Field Notes</div><div class="check-sub">Latest field collection data</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incField"><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Regulatory Status</div><div class="check-sub">EIA, mining rights, licences</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incReg" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Community Relations</div><div class="check-sub">Bakgagabakopa community</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incComm"><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Contact Directory</div><div class="check-sub">MZL team contacts</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incContact" checked><span class="toggle-track"></span></label>
+  </div>
+</div>
+
+<!-- ADDITIONAL NOTES -->
+<div class="section-lbl">Additional Notes</div>
+<div class="card">
+  <div class="field">
+    <label>Notes / Recommendations</label>
+    <textarea id="rNotes" placeholder="Any additional context, site observations or recommendations to include in the report..."></textarea>
+  </div>
+</div>
+
+<!-- GENERATE -->
+<button class="gen-btn" id="genBtn" onclick="generateReport()">
+  &#x1F4E5;&#xFE0E; Generate PDF Report
+</button>
+<div id="progressBar"><div id="progressFill"></div></div>
+<div id="progressMsg"></div>
+
+<!-- RECENT REPORTS -->
+<div class="section-lbl" style="margin-top:16px;">Recent Reports</div>
+<div class="card">
+  <div class="report-row" id="recentList">
+    <div style="padding:14px;color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;">
+      Generated reports will appear here
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div onclick="location.href='index.html'">Home</div>
+  <div onclick="location.href='index.html'">Submit</div>
+  <div onclick="location.href='index.html'">Citizen</div>
+  <div onclick="location.href='index.html'">Invest</div>
+  <div class="active" onclick="location.href='gis-portal.html'">GIS</div>
+</div>
+
+<script>
+const { jsPDF } = window.jspdf;
+let reportType = 'site';
+const recentReports = [];
+
+function selectType(t, btn){
+  reportType = t;
+  document.querySelectorAll('.rt-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function setProgress(pct, msg){
+  const bar  = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  const txt  = document.getElementById('progressMsg');
+  bar.style.display = 'block';
+  txt.style.display = 'block';
+  fill.style.width  = pct + '%';
+  txt.textContent   = msg;
+}
+
+function addLine(doc, text, x, y, opts={}){
+  const maxW = opts.maxW || 170;
+  const lines = doc.splitTextToSize(text, maxW);
+  doc.text(lines, x, y, opts);
+  return y + (lines.length * (opts.lineH || 6));
+}
+
+async function generateReport(){
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  setProgress(10, 'Initialising report...');
+
+  const zone    = document.getElementById('rZone').value || 'Mzilikazi Kingdom Zone';
+  const loc     = document.getElementById('rLocation').value;
+  const gps     = document.getElementById('rGPS').value;
+  const author  = document.getElementById('rAuthor').value || 'Mzilikazi Kingdom GIS Team';
+  const client  = document.getElementById('rClient').value || 'Stakeholder';
+  const notes   = document.getElementById('rNotes').value;
+  const today   = new Date().toLocaleDateString('en-ZA',{day:'2-digit',month:'long',year:'numeric'});
+  const refNo   = 'MZL-RPT-' + Date.now().toString().slice(-6);
+
+  await delay(300); setProgress(25, 'Building cover page...');
+
+  const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+  const W = 210, H = 297;
+  const gold = [201,168,76];
+  const darkGreen = [13,32,24];
+  const green = [31,60,47];
+  const white = [255,255,255];
+  const lightGrey = [240,242,240];
+  const muted = [120,140,130];
+
+  /* ── COVER PAGE ── */
+  // Background
+  doc.setFillColor(...darkGreen);
+  doc.rect(0,0,W,H,'F');
+
+  // Gold accent bar left
+  doc.setFillColor(...gold);
+  doc.rect(0,0,6,H,'F');
+
+  // Header block
+  doc.setFillColor(...green);
+  doc.rect(6,0,W-6,80,'F');
+
+  // Kingdom name
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...gold);
+  doc.text('MZILIKAZI KINGDOM', 20, 22);
+
+  doc.setFontSize(7);
+  doc.setTextColor(...muted);
+  doc.text('LOCATE · ANALYSE · MANAGE', 20, 29);
+
+  // Divider
+  doc.setDrawColor(...gold);
+  doc.setLineWidth(0.3);
+  doc.line(20, 32, 190, 32);
+
+  // Report title
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(22);
+  doc.setTextColor(...white);
+  doc.text('GIS INTELLIGENCE', 20, 48);
+  doc.text('REPORT', 20, 58);
+
+  doc.setFontSize(11);
+  doc.setTextColor(...gold);
+  doc.text(zone.toUpperCase(), 20, 68);
+
+  doc.setFontSize(7);
+  doc.setTextColor(...muted);
+  doc.text(loc.toUpperCase(), 20, 75);
+
+  // Meta block
+  doc.setFillColor(20,40,30);
+  doc.roundedRect(20, 95, 170, 50, 3, 3, 'F');
+
+  const meta = [
+    ['REPORT TYPE', reportType.toUpperCase() + ' SURVEY'],
+    ['REFERENCE',   refNo],
+    ['PREPARED BY', author],
+    ['PREPARED FOR',client],
+    ['DATE ISSUED', today],
+    ['GPS',         gps]
+  ];
+  let mx = 28, my = 106;
+  doc.setFont('helvetica','normal');
+  meta.forEach(([lbl,val])=>{
+    doc.setFontSize(7); doc.setTextColor(...gold);
+    doc.text(lbl, mx, my);
+    doc.setFontSize(8); doc.setTextColor(...white);
+    doc.text(val, mx + 45, my);
+    my += 7;
+  });
+
+  // Confidential stamp
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...muted);
+  doc.text('CONFIDENTIAL — FOR AUTHORISED RECIPIENTS ONLY', 20, 260);
+
+  doc.setFontSize(7);
+  doc.setTextColor(60,80,70);
+  doc.text('Mzilikazi Kingdom · mzilikazicorp@outlook.com · 061 512 9042', 20, 267);
+  doc.text('www.mzilikazi-ka-mashobane.github.io/Kingdom', 20, 272);
+
+  await delay(300); setProgress(45, 'Writing mine data...');
+
+  /* ── PAGE 2: CONTENT ── */
+  doc.addPage();
+  doc.setFillColor(...darkGreen);
+  doc.rect(0,0,W,H,'F');
+  doc.setFillColor(...gold);
+  doc.rect(0,0,6,H,'F');
+
+  function sectionHeader(title, yy){
+    doc.setFillColor(...green);
+    doc.rect(6,yy-5,W-6,12,'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...gold);
+    doc.text(title, 14, yy+3);
+    return yy + 14;
+  }
+
+  function bodyText(text, yy, indent=14){
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...lightGrey);
+    const lines = doc.splitTextToSize(text, 180);
+    doc.text(lines, indent, yy);
+    return yy + lines.length * 5.5;
+  }
+
+  function keyVal(lbl, val, yy){
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...gold);
+    doc.text(lbl + ':', 14, yy);
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(...lightGrey);
+    const lines = doc.splitTextToSize(val, 130);
+    doc.text(lines, 70, yy);
+    return yy + Math.max(lines.length * 5.5, 7);
+  }
+
+  let y = 20;
+
+  if(document.getElementById('incSummary').checked){
+    y = sectionHeader('EXECUTIVE SUMMARY', y);
+    y = bodyText(`This GIS Intelligence Report has been prepared by ${author} on behalf of ${client} for the ${zone}, located at ${loc}. The report presents verified geospatial, geological and operational data compiled from primary sources including title deeds, mining rights documentation and field survey records.`, y) + 4;
+    y = bodyText(`The findings are intended to support informed decision-making in relation to investment, operational planning, regulatory compliance and community engagement.`, y) + 8;
+  }
+
+  if(document.getElementById('incMine').checked){
+    y = sectionHeader('MINE / ZONE PROFILE', y);
+    const mineData = [
+      ['Mine Name','Blue Ridge Platinum Mine'],
+      ['Mining Right','MR-LP177 MRC dated 29 May 2014 (30 years)'],
+      ['Ownership','Blue Ridge Platinum Pty Ltd (Reg: 2002/002702/07)'],
+      ['Shareholders','Imbani Platinum SPV Pty Ltd (50%) · Ridge Mining Pty Ltd (50%)'],
+      ['Current Status','Brownfield — Care & Maintenance, Restart Ready'],
+      ['Mine Type','Shallow underground UG2 Chromite (PGM & Chrome)'],
+      ['Commissioned','March 2009 at R2.8 billion initial cost'],
+      ['Distance','20km SE of Groblersdal · 160km NE of Pretoria · 214km from Johannesburg'],
+    ];
+    mineData.forEach(([l,v])=>{ y = keyVal(l,v,y); });
+    y += 6;
+  }
+
+  if(document.getElementById('incResource').checked){
+    y = sectionHeader('RESOURCES & RESERVES', y);
+    const resData = [
+      ['Total Resource','89.8 Mt (9.14 Moz 4E PGM) + 19.5 Mt Cr₂O₃ saleable'],
+      ['Total Reserves','25.08 Mt (2.42 Moz 4E PGM) proven and probable'],
+      ['PGM Grade','3.3 g/t'],
+      ['Chrome Grade','22% Cr₂O₃'],
+      ['Commodities','Platinum · Palladium · Rhodium · Gold · Ruthenium · Iridium · Chrome · Nickel · Copper'],
+      ['Life of Mine','18–25 years @ 120 000 tpm (excl. Millennium)'],
+      ['Concentrator','120 000 tpm MF2 plant (upgradable to 160 000 tpm)'],
+      ['Boreholes','207 exploration boreholes · 80 000m bore-core (2003–2005)'],
+      ['Off-take','Life-of-mine PGM off-take: Impala Refinery Services (IRS)'],
+    ];
+    resData.forEach(([l,v])=>{ y = keyVal(l,v,y); });
+    y += 6;
+  }
+
+  /* PAGE 3 */
+  if(y > 230){
+    doc.addPage();
+    doc.setFillColor(...darkGreen); doc.rect(0,0,W,H,'F');
+    doc.setFillColor(...gold); doc.rect(0,0,6,H,'F');
+    y = 20;
+  }
+
+  if(document.getElementById('incInfra').checked){
+    y = sectionHeader('INFRASTRUCTURE SUMMARY', y);
+    const infraData = [
+      ['Surface Rights','6 500 hectares owned (Title Deed T048517/2008)'],
+      ['Underground','4 levels fully equipped — 2 000m linear, 450m depth'],
+      ['Power','Eskom live ring-feed — 2×20 MVA transformers (Mapog substation)'],
+      ['Water','Boreholes + Loskop Dam via canal. Registered water use licence.'],
+      ['Concentrator Plant','120 000 tpm MF2 — operational quarterly by Minopex'],
+      ['Other Facilities','Mine offices · workshops · change houses · fire assay lab · conveyor decline · ventilation pumps'],
+      ['Rehabilitation','Guardrisk guarantee: R12 807 105 · Closure provision: R13M'],
+      ['Care & Maintenance','Ongoing since 2012 — 22 permanent + Bidvest security team'],
+      ['Annual C&M Cost','R30 million per year (from 2019)'],
+    ];
+    infraData.forEach(([l,v])=>{ y = keyVal(l,v,y); });
+    y += 6;
+  }
+
+  if(document.getElementById('incReg').checked){
+    y = sectionHeader('REGULATORY & LEGAL STATUS', y);
+    const regData = [
+      ['Mining Right','MR-LP177 MRC · Converted new order · 30 years from May 2014'],
+      ['EIA Status','Approved and executed. Compliance reports on file.'],
+      ['Water Licence','Registered water use licence in place'],
+      ['BFS','Bankable Feasibility Study — SRK Cardiff & RSG Global (2007)'],
+      ['CPR','IGS Resource Statement & Competent Persons Report (2006)'],
+      ['Title Deed','T048517/2008 — filed under DropBox Folder 9: Legal'],
+      ['Share Capital','100% of issued share capital available for sale (ring-fenced proof of funds required)'],
+    ];
+    regData.forEach(([l,v])=>{ y = keyVal(l,v,y); });
+    y += 6;
+  }
+
+  if(document.getElementById('incComm').checked){
+    y = sectionHeader('COMMUNITY RELATIONS', y);
+    y = bodyText('Good relations maintained with the Bakgagabakopa Community (Traditional Council for Blue Ridge community). Community representative: Ghoshi Rammupudu Boleu Harry. Community holds shareholding and economic benefit agreement with Blue Ridge Platinum.', y) + 8;
+  }
+
+  if(notes.trim()){
+    y = sectionHeader('ADDITIONAL NOTES & RECOMMENDATIONS', y);
+    y = bodyText(notes, y) + 8;
+  }
+
+  if(document.getElementById('incContact').checked){
+    if(y > 220){ doc.addPage(); doc.setFillColor(...darkGreen); doc.rect(0,0,W,H,'F'); doc.setFillColor(...gold); doc.rect(0,0,6,H,'F'); y = 20; }
+    y = sectionHeader('CONTACT DIRECTORY', y);
+    const contacts = [
+      ['Ms Zamanyathi Lisetti','Managing Director — Mzilikazi Kingdom','061 512 9042','mzilikazicorp@outlook.com'],
+      ['Mr Phuthi Senyatsi','Director — Mzilikazi Kingdom','073 148 1791','mzilikazicorp@outlook.com'],
+    ];
+    contacts.forEach(([name,role,tel,email])=>{
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...white);
+      doc.text(name, 14, y); y += 5.5;
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...muted);
+      doc.text(role, 14, y); y += 5;
+      doc.setTextColor(...gold); doc.text(`Tel: ${tel}   Email: ${email}`, 14, y); y += 10;
+    });
+  }
+
+  /* Footer on all pages */
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i=1; i<=pageCount; i++){
+    doc.setPage(i);
+    doc.setFillColor(13,32,24);
+    doc.rect(6,H-14,W-6,14,'F');
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...muted);
+    doc.text(`Mzilikazi Kingdom GIS Report  ·  Ref: ${refNo}  ·  ${today}  ·  Page ${i} of ${pageCount}`, 14, H-6);
+    doc.text('CONFIDENTIAL', W-30, H-6);
+  }
+
+  await delay(200); setProgress(90, 'Saving PDF...');
+
+  const filename = `MZL_GIS_Report_${zone.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'')}_${refNo}.pdf`;
+  doc.save(filename);
+
+  // Add to recent
+  recentReports.unshift({name:filename, ref:refNo, date:today, type:reportType});
+  renderRecent();
+
+  setProgress(100, '✅ Report downloaded!');
+  setTimeout(()=>{
+    document.getElementById('progressBar').style.display='none';
+    document.getElementById('progressMsg').style.display='none';
+  }, 3000);
+
+  btn.disabled = false;
+}
+
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+function renderRecent(){
+  const icons = {site:'&#x26CF;&#xFE0E;',environmental:'&#x1F33F;&#xFE0E;',land:'&#x1F4D0;&#xFE0E;',investment:'&#x1F4CA;&#xFE0E;'};
+  document.getElementById('recentList').innerHTML = recentReports.slice(0,5).map(r=>`
+    <div class="report-row">
+      <div class="report-icon">${icons[r.type]||'&#x1F4C4;&#xFE0E;'}</div>
+      <div class="report-info">
+        <div class="report-name">${r.ref}</div>
+        <div class="report-meta">${r.date} · ${r.type.toUpperCase()} REPORT</div>
+      </div>
+      <button class="report-dl" onclick="alert('Re-generate report to download again')">&#x2B07;&#xFE0E;</button>
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>
