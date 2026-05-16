@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community Portal – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;1,300&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#060a08;--green:#1a3326;--gold:#c9a84c;--border:rgba(201,168,76,0.18);
+  --glass:rgba(12,22,16,0.8);--muted:rgba(255,255,255,0.4);
+}
+body{background:var(--ink);font-family:'DM Sans',sans-serif;overflow-x:hidden;padding-bottom:80px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#fff;position:sticky;top:0;z-index:3000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:15px;color:var(--green);font-weight:600;}
+
+.hero{
+  background:linear-gradient(160deg,#0d2018 0%,#030806 100%);
+  padding:24px 18px;border-bottom:1px solid var(--border);
+}
+.hero h1{font-family:'Fraunces',serif;font-size:28px;color:#fff;line-height:1.1;margin-bottom:4px;}
+.hero h1 em{color:var(--gold);font-style:italic;}
+.hero p{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);background:#080e0a;}
+.tab{flex:1;padding:13px 8px;text-align:center;font-size:12px;font-weight:600;
+  color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* PANEL */
+.panel{display:none;} .panel.active{display:block;}
+
+/* SECTION LABEL */
+.slbl{padding:14px 14px 6px;font-size:10px;color:rgba(255,255,255,0.25);
+  letter-spacing:2px;text-transform:uppercase;font-family:'DM Mono',monospace;}
+
+/* STAKEHOLDER CARDS */
+.stakeholder-card{
+  margin:0 14px 10px;border-radius:14px;border:1px solid var(--border);
+  background:var(--glass);overflow:hidden;
+}
+.sk-top{padding:13px 14px;display:flex;gap:10px;align-items:flex-start;}
+.sk-avatar{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  border:1px solid var(--border);
+}
+.sk-info{flex:1;}
+.sk-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px;}
+.sk-role{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+.sk-badge{
+  font-size:9px;font-weight:600;padding:3px 9px;border-radius:20px;
+  border:1px solid;font-family:'DM Mono',monospace;flex-shrink:0;
+}
+.sb-active{border-color:rgba(34,197,94,0.4);color:#4ade80;}
+.sb-pending{border-color:rgba(245,158,11,0.4);color:#fbbf24;}
+.sb-consult{border-color:rgba(59,130,246,0.4);color:#60a5fa;}
+
+.sk-stats{display:flex;border-top:1px solid var(--border);}
+.sk-stat{flex:1;padding:9px 8px;text-align:center;border-right:1px solid var(--border);}
+.sk-stat:last-child{border-right:none;}
+.sk-stat .v{font-size:12px;font-weight:700;color:var(--gold);}
+.sk-stat .l{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+.sk-notes{padding:10px 14px;border-top:1px solid var(--border);font-size:11px;
+  color:rgba(255,255,255,0.55);line-height:1.6;}
+
+/* CONSULTATION LOG */
+.log-item{
+  margin:0 14px 8px;padding:13px 14px;border-radius:12px;
+  border:1px solid var(--border);background:var(--glass);
+}
+.log-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.log-title{font-size:12px;font-weight:600;color:#fff;}
+.log-date{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+.log-party{font-size:11px;color:var(--gold);font-family:'DM Mono',monospace;margin-bottom:4px;}
+.log-notes{font-size:11px;color:rgba(255,255,255,0.55);line-height:1.6;}
+.log-outcome{
+  margin-top:8px;padding:6px 10px;border-radius:8px;font-size:10px;
+  font-family:'DM Mono',monospace;
+}
+.lo-positive{background:rgba(34,197,94,0.1);color:#4ade80;}
+.lo-pending{background:rgba(245,158,11,0.1);color:#fbbf24;}
+.lo-neutral{background:rgba(255,255,255,0.05);color:var(--muted);}
+
+/* COMMENT FORM */
+.form-card{margin:0 14px 12px;border-radius:14px;border:1px solid var(--border);
+  background:var(--glass);overflow:hidden;}
+.form-field{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.form-field:last-child{border-bottom:none;}
+.form-field label{display:block;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;
+  margin-bottom:5px;text-transform:uppercase;}
+input,select,textarea{
+  width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);
+  border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;
+  font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;}
+textarea{min-height:90px;resize:vertical;line-height:1.6;}
+select option{background:#111;}
+
+.submit-btn{
+  width:calc(100% - 28px);margin:0 14px 14px;padding:13px;border-radius:10px;
+  border:none;background:var(--gold);color:#000;font-size:13px;font-weight:600;
+  font-family:'DM Sans',sans-serif;cursor:pointer;}
+
+/* MAP PREVIEW */
+.map-preview{
+  margin:0 14px 12px;border-radius:14px;overflow:hidden;border:1px solid var(--border);
+  height:200px;background:#0f1a13;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;cursor:pointer;
+}
+.map-preview:active{opacity:0.8;}
+.map-preview .mp-icon{font-size:32px;}
+.map-preview .mp-text{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+#toast{position:fixed;bottom:85px;left:50%;transform:translateX(-50%);background:var(--green);
+  color:#fff;padding:10px 20px;border-radius:30px;font-size:12px;z-index:9999;display:none;
+  border:1px solid var(--border);}
+
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:#fff;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:12px 4px;font-size:11px;color:#6b7280;cursor:pointer;}
+.nav div.active{color:var(--green);font-weight:600;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="logo.png" alt="Mzilikazi Kingdom">
+  <h2>Community Portal</h2>
+</div>
+
+<div class="hero">
+  <h1>People &amp; <em>Place</em></h1>
+  <p>STAKEHOLDER REGISTER · CONSULTATION LOG · PUBLIC COMMENT</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('stakeholders',this)">Stakeholders</div>
+  <div class="tab" onclick="switchTab('consultations',this)">Consultations</div>
+  <div class="tab" onclick="switchTab('comment',this)">Submit Comment</div>
+</div>
+
+<!-- STAKEHOLDERS -->
+<div class="panel active" id="stakeholders">
+
+  <div class="slbl">Blue Ridge — Sekhukhune, Limpopo</div>
+
+  <div class="stakeholder-card">
+    <div class="sk-top">
+      <div class="sk-avatar" style="background:rgba(34,197,94,0.1);">&#x1F91D;&#xFE0E;</div>
+      <div class="sk-info">
+        <div class="sk-name">Bakgagabakopa Community</div>
+        <div class="sk-role">Traditional Council · Blue Ridge Community</div>
+      </div>
+      <span class="sk-badge sb-active">Active Partner</span>
+    </div>
+    <div class="sk-stats">
+      <div class="sk-stat"><div class="v">Shareholder</div><div class="l">Status</div></div>
+      <div class="sk-stat"><div class="v">Economic</div><div class="l">Benefit</div></div>
+      <div class="sk-stat"><div class="v">Positive</div><div class="l">Relations</div></div>
+    </div>
+    <div class="sk-notes">Representative: Ghoshi Rammupudu Boleu Harry (Bakgagabakopa Traditional Council). Community holds active shareholding and economic benefit agreement with Blue Ridge Platinum. Consultation complete.</div>
+  </div>
+
+  <div class="stakeholder-card">
+    <div class="sk-top">
+      <div class="sk-avatar" style="background:rgba(201,168,76,0.1);">&#x1F3DB;&#xFE0E;</div>
+      <div class="sk-info">
+        <div class="sk-name">Greater Sekhukhune District Municipality</div>
+        <div class="sk-role">Local Government · Limpopo</div>
+      </div>
+      <span class="sk-badge sb-active">Engaged</span>
+    </div>
+    <div class="sk-stats">
+      <div class="sk-stat"><div class="v">Groblersdal</div><div class="l">Area</div></div>
+      <div class="sk-stat"><div class="v">20km</div><div class="l">From Town</div></div>
+      <div class="sk-stat"><div class="v">Active</div><div class="l">Relations</div></div>
+    </div>
+    <div class="sk-notes">Municipal authority for the Groblersdal/Sekhukhune area. Infrastructure coordination — roads, water, community services. Key engagement point for Blue Ridge restart planning.</div>
+  </div>
+
+  <div class="stakeholder-card">
+    <div class="sk-top">
+      <div class="sk-avatar" style="background:rgba(59,130,246,0.1);">&#x1F4A1;&#xFE0E;</div>
+      <div class="sk-info">
+        <div class="sk-name">Eskom — Mapog Substation</div>
+        <div class="sk-role">Power Utility · North West / Limpopo</div>
+      </div>
+      <span class="sk-badge sb-active">Active Contract</span>
+    </div>
+    <div class="sk-stats">
+      <div class="sk-stat"><div class="v">2×20 MVA</div><div class="l">Capacity</div></div>
+      <div class="sk-stat"><div class="v">R12M/yr</div><div class="l">Retainer</div></div>
+      <div class="sk-stat"><div class="v">Live Feed</div><div class="l">Status</div></div>
+    </div>
+    <div class="sk-notes">Live ring-feed maintained from Eskom Mapog substation. Annual retainer of R12 million paid to retain power availability. Critical for mine restart readiness.</div>
+  </div>
+
+  <div class="stakeholder-card">
+    <div class="sk-top">
+      <div class="sk-avatar" style="background:rgba(168,85,247,0.1);">&#x1F3E6;&#xFE0E;</div>
+      <div class="sk-info">
+        <div class="sk-name">Impala Refinery Services (IRS)</div>
+        <div class="sk-role">Off-take Partner · PGM Refinery</div>
+      </div>
+      <span class="sk-badge sb-active">Off-take Active</span>
+    </div>
+    <div class="sk-stats">
+      <div class="sk-stat"><div class="v">Life-of-Mine</div><div class="l">Agreement</div></div>
+      <div class="sk-stat"><div class="v">PGM</div><div class="l">Concentrate</div></div>
+      <div class="sk-stat"><div class="v">Active</div><div class="l">Status</div></div>
+    </div>
+    <div class="sk-notes">Life-of-mine PGM off-take agreement in place with Impala Refinery Services. All PGM concentrate produced on site to be refined through IRS. Agreement to be reviewed on restart.</div>
+  </div>
+
+  <div class="slbl">Rhenosterkraal — Mankwe, North West</div>
+
+  <div class="stakeholder-card">
+    <div class="sk-top">
+      <div class="sk-avatar" style="background:rgba(245,158,11,0.1);">&#x1F3DB;&#xFE0E;</div>
+      <div class="sk-info">
+        <div class="sk-name">Mankwe Local Community</div>
+        <div class="sk-role">Affected Community · Mankwe District</div>
+      </div>
+      <span class="sk-badge sb-pending">Consultation Required</span>
+    </div>
+    <div class="sk-stats">
+      <div class="sk-stat"><div class="v">Required</div><div class="l">Status</div></div>
+      <div class="sk-stat"><div class="v">Section 12(d)</div><div class="l">MPRDA</div></div>
+      <div class="sk-stat"><div class="v">Overdue</div><div class="l">Deadline</div></div>
+    </div>
+    <div class="sk-notes">Section 12(d) requires consultation with landowner, lawful occupier and interested/affected parties. Results of consultation must be included in environmental reports. URGENT — deadline 28 April 2026 passed.</div>
+  </div>
+
+  <div class="stakeholder-card">
+    <div class="sk-top">
+      <div class="sk-avatar" style="background:rgba(239,68,68,0.1);">&#x1F4CB;&#xFE0E;</div>
+      <div class="sk-info">
+        <div class="sk-name">DMRE North West Region</div>
+        <div class="sk-role">Regulatory Authority · Klerksdorp</div>
+      </div>
+      <span class="sk-badge sb-consult">Regulatory</span>
+    </div>
+    <div class="sk-stats">
+      <div class="sk-stat"><div class="v">15265PR</div><div class="l">Reference</div></div>
+      <div class="sk-stat"><div class="v">Klerksdorp</div><div class="l">Office</div></div>
+      <div class="sk-stat"><div class="v">(018) 487 4300</div><div class="l">Tel</div></div>
+    </div>
+    <div class="sk-notes">Private Bag A1, Klerksdorp 2570. Tel: (018) 487 4300 / Fax: (018) 487 4350. Enquiries: T. Nkwe. All BEE documents and consultation results to be submitted online and hard copy to this office.</div>
+  </div>
+
+</div>
+
+<!-- CONSULTATIONS LOG -->
+<div class="panel" id="consultations">
+
+  <div class="slbl">Consultation Register</div>
+
+  <div class="log-item">
+    <div class="log-top">
+      <div class="log-title">Community Shareholding Agreement</div>
+      <div class="log-date">Pre-2012</div>
+    </div>
+    <div class="log-party">Bakgagabakopa Community · Blue Ridge Platinum</div>
+    <div class="log-notes">Formal shareholding and economic benefit agreement concluded between Blue Ridge Platinum and the Bakgagabakopa Traditional Council. Community Representative: Ghoshi Rammupudu Boleu Harry.</div>
+    <div class="log-outcome lo-positive">&#x2714;&#xFE0E; Outcome: Agreement concluded — community shareholder</div>
+  </div>
+
+  <div class="log-item">
+    <div class="log-top">
+      <div class="log-title">DMRE Acceptance — Rhenosterkraal</div>
+      <div class="log-date">16 March 2026</div>
+    </div>
+    <div class="log-party">DMRE North West Region · Rhenosterkraal Minerals</div>
+    <div class="log-notes">Official acceptance letter issued for prospecting right application. Reference NW 30/5/1/1/2/15265 PR. Signed by Regional Manager, North West Region. Deadlines issued for land restitution (28 Apr) and BEE documents (10 Jun 2026).</div>
+    <div class="log-outcome lo-positive">&#x2714;&#xFE0E; Outcome: Application accepted — deadlines issued</div>
+  </div>
+
+  <div class="log-item">
+    <div class="log-top">
+      <div class="log-title">Land Restitution Consultation — Mankwe</div>
+      <div class="log-date">Due 28 April 2026</div>
+    </div>
+    <div class="log-party">Commission on Restitution of Land Rights · Dept of Land Affairs</div>
+    <div class="log-notes">Required consultation with Department of Land Affairs and Commission on Restitution of Land Rights. Results to be submitted online and hard copy to DMRE Regional Office. DEADLINE HAS PASSED.</div>
+    <div class="log-outcome lo-pending">&#x26A0;&#xFE0E; Outcome: OVERDUE — Action required immediately</div>
+  </div>
+
+  <div class="log-item">
+    <div class="log-top">
+      <div class="log-title">BEE Documents Submission</div>
+      <div class="log-date">Due 10 June 2026</div>
+    </div>
+    <div class="log-party">DMRE North West Region</div>
+    <div class="log-notes">Shareholders agreement, share certificates, registers, MOI, articles of association, funding agreements. Online and hard copy submission required.</div>
+    <div class="log-outcome lo-pending">&#x23F3;&#xFE0E; Outcome: Pending — 25 days remaining</div>
+  </div>
+
+</div>
+
+<!-- PUBLIC COMMENT FORM -->
+<div class="panel" id="comment">
+
+  <div class="slbl">Submit a Public Comment</div>
+  <div style="padding:0 14px 10px;font-size:12px;color:var(--muted);line-height:1.7;">
+    Community members, landowners, and interested parties are invited to submit comments regarding Mzilikazi Kingdom's operations in your area.
+  </div>
+
+  <div class="form-card">
+    <div class="form-field">
+      <label>Full Name</label>
+      <input id="cName" placeholder="Your full name">
+    </div>
+    <div class="form-field">
+      <label>Community / Village</label>
+      <input id="cCommunity" placeholder="Your community or village name">
+    </div>
+    <div class="form-field">
+      <label>Phone Number</label>
+      <input type="tel" id="cPhone" placeholder="+27 __ ___ ____">
+    </div>
+    <div class="form-field">
+      <label>Comment relates to</label>
+      <select id="cRelates">
+        <option>Blue Ridge Platinum Mine — Sekhukhune</option>
+        <option>Rhenosterkraal 132JP — Mankwe</option>
+        <option>Tovey Lodge — Musina</option>
+        <option>General — Mzilikazi Kingdom</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Nature of Comment</label>
+      <select id="cNature">
+        <option>Support for operations</option>
+        <option>Concern — employment</option>
+        <option>Concern — environment</option>
+        <option>Concern — land rights</option>
+        <option>Concern — water access</option>
+        <option>Request for information</option>
+        <option>Complaint</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Your Comment</label>
+      <textarea id="cComment" placeholder="Please share your comment, concern or question. All comments are reviewed by the Mzilikazi Kingdom team."></textarea>
+    </div>
+  </div>
+
+  <button class="submit-btn" onclick="submitComment()">
+    &#x1F4AC;&#xFE0E; Submit Comment
+  </button>
+
+</div>
+
+<div id="toast"></div>
+
+<div class="nav">
+  <div onclick="location.href='index.html'">Home</div>
+  <div onclick="location.href='gis-portal.html'">GIS</div>
+  <div class="active">Community</div>
+  <div onclick="location.href='compliance.html'">Comply</div>
+  <div onclick="location.href='client-portal.html'">Portal</div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbz3cpb5rUI2uzst5cphvS5GsRCOedqazwoT2NNSSSKlamBAm8kcFtiLlBKKjT7-8G8IJw/exec';
+
+function switchTab(id, btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.innerHTML=msg;t.style.display='block';
+  clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',3000);
+}
+
+async function submitComment(){
+  const name=document.getElementById('cName').value.trim();
+  const comment=document.getElementById('cComment').value.trim();
+  if(!name||!comment){toast('&#x26A0;&#xFE0E; Please enter your name and comment.');return;}
+  const payload={
+    action:'publicComment',
+    name, community:document.getElementById('cCommunity').value,
+    phone:document.getElementById('cPhone').value,
+    relates:document.getElementById('cRelates').value,
+    nature:document.getElementById('cNature').value,
+    comment, timestamp:new Date().toISOString()
+  };
+  await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  toast('&#x2705;&#xFE0E; Comment submitted. Thank you.');
+  document.getElementById('cName').value='';
+  document.getElementById('cComment').value='';
+}
+</script>
+</body>
+</html>

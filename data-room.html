@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Room – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#05090a;--green:#1a3326;--gold:#c9a84c;--border:rgba(201,168,76,0.18);
+  --glass:rgba(10,20,15,0.8);--muted:rgba(255,255,255,0.4);
+}
+body{background:var(--ink);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh;}
+
+/* NDA GATE */
+#ndaGate{
+  min-height:100vh;display:flex;flex-direction:column;
+  background:radial-gradient(ellipse at top,#0d2018 0%,#000 70%);
+  align-items:center;justify-content:center;padding:30px 20px;
+}
+.nda-logo{font-size:40px;margin-bottom:16px;}
+.nda-title{font-family:'Playfair Display',serif;font-size:26px;color:#fff;text-align:center;margin-bottom:4px;}
+.nda-sub{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;text-align:center;margin-bottom:28px;letter-spacing:1px;}
+.nda-card{
+  width:100%;max-width:380px;background:rgba(15,28,20,0.9);
+  border:1px solid var(--border);border-radius:20px;padding:24px;
+}
+.nda-card h3{font-family:'Playfair Display',serif;font-size:16px;color:#fff;margin-bottom:6px;}
+.nda-card p{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
+.nda-scroll{
+  background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:10px;
+  padding:14px;max-height:180px;overflow-y:auto;margin-bottom:16px;
+  font-size:10px;color:rgba(255,255,255,0.5);line-height:1.8;font-family:'DM Mono',monospace;
+}
+.nda-field{margin-bottom:12px;}
+.nda-field label{display:block;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px;text-transform:uppercase;}
+input{
+  width:100%;background:rgba(0,0,0,0.4);border:1px solid var(--border);
+  border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;
+  font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;
+}
+input:focus{border-color:rgba(201,168,76,0.5);}
+.agree-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:16px;}
+.agree-box{
+  width:20px;height:20px;border-radius:5px;border:1.5px solid var(--border);
+  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:12px;margin-top:1px;transition:all 0.2s;
+}
+.agree-box.checked{background:var(--gold);border-color:var(--gold);color:#000;}
+.agree-text{font-size:11px;color:rgba(255,255,255,0.6);line-height:1.6;}
+.nda-btn{
+  width:100%;padding:13px;border-radius:10px;border:none;
+  background:var(--gold);color:#000;font-size:14px;font-weight:600;
+  font-family:'DM Sans',sans-serif;cursor:pointer;
+}
+.nda-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* DATA ROOM */
+#dataRoom{display:none;padding-bottom:80px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#fff;position:sticky;top:0;z-index:3000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:15px;color:var(--green);font-weight:600;}
+
+.room-header{
+  background:linear-gradient(135deg,#0d2018,#000);
+  padding:20px 18px;border-bottom:1px solid var(--border);
+}
+.room-header h1{font-family:'Playfair Display',serif;font-size:22px;color:#fff;margin-bottom:2px;}
+.room-header p{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+.nda-badge{
+  display:inline-flex;align-items:center;gap:5px;margin-top:8px;
+  background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);
+  border-radius:20px;padding:3px 12px;font-size:10px;color:#4ade80;
+  font-family:'DM Mono',monospace;
+}
+
+/* FOLDER TABS */
+.folder-tabs{
+  display:flex;gap:0;overflow-x:auto;scrollbar-width:none;
+  border-bottom:1px solid var(--border);background:#0a1510;
+}
+.folder-tabs::-webkit-scrollbar{display:none;}
+.folder-tab{
+  padding:12px 16px;font-size:11px;font-weight:600;cursor:pointer;
+  color:var(--muted);white-space:nowrap;border-bottom:2px solid transparent;
+  font-family:'DM Mono',monospace;transition:all 0.2s;flex-shrink:0;
+}
+.folder-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* DOCUMENT LIST */
+.doc-list{padding:8px 0;}
+.folder-section{display:none;}
+.folder-section.active{display:block;}
+
+.doc-item{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.04);
+  cursor:pointer;transition:background 0.15s;
+}
+.doc-item:active{background:rgba(255,255,255,0.03);}
+.doc-icon{font-size:22px;flex-shrink:0;}
+.doc-info{flex:1;}
+.doc-name{font-size:13px;font-weight:500;color:#fff;margin-bottom:2px;}
+.doc-meta{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+.doc-badge{
+  font-size:9px;font-weight:600;padding:3px 8px;border-radius:20px;
+  border:1px solid;font-family:'DM Mono',monospace;flex-shrink:0;
+}
+.db-available{border-color:rgba(34,197,94,0.4);color:#4ade80;}
+.db-request{border-color:var(--border);color:var(--muted);}
+.db-restricted{border-color:rgba(239,68,68,0.4);color:#f87171;}
+
+/* DOC VIEWER DRAWER */
+#docDrawer{
+  position:fixed;bottom:70px;left:0;right:0;z-index:4000;
+  background:#0d1e16;border-top:1px solid var(--border);
+  transform:translateY(100%);transition:transform 0.3s ease;
+  border-radius:18px 18px 0 0;max-height:65vh;overflow-y:auto;
+}
+#docDrawer.open{transform:translateY(0);}
+.drawer-handle{width:36px;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;margin:12px auto 0;}
+.drawer-inner{padding:16px 18px 24px;}
+.d-tag{font-size:10px;color:var(--gold);font-family:'DM Mono',monospace;margin-bottom:4px;}
+.d-title{font-family:'Playfair Display',serif;font-size:18px;color:#fff;margin-bottom:4px;}
+.d-sub{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:14px;}
+.d-desc{font-size:12px;color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:14px;}
+.d-actions{display:flex;gap:8px;}
+.d-btn{
+  flex:1;padding:11px;border-radius:10px;border:1px solid var(--border);
+  background:transparent;color:rgba(255,255,255,0.6);font-size:12px;
+  font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;
+}
+.d-btn.primary{background:rgba(201,168,76,0.12);color:var(--gold);border-color:var(--gold);}
+.d-close{
+  width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:12px;margin-top:8px;
+  font-family:'DM Sans',sans-serif;cursor:pointer;
+}
+
+/* NAV */
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:#fff;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:12px 4px;font-size:11px;color:#6b7280;cursor:pointer;}
+.nav div.active{color:var(--green);font-weight:600;}
+</style>
+</head>
+<body>
+
+<!-- NDA GATE -->
+<div id="ndaGate">
+  <div class="nda-logo">&#x1F512;&#xFE0E;</div>
+  <div class="nda-title">Mzilikazi Kingdom</div>
+  <div class="nda-sub">CONFIDENTIAL INVESTOR DATA ROOM</div>
+
+  <div class="nda-card">
+    <h3>Non-Disclosure Agreement</h3>
+    <p>Access to this data room requires acceptance of a confidentiality agreement. All documents are strictly confidential.</p>
+
+    <div class="nda-scroll">
+CONFIDENTIALITY AND NON-DISCLOSURE AGREEMENT
+
+By accessing this data room, you ("the Recipient") agree to the following:
+
+1. CONFIDENTIAL INFORMATION: All documents, data, financial models, geological reports, legal documents and any other information accessed through this data room ("Confidential Information") are strictly confidential and proprietary to Mzilikazi Kingdom and its subsidiaries.
+
+2. NON-DISCLOSURE: The Recipient undertakes not to disclose, share, reproduce, transmit or use any Confidential Information for any purpose other than evaluating a potential transaction with Mzilikazi Kingdom without prior written consent.
+
+3. LIMITED USE: Confidential Information may only be used for the purpose of evaluating a bona fide investment or business relationship with Mzilikazi Kingdom.
+
+4. RETURN OF INFORMATION: Upon request, the Recipient will promptly return or destroy all Confidential Information and any copies thereof.
+
+5. GOVERNING LAW: This agreement is governed by the laws of the Republic of South Africa.
+
+6. RING-FENCED PROOF OF FUNDS: Any offer or Letter of Interest must be accompanied by ring-fenced proof of funds. Without this the Sellers will not engage.
+
+Contact: Ms Zamanyathi Lisetti · mzilikazicorp@outlook.com · 061 512 9042
+    </div>
+
+    <div class="nda-field">
+      <label>Full Name</label>
+      <input id="ndaName" placeholder="Your full legal name">
+    </div>
+    <div class="nda-field">
+      <label>Organisation</label>
+      <input id="ndaOrg" placeholder="Company or fund name">
+    </div>
+    <div class="nda-field">
+      <label>Email Address</label>
+      <input type="email" id="ndaEmail" placeholder="your@email.com">
+    </div>
+
+    <div class="agree-row">
+      <div class="agree-box" id="agreeBox" onclick="toggleAgree()"></div>
+      <div class="agree-text">I have read and agree to the Non-Disclosure Agreement. I understand that all information is strictly confidential.</div>
+    </div>
+
+    <button class="nda-btn" id="ndaBtn" disabled onclick="enterDataRoom()">
+      &#x1F511;&#xFE0E; Enter Data Room
+    </button>
+  </div>
+</div>
+
+<!-- DATA ROOM -->
+<div id="dataRoom">
+  <div class="topbar">
+    <img src="logo.png" alt="Mzilikazi Kingdom">
+    <h2>Investor Data Room</h2>
+  </div>
+
+  <div class="room-header">
+    <h1>Document Library</h1>
+    <p>BLUE RIDGE PLATINUM · RHENOSTERKRAAL · MZILIKAZI KINGDOM</p>
+    <div class="nda-badge">&#x2714;&#xFE0E; NDA Signed · <span id="ndaUser">Investor</span></div>
+  </div>
+
+  <!-- FOLDER TABS -->
+  <div class="folder-tabs">
+    <div class="folder-tab active" onclick="switchFolder('f1',this)">&#x1F4BC;&#xFE0E; Overview</div>
+    <div class="folder-tab" onclick="switchFolder('f2',this)">&#x26CF;&#xFE0E; Geological</div>
+    <div class="folder-tab" onclick="switchFolder('f3',this)">&#x1F4B0;&#xFE0E; Financial</div>
+    <div class="folder-tab" onclick="switchFolder('f4',this)">&#x2696;&#xFE0E; Legal</div>
+    <div class="folder-tab" onclick="switchFolder('f5',this)">&#x1F33F;&#xFE0E; Environmental</div>
+    <div class="folder-tab" onclick="switchFolder('f6',this)">&#x1F4CA;&#xFE0E; Technical</div>
+  </div>
+
+  <!-- FOLDER 1: OVERVIEW -->
+  <div class="folder-section active" id="f1">
+    <div class="doc-list">
+      <div class="doc-item" onclick="openDoc('MZL Presentation Deck — May 2026','Investor Presentations','Investor-facing overview of Mzilikazi Kingdom operations, mining rights, land parcels and strategic vision. Prepared May 2026.','available')">
+        <div class="doc-icon">&#x1F4F0;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">MZL Presentation Deck — May 2026</div><div class="doc-meta">Investor Presentation · PDF · Updated May 2026</div></div>
+        <div class="doc-badge db-available">Available</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Blue Ridge — Summary Data Table','Folder 1: Investor Presentations','Comprehensive summary of all mine-related, product, infrastructure and operational data for Blue Ridge Platinum. Sourced from official DropBox data room.','available')">
+        <div class="doc-icon">&#x1F4CB;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Blue Ridge — Summary Data Table</div><div class="doc-meta">Data Summary · PDF · Blue Ridge Platinum</div></div>
+        <div class="doc-badge db-available">Available</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Business Plan 3.5','Folder 2: Business Plans','BP 3.5 designed to deliver 160 000 ROM tonnes per month to concentrator plant. 140 000 PGM oz/year production target.','request')">
+        <div class="doc-icon">&#x1F4D6;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Business Plan 3.5</div><div class="doc-meta">Business Plans · Folder 2 · Ridge Mining / AQP</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Re-commissioning Executive Summary','Folder 2: Business Plans','BRP re-commissioning executive summary — detailed plan for restarting Blue Ridge from care and maintenance to full production.','request')">
+        <div class="doc-icon">&#x1F527;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Re-commissioning Executive Summary</div><div class="doc-meta">Business Plans · Folder 2 · Restart Plan</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOLDER 2: GEOLOGICAL -->
+  <div class="folder-section" id="f2">
+    <div class="doc-list">
+      <div class="doc-item" onclick="openDoc('IGS Resource Statement 2006','Folder 4: CPR / Geology','SAMREC compliant resource statement. PGMs: 89.8Mt (9.14Moz 4E). Chrome: 19.5Mt Cr₂O₃. Prepared by IGS.','request')">
+        <div class="doc-icon">&#x1F4C8;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">IGS Resource Statement 2006</div><div class="doc-meta">CPR · Folder 4 · SAMREC Compliant</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Competent Persons Report (CPR)','Folder 4: CPR','Full CPR including resource estimation, grade estimation (3.3 g/t PGM, 22% Cr₂O₃) and reserve classification.','request')">
+        <div class="doc-icon">&#x1F9EA;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Competent Persons Report (CPR)</div><div class="doc-meta">Geological · Folder 4 · CPR</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Drilling Campaign Reports 2003–2005','Folder 5: Geology','207 exploration boreholes · 80 000m bore-core information across three drilling campaigns.','request')">
+        <div class="doc-icon">&#x26CF;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Drilling Campaign Reports 2003–2005</div><div class="doc-meta">Geology · Folder 5 · 207 Boreholes</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Rhenosterkraal — Prospecting Right Map','PPTX / MPRDA Filing','GPS coordinates (WGS84), farm boundaries, 3 055ha area map for Farm Rhenosterkraal 132JP, Mankwe District.','available')">
+        <div class="doc-icon">&#x1F5FA;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Rhenosterkraal — Prospecting Right Map</div><div class="doc-meta">Geological · PPTX · 3 055ha · Mankwe</div></div>
+        <div class="doc-badge db-available">Available</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOLDER 3: FINANCIAL -->
+  <div class="folder-section" id="f3">
+    <div class="doc-list">
+      <div class="doc-item" onclick="openDoc('Financial Model — Life of Mine','Folder 6: Financial','3 years monthly + annual life-of-mine (18 years) financial model. Based on Business Plan 3.5 at 160 000 tpm.','restricted')">
+        <div class="doc-icon">&#x1F4B9;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Financial Model — Life of Mine</div><div class="doc-meta">Financial · Folder 6 · 18-year model</div></div>
+        <div class="doc-badge db-restricted">Restricted</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Audited Financial Statements','Folder 6: Financial','Previous 3 years audited financial statements for Blue Ridge Platinum Pty Ltd.','restricted')">
+        <div class="doc-icon">&#x1F4BC;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Audited Financial Statements</div><div class="doc-meta">Financial · Folder 6 · Audited</div></div>
+        <div class="doc-badge db-restricted">Restricted</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Historical Production Reports (AQP)','Folder 16: AQP Data Room','Historical production data from Ridge Mining PLC and Aquarius Platinum Ltd operations 2008–2012.','request')">
+        <div class="doc-icon">&#x1F4CA;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Historical Production Reports (AQP)</div><div class="doc-meta">Financial · Folder 16 · 2008–2012</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOLDER 4: LEGAL -->
+  <div class="folder-section" id="f4">
+    <div class="doc-list">
+      <div class="doc-item" onclick="openDoc('Mining Right — MR-LP177 MRC','Folder 10: Legal','Converted new order mining right issued 29 May 2014 for 30 years. North West Region.','request')">
+        <div class="doc-icon">&#x2696;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Mining Right — MR-LP177 MRC</div><div class="doc-meta">Legal · Folder 10 · 30-year right · 2014</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Title Deed — T048517/2008','Folder 9: Legal','Deed of Transfer for 6 500ha surface rights. Blue Ridge Platinum holds title deeds for mineralised area and surrounding farms.','request')">
+        <div class="doc-icon">&#x1F4DC;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Title Deed — T048517/2008</div><div class="doc-meta">Legal · Folder 9 · 6 500ha Surface Rights</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Rhenosterkraal DMRE Acceptance Letter','NW 30/5/1/1/2/15265 PR','Official acceptance from DMRE North West Region dated 16 March 2026. Deadlines: 28 Apr 2026 (restitution) · 10 Jun 2026 (BEE docs).','available')">
+        <div class="doc-icon">&#x1F4E8;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">DMRE Acceptance Letter — Rhenosterkraal</div><div class="doc-meta">Legal · NW 30/5/1/1/2/15265 PR · 16 Mar 2026</div></div>
+        <div class="doc-badge db-available">Available</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Impala Off-take Agreement','Confidential','Life-of-mine PGM off-take agreement with Impala Refinery Services (IRS).','restricted')">
+        <div class="doc-icon">&#x1F91D;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Impala Refinery Off-take Agreement</div><div class="doc-meta">Legal · Life-of-mine · IRS</div></div>
+        <div class="doc-badge db-restricted">Restricted</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOLDER 5: ENVIRONMENTAL -->
+  <div class="folder-section" id="f5">
+    <div class="doc-list">
+      <div class="doc-item" onclick="openDoc('Environmental Impact Assessment','Approved & Executed','EIA approved and executed. Compliance reports on file. Water use licence registered.','available')">
+        <div class="doc-icon">&#x1F33F;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Environmental Impact Assessment</div><div class="doc-meta">Environmental · Approved · Compliance on file</div></div>
+        <div class="doc-badge db-available">Available</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Guardrisk Rehabilitation Guarantee','Environmental · Financial','Total funded guarantee: R12 807 105. Closure cost provision R13M recorded in audited accounts.','available')">
+        <div class="doc-icon">&#x1F6E1;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Guardrisk Rehabilitation Guarantee</div><div class="doc-meta">Environmental · R12.8M · Guardrisk</div></div>
+        <div class="doc-badge db-available">Available</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('Water Use Licence','Registered','Registered water use licence. Boreholes + Loskop Dam via canal. Loskop Dam supply rights included.','request')">
+        <div class="doc-icon">&#x1F4A7;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Water Use Licence</div><div class="doc-meta">Environmental · Registered · Loskop Dam</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOLDER 6: TECHNICAL -->
+  <div class="folder-section" id="f6">
+    <div class="doc-list">
+      <div class="doc-item" onclick="openDoc('Bankable Feasibility Study (BFS)','Folder 15: BFS','BFS signed off by SRK Cardiff (for Ridge Mining PLC) and RSG Global/Coffee Mining (for Standard Bank and Investec). 2007.','request')">
+        <div class="doc-icon">&#x1F3D7;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">Bankable Feasibility Study (BFS)</div><div class="doc-meta">Technical · Folder 15 · SRK Cardiff · 2007</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('SRK Independent Technical Report','Folder 13: Technical Reports','Independent technical report signed off by SRK Cardiff confirming BFS findings.','request')">
+        <div class="doc-icon">&#x1F4DD;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">SRK Independent Technical Report</div><div class="doc-meta">Technical · Folder 13 · SRK Cardiff</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+      <div class="doc-item" onclick="openDoc('AQP Mine Plans & Optimization Plan','Folder 6: Financial / Plans','Aquarius Platinum mine plan and 5-year optimization plan. BP 3.5 revamp designed for 140 000 PGM oz/year.','request')">
+        <div class="doc-icon">&#x1F5FA;&#xFE0E;</div>
+        <div class="doc-info"><div class="doc-name">AQP Mine Plans & Optimization Plan</div><div class="doc-meta">Technical · AQP · 5-year plan</div></div>
+        <div class="doc-badge db-request">Request</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOC DRAWER -->
+  <div id="docDrawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-inner" id="docContent"></div>
+  </div>
+
+  <div class="nav">
+    <div onclick="location.href='index.html'">Home</div>
+    <div onclick="location.href='invest.html'">Invest</div>
+    <div class="active">Data Room</div>
+    <div onclick="location.href='compliance.html'">Comply</div>
+    <div onclick="location.href='client-portal.html'">Portal</div>
+  </div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbz3cpb5rUI2uzst5cphvS5GsRCOedqazwoT2NNSSSKlamBAm8kcFtiLlBKKjT7-8G8IJw/exec';
+let agreed = false;
+
+function toggleAgree(){
+  const box = document.getElementById('agreeBox');
+  agreed = !agreed;
+  box.classList.toggle('checked', agreed);
+  box.innerHTML = agreed ? '&#x2713;' : '';
+  document.getElementById('ndaBtn').disabled = !agreed;
+}
+
+function enterDataRoom(){
+  const name  = document.getElementById('ndaName').value.trim();
+  const email = document.getElementById('ndaEmail').value.trim();
+  if(!name || !email){ alert('Please enter your name and email.'); return; }
+
+  // Log NDA acceptance
+  fetch(APPS_SCRIPT_URL,{
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'ndaAcceptance', name, org:document.getElementById('ndaOrg').value, email, timestamp:new Date().toISOString()})
+  });
+
+  localStorage.setItem('mzl_nda', JSON.stringify({name, email, ts:Date.now()}));
+  document.getElementById('ndaGate').style.display  = 'none';
+  document.getElementById('dataRoom').style.display = 'block';
+  document.getElementById('ndaUser').textContent = name;
+}
+
+// Check existing NDA
+window.addEventListener('load',()=>{
+  const saved = localStorage.getItem('mzl_nda');
+  if(saved){
+    try{
+      const d = JSON.parse(saved);
+      if(Date.now() - d.ts < 7*24*60*60*1000){
+        document.getElementById('ndaGate').style.display  = 'none';
+        document.getElementById('dataRoom').style.display = 'block';
+        document.getElementById('ndaUser').textContent = d.name;
+      }
+    }catch(e){ localStorage.removeItem('mzl_nda'); }
+  }
+});
+
+function switchFolder(id, btn){
+  document.querySelectorAll('.folder-section').forEach(f=>f.classList.remove('active'));
+  document.querySelectorAll('.folder-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+const badgeMap = {available:'&#x2705;&#xFE0E; Available in data room',request:'&#x1F4E7;&#xFE0E; Request from Zamanyathi',restricted:'&#x1F512;&#xFE0E; Restricted — proof of funds required'};
+
+function openDoc(name, folder, desc, status){
+  document.getElementById('docContent').innerHTML = `
+    <div class="d-tag">${folder}</div>
+    <div class="d-title">${name}</div>
+    <div class="d-sub">${badgeMap[status]||''}</div>
+    <div class="d-desc">${desc}</div>
+    <div class="d-actions">
+      <button class="d-btn primary" onclick="requestDoc('${name}')">&#x1F4E7;&#xFE0E; Request Document</button>
+      <button class="d-btn" onclick="closeDocDrawer()">Close</button>
+    </div>
+    <button class="d-close" onclick="closeDocDrawer()">&#x2715; Dismiss</button>
+  `;
+  document.getElementById('docDrawer').classList.add('open');
+}
+
+function closeDocDrawer(){ document.getElementById('docDrawer').classList.remove('open'); }
+
+function requestDoc(name){
+  const nda = JSON.parse(localStorage.getItem('mzl_nda')||'{}');
+  fetch(APPS_SCRIPT_URL,{
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'documentRequest', document:name, requester:nda.name||'Unknown', email:nda.email||'', timestamp:new Date().toISOString()})
+  });
+  alert(`Document request sent to Zamanyathi Lisetti.\n\nDocument: ${name}\nYou will be contacted at ${nda.email||'your email'} within 48 hours.`);
+  closeDocDrawer();
+}
+</script>
+</body>
+</html>
