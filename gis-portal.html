@@ -394,23 +394,21 @@ body{background:#0a0f0d;overflow-x:hidden;padding-bottom:70px;}
   <p>&#x1F447;&#xFE0E; Tap any zone on the map for details</p>
 </div>
 
-<!-- FIELD COLLECTION CTA -->
-<div style="padding:12px 14px;background:#0f1a13;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;align-items:center;">
-  <div style="flex:1;">
-    <div style="font-size:12px;color:#fff;font-weight:600;">Are you in the field?</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Capture on-site GIS data with GPS</div>
-  </div>
-  <button onclick="location.href='field-collect.html'" style="padding:9px 16px;border-radius:10px;border:1px solid #c9a84c;background:rgba(201,168,76,0.12);color:#c9a84c;font-size:12px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">
-    &#x1F4CD;&#xFE0E; Field Form
-  </button>
+<!-- QUICK LINKS BAR -->
+<div style="padding:10px 14px;background:#0a0f0d;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;">
+  <button onclick="location.href='field-collect.html'" style="flex-shrink:0;padding:8px 14px;border-radius:10px;border:1px solid #c9a84c;background:rgba(201,168,76,0.1);color:#c9a84c;font-size:11px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">&#x1F4CD;&#xFE0E; Field Form</button>
+  <button onclick="location.href='compliance.html'" style="flex-shrink:0;padding:8px 14px;border-radius:10px;border:1px solid #ef4444;background:rgba(239,68,68,0.1);color:#f87171;font-size:11px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">&#x26A0;&#xFE0E; Compliance</button>
+  <button onclick="location.href='data-room.html'" style="flex-shrink:0;padding:8px 14px;border-radius:10px;border:1px solid #3b82f6;background:rgba(59,130,246,0.1);color:#60a5fa;font-size:11px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">&#x1F512;&#xFE0E; Data Room</button>
+  <button onclick="location.href='community.html'" style="flex-shrink:0;padding:8px 14px;border-radius:10px;border:1px solid #22c55e;background:rgba(34,197,94,0.1);color:#4ade80;font-size:11px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">&#x1F91D;&#xFE0E; Community</button>
+  <button onclick="location.href='operations.html'" style="flex-shrink:0;padding:8px 14px;border-radius:10px;border:1px solid #a855f7;background:rgba(168,85,247,0.1);color:#c084fc;font-size:11px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">&#x1F4CA;&#xFE0E; Operations</button>
 </div>
 
 <!-- NAV -->
 <div class="nav">
   <div onclick="location.href='index.html'">Home</div>
-  <div onclick="location.href='index.html'">Submit</div>
-  <div onclick="location.href='index.html'">Citizen</div>
-  <div onclick="location.href='index.html'">Invest</div>
+  <div onclick="location.href='compliance.html'">Comply</div>
+  <div onclick="location.href='community.html'">Community</div>
+  <div onclick="location.href='invest.html'">Invest</div>
   <div class="active">GIS</div>
 </div>
 
@@ -740,13 +738,13 @@ const miningZones = [{
   commodities:"Platinum · Palladium · Rhodium · Gold · Ruthenium · Iridium · Chrome · Nickel · Copper",
   employment:"1 600 at steady state"
 },{
-  name:"Rhenosterkraal 132JP – Prospecting Right",
+  name:"Rhenosterkraal 132JP – Prospecting Right (ACCEPTED)",
   coords:[[-24.99497,26.961034],[-24.975871,26.99910],[-25.02725,26.928368],[-25.05159,26.989401]],
-  area:"Bojanala District, North West Province",
-  status:"Prospecting Right Application – Section 16 MPRDA",
+  area:"Mankwe District, North West Province",
+  status:"DMRE Accepted · Section 16 MPRDA · Ref: NW 30/5/1/1/2/15265 PR",
   capital:"Prospecting phase",
-  notes:"Proposed prospecting right area for Farm Rhenosterkraal 132JP in the Magisterial District of Bojanala. Applicant: Rhenosterkraal Minerals (Pty) Ltd. 3 055 hectares. Topo Maps Ref: 2426. Coordinates WGS84. Excludes 100m buffer from public roads, railways, cemeteries and residential areas per Section 42(2)(b) MPRDA & Health and Safety Act No. 29 of 1996.",
-  commodities:"Chrome · Iron Ore · Andalusite · Gold · Limestone · Nickel · Uranium · Vanadium · Rare Earth Minerals · PGMs",
+  notes:"Application OFFICIALLY ACCEPTED by DMRE North West Region (16 March 2026). Farm Rhenosterkraal 132JP, Mankwe Magisterial District. 3 055ha. Commodities: Nickel, Uranium, Vanadium, Rare Earths, PGMs, Gold, Limestone, Chrome, Iron Ore, Andalusite. DEADLINE: Land restitution consultation — 28 April 2026 (OVERDUE). BEE documents — 10 June 2026. Contact: Ms Zamanyathi Lisetti (061 512 9042) · mzilikazicorp@outlook.com",
+  commodities:"Nickel · Uranium · Vanadium · Rare Earths · PGMs · Gold · Limestone · Chrome · Iron Ore · Andalusite",
   employment:"Prospecting phase — TBD"
 }];
 miningZones.forEach(z => addPoly('mining', z.coords, z, false));
@@ -847,11 +845,14 @@ out geom qt 30;`;
 
 function loadLandFallback(){
   const fallback = [
-    {name:"Sekhukhune Land Claim Area",coords:[[-25.0,29.2],[-25.0,29.6],[-25.3,29.6],[-25.3,29.2]],area:"Greater Sekhukhune, Limpopo",status:"Land Claim",notes:"Community land claim area under DALRRD review.",source:"Fallback data"},
-    {name:"Blue Ridge Surface Rights – 6500ha",coords:[[-25.18,29.50],[-25.18,29.62],[-25.30,29.62],[-25.30,29.50]],area:"Groblersdal, Limpopo",status:"Title Deed: T048517/2008",notes:"Surface rights held by Blue Ridge Platinum. Deed of Transfer filed.",source:"Title Deed data"}
+    {name:"Blue Ridge Surface Rights – 6 500ha",coords:[[-25.18,29.50],[-25.18,29.62],[-25.30,29.62],[-25.30,29.50]],area:"Groblersdal, Limpopo",status:"Title Deed: T048517/2008",notes:"Surface rights owned by Blue Ridge Platinum. Deed of Transfer T048517/2008 filed.",source:"Title Deed"},
+    {name:"Rhenosterkraal – 3 055ha",coords:[[-24.99497,26.961034],[-24.975871,26.99910],[-25.02725,26.928368],[-25.05159,26.989401]],area:"Mankwe, North West",status:"DMRE Accepted — Ref: NW 30/5/1/1/2/15265 PR",notes:"Prospecting right ACCEPTED 16 March 2026. Deadline: BEE documents 10 June 2026.",source:"DMRE Letter"},
+    {name:"Tovey Lodge — Farm Tovey Portion 5",coords:[[-22.32,29.99],[-22.32,30.06],[-22.37,30.06],[-22.37,29.99]],area:"Musina, Limpopo",status:"Available — Tourism / Hospitality",notes:"171ha. 11-room lodge, waterpark (2 000 capacity), hospital licence 5ha, water licence, 2 boreholes. SEZ zone near Beit Bridge. R572 Pontrift Road.",source:"Tovey Lodge"},
+    {name:"Farm Munnichshausen Portion 6",coords:[[-22.34,30.06],[-22.34,30.14],[-22.42,30.14],[-22.42,30.06]],area:"Musina, Limpopo",status:"Available — Industrial",notes:"1 177ha. Previous crusher licences — Thavhani & Elmers. Near Beit Bridge. Industrial/logistics potential in SEZ corridor.",source:"Tovey Lodge"},
+    {name:"Bakgaga Community Land Claim",coords:[[-25.28,29.55],[-25.28,29.68],[-25.38,29.68],[-25.38,29.55]],area:"Blue Ridge, Sekhukhune",status:"Active Community Partner",notes:"Bakgagabakopa Community holds shareholding and economic benefit agreement with Blue Ridge Platinum. Rep: Ghoshi Rammupudu Boleu Harry.",source:"MZL Data"}
   ];
   fallback.forEach(z=> addPoly('land', z.coords, z, true));
-  updateCount('land','~');
+  updateCount('land', fallback.length);
 }
 
 /* ── LIVE: SMART CITY (OSM infrastructure nodes) ── */
