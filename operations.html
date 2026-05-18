@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operations – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#050908;
+  --green:#1a3326;
+  --gold:#c9a84c;
+  --red:#ef4444;
+  --amber:#f59e0b;
+  --ok:#22c55e;
+  --blue:#3b82f6;
+  --border:rgba(201,168,76,0.15);
+  --glass:rgba(12,24,18,0.8);
+  --muted:rgba(255,255,255,0.38);
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Space Grotesk',sans-serif;
+}
+body{background:var(--ink);font-family:var(--sans);overflow-x:hidden;padding-bottom:80px;color:#fff;}
+
+/* TOPBAR */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;background:#fff;position:sticky;top:0;z-index:3000;
+}
+.topbar img{height:38px;}
+.topbar h2{font-size:15px;color:var(--green);font-weight:700;}
+
+/* HERO */
+.hero{
+  padding:22px 18px 18px;
+  background:linear-gradient(160deg,#0a1e12 0%,#000 70%);
+  border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'OPS';
+  position:absolute;right:-8px;top:50%;transform:translateY(-50%);
+  font-size:88px;font-weight:700;color:rgba(201,168,76,0.04);
+  letter-spacing:-4px;pointer-events:none;font-family:var(--sans);
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+  border-radius:20px;padding:3px 10px;font-size:10px;color:#fca5a5;
+  font-family:var(--mono);margin-bottom:10px;
+}
+.hero-badge::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:#ef4444;animation:blink 1s step-end infinite;
+}
+@keyframes blink{50%{opacity:0;}}
+.hero h1{font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:3px;}
+.hero p{font-size:11px;color:var(--muted);font-family:var(--mono);}
+
+/* KPI ROW */
+.kpi-row{display:flex;background:#080e0a;border-bottom:1px solid var(--border);}
+.kpi{flex:1;padding:13px 8px;text-align:center;border-right:1px solid var(--border);}
+.kpi:last-child{border-right:none;}
+.kpi-val{font-size:16px;font-weight:700;font-family:var(--mono);}
+.kpi-lbl{font-size:9px;color:var(--muted);font-family:var(--mono);margin-top:2px;text-transform:uppercase;}
+.kpi-val.red{color:var(--red);}
+.kpi-val.amber{color:var(--amber);}
+.kpi-val.green{color:var(--ok);}
+.kpi-val.gold{color:var(--gold);}
+
+/* SECTION LABEL */
+.slbl{
+  padding:14px 14px 6px;font-size:10px;font-weight:600;
+  color:rgba(255,255,255,0.22);letter-spacing:2px;text-transform:uppercase;
+  font-family:var(--mono);
+}
+
+/* CARD */
+.card{
+  margin:0 14px 12px;border-radius:14px;border:1px solid var(--border);
+  background:var(--glass);overflow:hidden;
+}
+
+/* RESTART READINESS */
+.readiness-header{
+  padding:14px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.readiness-title{font-size:14px;font-weight:700;}
+.readiness-pct{
+  font-size:28px;font-weight:700;font-family:var(--mono);color:var(--gold);
+}
+.readiness-arc{
+  width:100%;height:6px;background:rgba(255,255,255,0.06);
+  border-radius:3px;overflow:hidden;margin:0 14px 14px;
+  width:calc(100% - 28px);
+}
+.readiness-fill{
+  height:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--amber),var(--gold),var(--ok));
+  transition:width 1s ease;
+}
+
+/* READINESS ITEMS */
+.r-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.r-item:last-child{border-bottom:none;}
+.r-dot{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+}
+.r-info{flex:1;}
+.r-name{font-size:12px;font-weight:600;color:#fff;}
+.r-sub{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:1px;}
+.r-badge{
+  font-size:9px;font-weight:600;padding:3px 8px;border-radius:20px;
+  border:1px solid;font-family:var(--mono);flex-shrink:0;
+}
+.rb-ready{border-color:var(--ok);color:var(--ok);background:rgba(34,197,94,0.08);}
+.rb-partial{border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,0.08);}
+.rb-needed{border-color:var(--red);color:var(--red);background:rgba(239,68,68,0.08);}
+
+/* CM COST CHART */
+.cost-bar-wrap{padding:12px 14px;}
+.cost-year{
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;
+}
+.cost-yr-lbl{font-size:10px;font-family:var(--mono);color:var(--muted);width:36px;flex-shrink:0;}
+.cost-bar{
+  flex:1;height:22px;background:rgba(255,255,255,0.04);
+  border-radius:4px;overflow:hidden;position:relative;
+}
+.cost-bar-fill{
+  height:100%;border-radius:4px;display:flex;align-items:center;
+  padding-left:8px;font-size:10px;font-family:var(--mono);
+  font-weight:600;color:#000;transition:width 1s ease;
+}
+.cost-bar-fill.high{background:var(--red);}
+.cost-bar-fill.med{background:var(--amber);}
+.cost-bar-fill.low{background:var(--ok);}
+
+/* ACTIVITY ITEMS */
+.act-item{
+  display:flex;gap:10px;padding:11px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.act-item:last-child{border-bottom:none;}
+.act-line{
+  display:flex;flex-direction:column;align-items:center;
+  gap:0;flex-shrink:0;
+}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.act-tail{flex:1;width:1px;background:rgba(255,255,255,0.08);margin-top:3px;}
+.act-info{flex:1;}
+.act-title{font-size:12px;font-weight:600;color:#fff;margin-bottom:2px;}
+.act-meta{font-size:10px;color:var(--muted);font-family:var(--mono);}
+
+/* REPORT FORM */
+.form-field{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.form-field:last-child{border-bottom:none;}
+.form-field label{
+  display:block;font-size:10px;color:var(--muted);
+  font-family:var(--mono);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;
+}
+input,select,textarea{
+  width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);
+  border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;
+  font-family:var(--sans);outline:none;-webkit-appearance:none;
+  transition:border-color 0.2s;
+}
+input:focus,select:focus,textarea:focus{border-color:rgba(201,168,76,0.5);}
+select option{background:#111;}
+textarea{min-height:80px;resize:vertical;line-height:1.6;}
+
+/* SUBMIT BTN */
+.submit-btn{
+  width:calc(100% - 28px);margin:0 14px;padding:13px;border-radius:10px;
+  border:none;background:var(--gold);color:#000;font-size:13px;
+  font-weight:700;font-family:var(--sans);cursor:pointer;
+}
+.submit-btn:active{opacity:0.85;}
+.submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* INFRA GRID */
+.infra-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px;}
+.infra-item{
+  background:rgba(0,0,0,0.3);border:1px solid var(--border);
+  border-radius:10px;padding:11px;
+}
+.infra-icon{font-size:20px;margin-bottom:5px;}
+.infra-name{font-size:11px;font-weight:600;color:#fff;margin-bottom:2px;}
+.infra-status{font-size:10px;font-family:var(--mono);}
+.is-ready{color:var(--ok);}
+.is-partial{color:var(--amber);}
+.is-needed{color:var(--red);}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:85px;left:50%;transform:translateX(-50%);
+  background:var(--green);color:#fff;padding:10px 20px;border-radius:30px;
+  font-size:12px;z-index:9999;display:none;border:1px solid var(--border);
+  font-family:var(--mono);
+}
+
+/* NAV */
+.nav{
+  position:fixed;bottom:0;width:100%;display:flex;
+  background:#fff;border-top:1px solid #ddd;z-index:2000;
+}
+.nav div{
+  flex:1;text-align:center;padding:12px 4px;font-size:11px;
+  color:#6b7280;cursor:pointer;font-family:var(--sans);
+}
+.nav div.active{color:var(--green);font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="logo.png" alt="Mzilikazi Kingdom">
+  <h2>Mzilikazi Kingdom</h2>
+</div>
+
+<div class="hero">
+  <div class="hero-badge">Care & Maintenance — Since 2012</div>
+  <h1>Operations Dashboard</h1>
+  <p>BLUE RIDGE PLATINUM · RESTART READINESS · C&amp;M TRACKER</p>
+</div>
+
+<!-- KPI ROW -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-val amber">67%</div>
+    <div class="kpi-lbl">Restart Ready</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val gold">R30M</div>
+    <div class="kpi-lbl">C&amp;M / Year</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val green">Active</div>
+    <div class="kpi-lbl">Mining Right</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val amber">2044</div>
+    <div class="kpi-lbl">Expiry Year</div>
+  </div>
+</div>
+
+<!-- RESTART READINESS -->
+<div class="slbl">Blue Ridge — Restart Readiness</div>
+<div class="card">
+  <div class="readiness-header">
+    <div class="readiness-title">Overall Readiness</div>
+    <div class="readiness-pct" id="readinessPct">67%</div>
+  </div>
+  <div class="readiness-arc">
+    <div class="readiness-fill" id="readinessFill" style="width:67%"></div>
+  </div>
+
+  <!-- INFRASTRUCTURE -->
+  <div class="r-item">
+    <div class="r-dot" style="background:var(--ok);"></div>
+    <div class="r-info">
+      <div class="r-name">Underground Infrastructure</div>
+      <div class="r-sub">4 levels · 2 000m linear · 450m depth · Fully equipped</div>
+    </div>
+    <span class="r-badge rb-ready">Ready</span>
+  </div>
+  <div class="r-item">
+    <div class="r-dot" style="background:var(--ok);"></div>
+    <div class="r-info">
+      <div class="r-name">Concentrator Plant — 120 000 tpm</div>
+      <div class="r-sub">MF2 plant · Quarterly run by Minopex · Upgradable to 160 000 tpm</div>
+    </div>
+    <span class="r-badge rb-ready">Maintained</span>
+  </div>
+  <div class="r-item">
+    <div class="r-dot" style="background:var(--ok);"></div>
+    <div class="r-info">
+      <div class="r-name">Eskom Power — 2×20 MVA</div>
+      <div class="r-sub">Live ring-feed · Mapog substation · R12M/yr retainer paid</div>
+    </div>
+    <span class="r-badge rb-ready">Live</span>
+  </div>
+  <div class="r-item">
+    <div class="r-dot" style="background:var(--ok);"></div>
+    <div class="r-info">
+      <div class="r-name">Water Supply</div>
+      <div class="r-sub">Boreholes + Loskop Dam canal · Registered water use licence</div>
+    </div>
+    <span class="r-badge rb-ready">Active</span>
+  </div>
+  <div class="r-item">
+    <div class="r-dot" style="background:var(--ok);"></div>
+    <div class="r-info">
+      <div class="r-name">Security & Care Team</div>
+      <div class="r-sub">22 permanent staff · Bidvest outsourced security · Full-time</div>
+    </div>
+    <span class="r-badge rb-ready">Active</span>
+  </div>
+  <div class="r-item">
+    <div class="r-dot" style="background:var(--ok);"></div>
+    <div class="r-info">
+      <div class="r-name">Impala Off-take Agreement</div>
+      <div class="r-sub">Life-of-mine PGM off-take · Impala Refinery Services (IRS)</div>
+    </div>
+    <span class="r-badge rb-ready">In Place</span>
+  </div>
+  <div class="r-item">
+    <div class="r-dot" style="background:var(--ok);"></div>
+    <div class="r-info">
+      <div class="r-name">Rehabilitation Guarantee</div>
+      <div class="r-sub">Guardrisk R12 807 105 · Closure provision R13M in audited accounts</div>
+    </div>
+    <span class="r-badge rb-ready">Funded</span>
+  </div>
+  <div class="r-item">
+    <div class="r-dot" style="background:var(--amber);"></div>
+    <div class="r-info">
+      <div class="r-name">Restart Capital — R2.38B</div>
+      <div class="r-sub">Investment required to restart from care &amp; maintenance to production</div>
+    </div>
+    <span class="r-badge rb-partial">Pending</span>
+  </div>
+  <div class="r-item">
+    <div class="r-dot" style="background:var(--amber);"></div>
+    <div class="r-info">
+      <div class="r-name">Share Capital Sale</div>
+      <div class="r-sub">100% issued share capital available · Ring-fenced proof of funds required</div>
+    </div>
+    <span class="r-badge rb-partial">In Process</span>
+  </div>
+  <div class="r-item">
+    <div class="r-dot" style="background:var(--red);"></div>
+    <div class="r-info">
+      <div class="r-name">Workforce Mobilisation</div>
+      <div class="r-sub">1 600 jobs at steady state · Recruitment pipeline not yet initiated</div>
+    </div>
+    <span class="r-badge rb-needed">Not Started</span>
+  </div>
+  <div class="r-item">
+    <div class="r-dot" style="background:var(--red);"></div>
+    <div class="r-info">
+      <div class="r-name">Mine Plan Finalisation (BP 3.5)</div>
+      <div class="r-sub">160 000 ROM tpm · 140 000 PGM oz/year · Requires investor sign-off</div>
+    </div>
+    <span class="r-badge rb-needed">Pending Funding</span>
+  </div>
+</div>
+
+<!-- INFRASTRUCTURE STATUS -->
+<div class="slbl">Infrastructure Status</div>
+<div class="card">
+  <div class="infra-grid">
+    <div class="infra-item">
+      <div class="infra-icon">&#x26A1;&#xFE0E;</div>
+      <div class="infra-name">Eskom Power</div>
+      <div class="infra-status is-ready">&#x25CF; Live ring-feed</div>
+    </div>
+    <div class="infra-item">
+      <div class="infra-icon">&#x1F3ED;&#xFE0E;</div>
+      <div class="infra-name">Concentrator Plant</div>
+      <div class="infra-status is-ready">&#x25CF; Quarterly run</div>
+    </div>
+    <div class="infra-item">
+      <div class="infra-icon">&#x1F4A7;&#xFE0E;</div>
+      <div class="infra-name">Water Supply</div>
+      <div class="infra-status is-ready">&#x25CF; Borehole + Canal</div>
+    </div>
+    <div class="infra-item">
+      <div class="infra-icon">&#x1F6E0;&#xFE0E;</div>
+      <div class="infra-name">Mobile Equipment</div>
+      <div class="infra-status is-ready">&#x25CF; Workshops active</div>
+    </div>
+    <div class="infra-item">
+      <div class="infra-icon">&#x1F52C;&#xFE0E;</div>
+      <div class="infra-name">Fire Assay Lab</div>
+      <div class="infra-status is-ready">&#x25CF; On-site</div>
+    </div>
+    <div class="infra-item">
+      <div class="infra-icon">&#x1F4BB;&#xFE0E;</div>
+      <div class="infra-name">Ventilation Systems</div>
+      <div class="infra-status is-ready">&#x25CF; Weekly run</div>
+    </div>
+    <div class="infra-item">
+      <div class="infra-icon">&#x1F3E2;&#xFE0E;</div>
+      <div class="infra-name">Mine Offices</div>
+      <div class="infra-status is-ready">&#x25CF; Operational</div>
+    </div>
+    <div class="infra-item">
+      <div class="infra-icon">&#x1F9F1;&#xFE0E;</div>
+      <div class="infra-name">Conveyor Decline</div>
+      <div class="infra-status is-partial">&#x25CF; Under review</div>
+    </div>
+  </div>
+</div>
+
+<!-- C&M COST TRACKER -->
+<div class="slbl">Care & Maintenance Cost History</div>
+<div class="card">
+  <div class="cost-bar-wrap">
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2012</div>
+      <div class="cost-bar"><div class="cost-bar-fill high" style="width:100%">R100M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2013</div>
+      <div class="cost-bar"><div class="cost-bar-fill high" style="width:90%">R90M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2014</div>
+      <div class="cost-bar"><div class="cost-bar-fill high" style="width:80%">R80M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2015</div>
+      <div class="cost-bar"><div class="cost-bar-fill med" style="width:70%">R70M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2016</div>
+      <div class="cost-bar"><div class="cost-bar-fill med" style="width:60%">R60M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2017</div>
+      <div class="cost-bar"><div class="cost-bar-fill med" style="width:55%">R55M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2018</div>
+      <div class="cost-bar"><div class="cost-bar-fill med" style="width:50%">R50M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2019</div>
+      <div class="cost-bar"><div class="cost-bar-fill low" style="width:30%">R30M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2020</div>
+      <div class="cost-bar"><div class="cost-bar-fill low" style="width:30%">R30M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2021</div>
+      <div class="cost-bar"><div class="cost-bar-fill low" style="width:30%">R30M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2022</div>
+      <div class="cost-bar"><div class="cost-bar-fill low" style="width:30%">R30M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2023</div>
+      <div class="cost-bar"><div class="cost-bar-fill low" style="width:30%">R30M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2024</div>
+      <div class="cost-bar"><div class="cost-bar-fill low" style="width:30%">R30M</div></div>
+    </div>
+    <div class="cost-year">
+      <div class="cost-yr-lbl">2025</div>
+      <div class="cost-bar"><div class="cost-bar-fill low" style="width:30%">R30M</div></div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:8px;text-align:right;">
+      Total C&amp;M spend 2012–2025: est. R740M+
+    </div>
+  </div>
+</div>
+
+<!-- ACTIVITY LOG -->
+<div class="slbl">Operational Activity Log</div>
+<div class="card">
+  <div class="act-item">
+    <div class="act-line"><div class="act-dot" style="background:var(--ok);"></div><div class="act-tail"></div></div>
+    <div class="act-info">
+      <div class="act-title">Weekly Ventilation Run</div>
+      <div class="act-meta">All underground equipment serviced · Water pumped to surface · May 2026</div>
+    </div>
+  </div>
+  <div class="act-item">
+    <div class="act-line"><div class="act-dot" style="background:var(--ok);"></div><div class="act-tail"></div></div>
+    <div class="act-info">
+      <div class="act-title">Concentrator Plant Quarterly Run</div>
+      <div class="act-meta">Minopex ran mills using water · April 2026</div>
+    </div>
+  </div>
+  <div class="act-item">
+    <div class="act-line"><div class="act-dot" style="background:var(--gold);"></div><div class="act-tail"></div></div>
+    <div class="act-info">
+      <div class="act-title">Eskom Annual Retainer Paid</div>
+      <div class="act-meta">R12 million · Power availability retained · March 2026</div>
+    </div>
+  </div>
+  <div class="act-item">
+    <div class="act-line"><div class="act-dot" style="background:var(--blue);"></div><div class="act-tail"></div></div>
+    <div class="act-info">
+      <div class="act-title">GIS Field Inspection — Blue Ridge</div>
+      <div class="act-meta">Surface infrastructure survey · Ref: MK-FIELD-092341 · May 2026</div>
+    </div>
+  </div>
+  <div class="act-item">
+    <div class="act-line"><div class="act-dot" style="background:var(--amber);"></div><div class="act-tail"></div></div>
+    <div class="act-info">
+      <div class="act-title">Investor Interest Received</div>
+      <div class="act-meta">3 expressions of interest logged · Data room access requested · May 2026</div>
+    </div>
+  </div>
+  <div class="act-item">
+    <div class="act-line"><div class="act-dot" style="background:var(--red);"></div></div>
+    <div class="act-info">
+      <div class="act-title">Care & Maintenance Since</div>
+      <div class="act-meta">Blue Ridge placed on C&amp;M following AQP cash flow collapse · 2012</div>
+    </div>
+  </div>
+</div>
+
+<!-- MONTHLY REPORT FORM -->
+<div class="slbl">Submit Monthly Report</div>
+<div class="card">
+  <div class="form-field">
+    <label>Report Month</label>
+    <input type="month" id="rMonth">
+  </div>
+  <div class="form-field">
+    <label>Prepared By</label>
+    <input id="rAuthor" placeholder="Your name">
+  </div>
+  <div class="form-field">
+    <label>C&amp;M Expenditure (R)</label>
+    <input type="number" id="rCost" placeholder="e.g. 2500000">
+  </div>
+  <div class="form-field">
+    <label>Eskom Status</label>
+    <select id="rEskom">
+      <option>Live — Power available</option>
+      <option>Retainer payment due</option>
+      <option>Issue — Escalate</option>
+    </select>
+  </div>
+  <div class="form-field">
+    <label>Plant Status</label>
+    <select id="rPlant">
+      <option>Maintained — Quarterly run complete</option>
+      <option>Quarterly run due</option>
+      <option>Issue identified</option>
+    </select>
+  </div>
+  <div class="form-field">
+    <label>Security Status</label>
+    <select id="rSecurity">
+      <option>Normal — 22 staff + Bidvest active</option>
+      <option>Reduced — below complement</option>
+      <option>Incident reported</option>
+    </select>
+  </div>
+  <div class="form-field">
+    <label>Investor Activity</label>
+    <select id="rInvestor">
+      <option>No new activity</option>
+      <option>New inquiry received</option>
+      <option>Data room access requested</option>
+      <option>Meeting scheduled</option>
+      <option>Offer received</option>
+    </select>
+  </div>
+  <div class="form-field">
+    <label>Notes &amp; Issues</label>
+    <textarea id="rNotes" placeholder="Any issues, incidents, or notable observations this month..."></textarea>
+  </div>
+</div>
+
+<button class="submit-btn" id="submitBtn" onclick="submitReport()">
+  &#x1F4E4;&#xFE0E; Submit Monthly Report
+</button>
+
+<div id="toast"></div>
+
+<div class="nav">
+  <div onclick="location.href='index.html'">Home</div>
+  <div onclick="location.href='gis-portal.html'">GIS</div>
+  <div onclick="location.href='compliance.html'">Comply</div>
+  <div class="active">Ops</div>
+  <div onclick="location.href='client-portal.html'">Portal</div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3cpb5rUI2uzst5cphvS5GsRCOedqazwoT2NNSSSKlamBAm8kcFtiLlBKKjT7-8G8IJw/exec';
+
+// Auto-fill current month
+const now = new Date();
+document.getElementById('rMonth').value = now.toISOString().slice(0,7);
+
+// Animate readiness bar on load
+setTimeout(()=>{
+  const fill = document.getElementById('readinessFill');
+  fill.style.width = '67%';
+}, 300);
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.style.display = 'block';
+  clearTimeout(t._t);
+  t._t = setTimeout(()=> t.style.display='none', 3000);
+}
+
+async function submitReport(){
+  const author = document.getElementById('rAuthor').value.trim();
+  const month  = document.getElementById('rMonth').value;
+  if(!author || !month){
+    toast('&#x26A0;&#xFE0E; Please fill in your name and report month');
+    return;
+  }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const payload = {
+    action:      'monthlyOpsReport',
+    month,
+    author,
+    cost:        document.getElementById('rCost').value,
+    eskom:       document.getElementById('rEskom').value,
+    plant:       document.getElementById('rPlant').value,
+    security:    document.getElementById('rSecurity').value,
+    investor:    document.getElementById('rInvestor').value,
+    notes:       document.getElementById('rNotes').value,
+    timestamp:   new Date().toISOString(),
+    ref:         'MZL-OPS-' + Date.now().toString().slice(-6)
+  };
+
+  try{
+    await fetch(APPS_SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    toast('&#x2705;&#xFE0E; Report submitted successfully');
+    document.getElementById('rNotes').value = '';
+    document.getElementById('rCost').value  = '';
+  } catch(e){
+    toast('&#x274C;&#xFE0E; Submission failed. Check connection.');
+  }
+  btn.disabled = false;
+  btn.textContent = '&#x1F4E4;&#xFE0E; Submit Monthly Report';
+}
+</script>
+</body>
+</html>
