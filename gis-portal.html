@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIS Intelligence Portal – South Africa · Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif;}
+:root{
+  --green:#1f3c2f;--green-light:#2d5440;--gold:#c9a84c;
+  --mining:#f59e0b;--agri:#22c55e;--land:#3b82f6;--smart:#a855f7;
+  --glass:rgba(0,0,0,0.45);--glass-border:rgba(255,255,255,0.10);
+}
+body{background:#0a0f0d;overflow-x:hidden;padding-bottom:70px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:white;position:sticky;top:0;z-index:3000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:15px;color:var(--green);font-weight:600;}
+.page-header{background:linear-gradient(135deg,var(--green) 0%,#0d1f17 100%);padding:18px;border-bottom:1px solid rgba(201,168,76,0.3);}
+.page-header h1{color:#fff;font-size:18px;font-weight:600;margin-bottom:4px;}
+.page-header p{color:rgba(255,255,255,0.6);font-size:12px;}
+.layer-bar{display:flex;gap:8px;padding:12px;overflow-x:auto;background:#0f1a13;border-bottom:1px solid var(--glass-border);scrollbar-width:none;}
+.layer-bar::-webkit-scrollbar{display:none;}
+.layer-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:20px;border:1px solid;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.2s;background:rgba(0,0,0,0.4);}
+.layer-btn .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.layer-btn.mining{border-color:var(--mining);color:var(--mining);}
+.layer-btn.mining.on{background:var(--mining);color:#000;}
+.layer-btn.mining .dot{background:var(--mining);}
+.layer-btn.agri{border-color:var(--agri);color:var(--agri);}
+.layer-btn.agri.on{background:var(--agri);color:#000;}
+.layer-btn.agri .dot{background:var(--agri);}
+.layer-btn.land{border-color:var(--land);color:var(--land);}
+.layer-btn.land.on{background:var(--land);color:#fff;}
+.layer-btn.land .dot{background:var(--land);}
+.layer-btn.smart{border-color:var(--smart);color:var(--smart);}
+.layer-btn.smart.on{background:var(--smart);color:#fff;}
+.layer-btn.smart .dot{background:var(--smart);}
+#fieldPinsBtn.on{background:rgba(201,168,76,0.25)!important;border-color:#c9a84c!important;}
+#fieldPinsBtn:not(.on){background:rgba(0,0,0,0.4)!important;color:rgba(201,168,76,0.45)!important;border-color:rgba(201,168,76,0.3)!important;}
+#fieldPinsBtn:not(.on) .dot{background:rgba(201,168,76,0.35)!important;}
+#map{width:100%;height:calc(100vh - 310px);min-height:340px;background:#0f1a13;}
+.info-panel{background:var(--glass);backdrop-filter:blur(20px);border-top:1px solid var(--glass-border);padding:14px;min-height:80px;display:none;}
+.info-panel.visible{display:block;}
+.info-panel .zone-tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-bottom:8px;}
+.info-panel h3{color:#fff;font-size:14px;margin-bottom:4px;}
+.info-panel p{color:rgba(255,255,255,0.65);font-size:12px;line-height:1.6;}
+.info-panel .meta{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;}
+.info-panel .meta span{font-size:11px;color:rgba(255,255,255,0.5);}
+.info-panel .meta strong{color:rgba(255,255,255,0.9);}
+.stats-row{display:flex;background:#0f1a13;border-top:1px solid var(--glass-border);}
+.stat-box{flex:1;padding:12px 8px;text-align:center;border-right:1px solid var(--glass-border);}
+.stat-box:last-child{border-right:none;}
+.stat-box .val{font-size:18px;font-weight:600;color:var(--gold);}
+.stat-box .lbl{font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;}
+.map-hint{padding:14px;background:#0f1a13;border-top:1px solid var(--glass-border);text-align:center;}
+.map-hint p{color:rgba(255,255,255,0.35);font-size:12px;}
+.live-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:20px;padding:3px 10px;font-size:10px;color:#4ade80;margin-top:5px;}
+.live-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3;}}
+.osm-count{font-size:10px;color:rgba(255,255,255,0.3);margin-left:4px;font-weight:400;}
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:white;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:14px;font-size:13px;color:#6b7280;cursor:pointer;}
+.nav div.active{color:var(--green);font-weight:600;}
+.leaflet-popup-content-wrapper{background:rgba(15,26,19,0.95)!important;border:1px solid var(--glass-border)!important;border-radius:12px!important;color:#fff!important;box-shadow:0 8px 32px rgba(0,0,0,0.6)!important;}
+.leaflet-popup-tip{background:rgba(15,26,19,0.95)!important;}
+.leaflet-popup-content{color:#fff!important;font-family:Inter,sans-serif!important;}
+.leaflet-control-zoom a{background:rgba(15,26,19,0.9)!important;color:#fff!important;border-color:rgba(255,255,255,0.15)!important;}
+.leaflet-control-attribution{background:rgba(0,0,0,0.6)!important;color:rgba(255,255,255,0.4)!important;font-size:9px!important;}
+/* ── VIEW TOGGLE (scrollable bottom bar) ── */
+.map-wrapper{position:relative;}
+.view-toggle{
+  position:absolute;bottom:0;left:0;right:0;z-index:1000;
+  display:flex;overflow-x:auto;scrollbar-width:none;
+  background:rgba(8,14,11,0.95);border-top:1px solid rgba(255,255,255,0.09);
+  backdrop-filter:blur(12px);
+}
+.view-toggle::-webkit-scrollbar{display:none;}
+.vt-btn{flex-shrink:0;padding:9px 15px;font-size:12px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;border:none;border-right:1px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.45);transition:all 0.2s;white-space:nowrap;}
+.vt-btn:last-child{border-right:none;}
+.vt-btn.active{background:rgba(255,255,255,0.1);color:#fff;}
+.vt-btn.geo-btn{color:#f59e0b;}.vt-btn.geo-btn.active{background:rgba(245,158,11,0.15);color:#fbbf24;}
+.vt-btn.min-btn{color:#fcd34d;}.vt-btn.min-btn.active{background:rgba(252,211,77,0.12);color:#fde68a;}
+.vt-btn.farm-btn{color:#4ade80;}.vt-btn.farm-btn.active{background:rgba(74,222,128,0.12);color:#86efac;}
+.vt-btn.wat-btn{color:#67e8f9;}.vt-btn.wat-btn.active{background:rgba(103,232,249,0.12);color:#a5f3fc;}
+.vt-btn.sa-btn{color:#00bfff;font-weight:700;}.vt-btn.sa-btn.active{background:rgba(0,191,255,0.15);color:#38bdf8;border-bottom:2px solid #00bfff;}
+.vt-btn.labels-btn{color:#7dd3fc;}.vt-btn.labels-btn.active{background:rgba(56,189,248,0.15);color:#38bdf8;}
+/* ── MINERAL FILTER BAR ── */
+#mineralFilter{display:none;gap:6px;padding:8px 12px;overflow-x:auto;background:#050a07;border-bottom:1px solid rgba(255,255,255,0.05);scrollbar-width:none;}
+#mineralFilter.show{display:flex;}
+#mineralFilter::-webkit-scrollbar{display:none;}
+.mf-btn{flex-shrink:0;padding:5px 11px;border-radius:12px;border:1px solid;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;background:rgba(0,0,0,0.5);font-family:Inter,sans-serif;transition:all 0.2s;opacity:0.6;}
+.mf-btn.active{opacity:1;}
+/* ── OTHER CONTROLS ── */
+#zoomMineBtn{position:absolute;top:10px;right:10px;z-index:1000;background:rgba(10,15,13,0.88);border:1px solid rgba(245,158,11,0.5);color:#fbbf24;font-size:11px;font-weight:600;padding:7px 12px;border-radius:10px;cursor:pointer;font-family:Inter,sans-serif;backdrop-filter:blur(10px);white-space:nowrap;box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+#terrainToggle{position:absolute;top:48px;right:10px;z-index:1000;background:rgba(10,15,13,0.88);border:1px solid rgba(56,189,248,0.4);color:#7dd3fc;font-size:11px;font-weight:600;padding:7px 12px;border-radius:10px;cursor:pointer;font-family:Inter,sans-serif;backdrop-filter:blur(10px);white-space:nowrap;display:none;}
+#terrainToggle.show{display:block;}
+#terrainToggle.on{background:rgba(56,189,248,0.15);color:#38bdf8;}
+.science-bar{background:#080e0b;border-top:1px solid rgba(255,255,255,0.04);}
+.science-label{font-size:9px;color:rgba(255,255,255,0.22);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap;align-self:center;padding:0 4px 0 2px;flex-shrink:0;}
+.layer-btn.topo{border-color:#65a30d;color:#84cc16;}.layer-btn.topo.on{background:#84cc16;color:#000;}.layer-btn.topo .dot{background:#84cc16;}
+.layer-btn.ndvi{border-color:#15803d;color:#4ade80;}.layer-btn.ndvi.on{background:#4ade80;color:#000;}.layer-btn.ndvi .dot{background:#4ade80;}
+.layer-btn.sentinel2{border-color:#0369a1;color:#38bdf8;}.layer-btn.sentinel2.on{background:#38bdf8;color:#000;}.layer-btn.sentinel2 .dot{background:#38bdf8;}
+.layer-btn.landsat{border-color:#6d28d9;color:#a78bfa;}.layer-btn.landsat.on{background:#a78bfa;color:#000;}.layer-btn.landsat .dot{background:#a78bfa;}
+.layer-btn.grace{border-color:#0e7490;color:#67e8f9;}.layer-btn.grace.on{background:#67e8f9;color:#000;}.layer-btn.grace .dot{background:#67e8f9;}
+.layer-btn.sar{border-color:#be123c;color:#fb7185;}.layer-btn.sar.on{background:#fb7185;color:#000;}.layer-btn.sar .dot{background:#fb7185;}
+#sciActiveBadge{display:none;padding:7px 14px;background:#0a0f0d;border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:rgba(255,255,255,0.55);text-align:center;line-height:1.5;}
+#sciActiveBadge.show{display:block;}
+.layer-btn.err{opacity:0.45;border-style:dashed!important;}
+.layer-btn.loading{opacity:0.6;pointer-events:none;}
+.layer-btn.loading .dot{border:2px solid currentColor;border-top-color:transparent;background:transparent;border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+/* ── MINERAL LEGEND (info area) ── */
+.leg-row{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:7px;cursor:pointer;transition:background 0.15s;}
+.leg-row:active,.leg-row.active{background:rgba(255,255,255,0.08);}
+.leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,0.25);}
+.leg-lbl{font-size:12px;color:rgba(255,255,255,0.65);}
+/* ── STREET VIEW BUTTON ── */
+.sv-btn{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:6px 12px;border-radius:8px;border:1px solid rgba(0,191,255,0.4);background:rgba(0,191,255,0.1);color:#67e8f9;font-size:11px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;}
+.sv-btn:active{background:rgba(0,191,255,0.2);}
+/* ── GPS BUTTON ── */
+#gpsBtn{position:absolute;bottom:44px;left:10px;z-index:1000;background:rgba(10,15,13,0.92);border:1px solid rgba(59,130,246,0.6);color:#60a5fa;font-size:11px;font-weight:600;padding:7px 12px;border-radius:10px;cursor:pointer;font-family:Inter,sans-serif;backdrop-filter:blur(10px);white-space:nowrap;box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+#gpsBtn.locating{border-color:#fbbf24;color:#fbbf24;animation:gpsBtnPulse 1s ease-in-out infinite;}
+@keyframes gpsBtnPulse{0%,100%{opacity:1}50%{opacity:0.5;}}
+@keyframes gpsDot{0%,100%{box-shadow:0 0 0 3px rgba(59,130,246,0.4)}50%{box-shadow:0 0 0 8px rgba(59,130,246,0.1);}}
+/* ── NEARBY PANEL ── */
+#nearbyPanel{display:none;background:#080e0b;border-top:1px solid rgba(59,130,246,0.2);padding:12px 14px;}
+#nearbyPanel .np-head{font-size:9px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;}
+.np-row{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;}
+.np-row:last-child{border-bottom:none;}
+.np-name{flex:1;font-size:11px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.np-type{font-size:10px;color:rgba(255,255,255,0.4);}
+.np-dist{font-size:11px;color:#c9a84c;font-weight:700;flex-shrink:0;}
+/* ── RAIL LAYER BUTTON ── */
+.layer-btn.rail{border-color:#ef4444;color:#ef4444;}
+.layer-btn.rail.on{background:#ef4444;color:#fff;}
+.layer-btn.rail .dot{background:#ef4444;}
+/* ── CLUSTER OVERRIDE ── */
+.marker-cluster{background:rgba(31,60,47,0.85)!important;}
+.marker-cluster div{background:#1f3c2f!important;color:#fbbf24!important;font-family:Inter,sans-serif!important;font-weight:700!important;font-size:12px!important;border:2px solid #c9a84c!important;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="logo.png" alt="Mzilikazi Kingdom">
+  <h2>Mzilikazi Kingdom</h2>
+</div>
+
+<div class="page-header">
+  <h1>&#x1F5FA;&#xFE0E; GIS Intelligence Portal</h1>
+  <p>South Africa · Full mineral · farming · water · geological database</p>
+  <div class="live-badge">Live OSM · Sekhukhune + National SA Coverage</div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-box"><div class="val">2</div><div class="lbl">Mining Zones</div></div>
+  <div class="stat-box"><div class="val">9 555</div><div class="lbl">Hectares</div></div>
+  <div class="stat-box"><div class="val">9.14M</div><div class="lbl">PGM Oz Resource</div></div>
+  <div class="stat-box"><div class="val">R2.8B</div><div class="lbl">Infrastructure</div></div>
+</div>
+
+<!-- KINGDOM LAYER CONTROLS -->
+<div class="layer-bar">
+  <button class="layer-btn mining on" onclick="toggleLayer('mining',this)"><span class="dot"></span> Mining</button>
+  <button class="layer-btn agri on" onclick="toggleLayer('agri',this)"><span class="dot"></span> Agriculture <span class="osm-count" id="agriCount"></span></button>
+  <button class="layer-btn land on" onclick="toggleLayer('land',this)"><span class="dot"></span> Land <span class="osm-count" id="landCount"></span></button>
+  <button class="layer-btn smart on" onclick="toggleLayer('smart',this)"><span class="dot"></span> Smart City</button>
+  <button class="layer-btn on" id="fieldPinsBtn" onclick="toggleFieldPins()" style="border-color:#c9a84c;color:#c9a84c;background:rgba(201,168,76,0.1);"><span class="dot" style="background:#c9a84c;"></span> Field Pins</button>
+</div>
+
+<!-- SCIENCE / REMOTE SENSING LAYERS -->
+<div class="layer-bar science-bar">
+  <span class="science-label">Science</span>
+  <button class="layer-btn ndvi" title="NDVI — vegetation health via NASA MODIS Terra" onclick="toggleSciLayer('ndvi',this)"><span class="dot"></span> NDVI</button>
+  <button class="layer-btn sentinel2" title="ESA Sentinel-2 true colour 10m" onclick="toggleSciLayer('sentinel2',this)"><span class="dot"></span> Sentinel-2</button>
+  <button class="layer-btn landsat" title="Landsat surface mineralogy" onclick="toggleSciLayer('landsat',this)"><span class="dot"></span> Landsat</button>
+  <button class="layer-btn grace" title="GRACE-FO groundwater drought indicator" onclick="toggleSciLayer('grace',this)"><span class="dot"></span> GRACE</button>
+  <button class="layer-btn sar" title="SMAP SAR soil moisture" onclick="toggleSciLayer('sar',this)"><span class="dot"></span> SAR</button>
+  <button class="layer-btn rail" title="Rail corridors, ports and logistics hubs" onclick="toggleRailLayer(this)"><span class="dot"></span> Rail &amp; Ports</button>
+</div>
+
+<!-- SA SUB-MODE BAR (shown in SA view) -->
+<div id="saBar" style="display:none;background:#050a07;border-bottom:1px solid rgba(255,255,255,0.05);padding:8px 12px;">
+  <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;">
+    <button class="sa-mode-btn active" id="saHybridBtn"  onclick="setSAMode('hybrid',this)" style="flex-shrink:0;padding:5px 13px;border-radius:12px;border:1px solid rgba(0,191,255,0.5);background:rgba(0,191,255,0.12);color:#67e8f9;font-size:11px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">&#x1F6F0; SA Hybrid</button>
+    <button class="sa-mode-btn"        id="saTerrainBtn" onclick="setSAMode('terrain',this)" style="flex-shrink:0;padding:5px 13px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">&#x26F0; SA Terrain</button>
+    <button class="sa-mode-btn"        id="saRoadBtn"    onclick="setSAMode('road',this)" style="flex-shrink:0;padding:5px 13px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">&#x1F5FA; SA Road</button>
+    <button class="sa-mode-btn"        id="saNightBtn"   onclick="setSAMode('night',this)" style="flex-shrink:0;padding:5px 13px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">&#x1F319; SA Night</button>
+  </div>
+</div>
+
+<!-- SEARCH BAR (shown in SA view) -->
+<div id="saSearch" style="display:none;padding:8px 12px;background:#080e0b;border-bottom:1px solid rgba(255,255,255,0.05);">
+  <div style="display:flex;gap:8px;align-items:center;">
+    <input id="saSearchInput" type="text" placeholder="Search SA — mine, town, farm, SEZ..." 
+      style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid rgba(0,191,255,0.3);background:rgba(255,255,255,0.05);color:#fff;font-size:13px;font-family:Inter,sans-serif;outline:none;"
+      onkeydown="if(event.key==='Enter')hereSearch()"
+    />
+    <button onclick="hereSearch()" style="padding:8px 14px;border-radius:10px;border:1px solid rgba(0,191,255,0.4);background:rgba(0,191,255,0.12);color:#67e8f9;font-size:12px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">&#x1F50D; Find</button>
+  </div>
+  <div id="saSearchResult" style="margin-top:6px;font-size:11px;color:rgba(255,255,255,0.4);"></div>
+</div>
+
+<!-- MINERAL FILTER BAR (shown in Minerals view) -->
+<div id="mineralFilter">
+  <button class="mf-btn active" style="border-color:#aaa;color:#ccc;" onclick="filterMinerals('all',this)">All</button>
+  <button class="mf-btn" style="border-color:#FFD700;color:#FFD700;" onclick="filterMinerals('gold',this)">Gold</button>
+  <button class="mf-btn" style="border-color:#e2e8f0;color:#e2e8f0;" onclick="filterMinerals('pgm',this)">PGM / Platinum</button>
+  <button class="mf-btn" style="border-color:#93c5fd;color:#93c5fd;" onclick="filterMinerals('diamond',this)">Diamonds</button>
+  <button class="mf-btn" style="border-color:#78350f;color:#d97706;" onclick="filterMinerals('coal',this)">Coal</button>
+  <button class="mf-btn" style="border-color:#ef4444;color:#ef4444;" onclick="filterMinerals('iron',this)">Iron Ore</button>
+  <button class="mf-btn" style="border-color:#8B4513;color:#c87941;" onclick="filterMinerals('manganese',this)">Manganese</button>
+  <button class="mf-btn" style="border-color:#B87333;color:#B87333;" onclick="filterMinerals('copper',this)">Copper</button>
+  <button class="mf-btn" style="border-color:#818cf8;color:#818cf8;" onclick="filterMinerals('zinc',this)">Zinc / Lead</button>
+  <button class="mf-btn" style="border-color:#374151;color:#94a3b8;" onclick="filterMinerals('chromite',this)">Chromite</button>
+  <button class="mf-btn" style="border-color:#a855f7;color:#c084fc;" onclick="filterMinerals('vanadium',this)">Vanadium</button>
+  <button class="mf-btn" style="border-color:#67e8f9;color:#67e8f9;" onclick="filterMinerals('titanium',this)">Titanium / Sands</button>
+  <button class="mf-btn" style="border-color:#f0abfc;color:#f0abfc;" onclick="filterMinerals('rare_earth',this)">Rare Earths</button>
+  <button class="mf-btn" style="border-color:#94a3b8;color:#94a3b8;" onclick="filterMinerals('industrial',this)">Industrial</button>
+</div>
+
+<div id="sciActiveBadge"></div>
+
+<div class="map-wrapper">
+  <div id="map"></div>
+  <div class="view-toggle">
+    <button id="btnMap"  class="vt-btn active"   onclick="setView('map')">&#x1F30D; Map</button>
+    <button id="btnSat"  class="vt-btn"           onclick="setView('satellite')">&#x1F6F0; Satellite</button>
+    <button id="btnTopo" class="vt-btn"           onclick="setView('topo')">&#x26F0; Topo</button>
+    <button id="btnGeo"  class="vt-btn geo-btn"   onclick="setView('geology')">&#x1FAA8; Geology</button>
+    <button id="btnMin"  class="vt-btn min-btn"   onclick="setView('minerals')">&#x26CF; Minerals</button>
+    <button id="btnFarm" class="vt-btn farm-btn"  onclick="setView('farming')">&#x1F33E; Farming</button>
+    <button id="btnWat"  class="vt-btn wat-btn"   onclick="setView('water')">&#x1F4A7; Water</button>
+    <button id="btnSA"   class="vt-btn sa-btn"    onclick="setView('sa')">&#x1F1FF;&#x1F1E6; SA</button>
+    <button id="btnLabels" class="vt-btn labels-btn" onclick="toggleLabels()">&#x1F4CD; Labels</button>
+  </div>
+  <button id="zoomMineBtn" onclick="zoomToMine()">&#x26CF;&#xFE0E; Blue Ridge</button>
+  <button id="terrainToggle" onclick="toggleTerrain(this)">&#x1F4CD;&#xFE0E; Labels</button>
+  <button id="gpsBtn" onclick="locateMe()">&#x1F4E1; Near Me</button>
+</div>
+
+<div class="info-panel" id="infoPanel">
+  <div class="zone-tag" id="infoTag"></div>
+  <h3 id="infoTitle"></h3>
+  <p id="infoDesc"></p>
+  <div class="meta" id="infoMeta"></div>
+  <button class="sv-btn" id="svBtn" onclick="openSV()" style="display:none;">&#x1F6F0; Satellite View</button>
+</div>
+
+<div class="map-hint" id="mapHint">
+  <p>&#x1F447;&#xFE0E; Tap any zone or marker for full details</p>
+</div>
+
+<!-- NEARBY PANEL — GPS results -->
+<div id="nearbyPanel">
+  <div class="np-head">&#x1F4E1; Nearest features to your location</div>
+</div>
+
+<!-- STREET VIEW MODAL -->
+<div id="svModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:rgba(0,0,0,0.92);flex-direction:column;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#0a0f0d;border-bottom:1px solid rgba(255,255,255,0.1);flex-shrink:0;">
+    <div>
+      <div id="svTitle" style="color:#fff;font-size:13px;font-weight:600;font-family:Inter,sans-serif;"></div>
+      <div id="svCoords" style="color:rgba(255,255,255,0.4);font-size:11px;font-family:Inter,sans-serif;margin-top:2px;"></div>
+    </div>
+    <button onclick="closeSV()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;">✕ Close</button>
+  </div>
+  <div id="svFrame" style="flex:1;width:100%;"></div>
+</div>
+<div id="mineralLegendPanel" style="display:none;background:#080e0b;border-top:1px solid rgba(255,255,255,0.06);padding:12px 14px;">
+  <div style="font-size:9px;color:rgba(255,255,255,0.3);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">&#x26CF; Mineral Types — tap to filter map</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;">
+    <div class="leg-row" onclick="filterMinerals('gold',this)"><span class="leg-dot" style="background:#FFD700"></span><span class="leg-lbl">Gold (Au)</span></div>
+    <div class="leg-row" onclick="filterMinerals('pgm',this)"><span class="leg-dot" style="background:#D4D8E0"></span><span class="leg-lbl">PGM / Platinum</span></div>
+    <div class="leg-row" onclick="filterMinerals('diamond',this)"><span class="leg-dot" style="background:#93c5fd"></span><span class="leg-lbl">Diamonds</span></div>
+    <div class="leg-row" onclick="filterMinerals('coal',this)"><span class="leg-dot" style="background:#92400e"></span><span class="leg-lbl">Coal</span></div>
+    <div class="leg-row" onclick="filterMinerals('iron',this)"><span class="leg-dot" style="background:#ef4444"></span><span class="leg-lbl">Iron Ore</span></div>
+    <div class="leg-row" onclick="filterMinerals('manganese',this)"><span class="leg-dot" style="background:#c87941"></span><span class="leg-lbl">Manganese</span></div>
+    <div class="leg-row" onclick="filterMinerals('copper',this)"><span class="leg-dot" style="background:#B87333"></span><span class="leg-lbl">Copper (Cu)</span></div>
+    <div class="leg-row" onclick="filterMinerals('zinc',this)"><span class="leg-dot" style="background:#818cf8"></span><span class="leg-lbl">Zinc / Lead</span></div>
+    <div class="leg-row" onclick="filterMinerals('chromite',this)"><span class="leg-dot" style="background:#9ca3af"></span><span class="leg-lbl">Chromite (Cr)</span></div>
+    <div class="leg-row" onclick="filterMinerals('vanadium',this)"><span class="leg-dot" style="background:#c084fc"></span><span class="leg-lbl">Vanadium (V)</span></div>
+    <div class="leg-row" onclick="filterMinerals('titanium',this)"><span class="leg-dot" style="background:#67e8f9"></span><span class="leg-lbl">Titanium / Sands</span></div>
+    <div class="leg-row" onclick="filterMinerals('rare_earth',this)"><span class="leg-dot" style="background:#f0abfc"></span><span class="leg-lbl">Rare Earths</span></div>
+    <div class="leg-row" onclick="filterMinerals('industrial',this)"><span class="leg-dot" style="background:#94a3b8"></span><span class="leg-lbl">Industrial Min.</span></div>
+    <div class="leg-row" onclick="filterMinerals('phosphate',this)"><span class="leg-dot" style="background:#86efac"></span><span class="leg-lbl">Phosphate</span></div>
+  </div>
+  <button onclick="filterMinerals('all',null)" style="margin-top:10px;width:100%;padding:7px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;">Show All Minerals</button>
+</div>
+
+<div style="padding:12px 14px;background:#0f1a13;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;align-items:center;">
+  <div style="flex:1;">
+    <div style="font-size:12px;color:#fff;font-weight:600;">Are you in the field?</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Capture on-site GIS data with GPS</div>
+  </div>
+  <button onclick="location.href='field-collect.html'" style="padding:9px 16px;border-radius:10px;border:1px solid #c9a84c;background:rgba(201,168,76,0.12);color:#c9a84c;font-size:12px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;white-space:nowrap;">&#x1F4CD;&#xFE0E; Field Form</button>
+</div>
+
+<div class="nav">
+  <div onclick="location.href='index.html'">Home</div>
+  <div onclick="location.href='compliance.html'">Comply</div>
+  <div onclick="location.href='community.html'">Community</div>
+  <div onclick="location.href='index.html'">Invest</div>
+  <div class="active">GIS</div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   MAP INIT
+══════════════════════════════════════════════════════════════════════════ */
+const map = L.map('map',{center:[-28.5,25.0],zoom:5,maxZoom:19,zoomControl:true,attributionControl:true});
+
+/* ── BASE TILE LAYERS ── */
+const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap contributors &amp; CARTO',subdomains:'active',maxZoom:19});
+darkLayer.addTo(map);
+
+const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:19});
+const labelsLayer    = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{attribution:'Labels &copy; Esri',maxZoom:19,opacity:0.9});
+const topoLayer      = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',subdomains:'active',maxZoom:17});
+const geoLayer       = L.tileLayer('https://tiles.macrostrat.org/carto/{z}/{x}/{y}.png',{attribution:'Geology &copy; <a href="https://macrostrat.org">Macrostrat</a>',maxNativeZoom:12,maxZoom:16,opacity:0.88});
+const lightLabels    = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap contributors &amp; CARTO',subdomains:'active',maxZoom:19});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ██████  PASTE YOUR HERE API KEY BELOW  ██████
+   Replace 'PASTE_HERE_API_KEY' with your actual key to activate:
+     • SA Tab (Hybrid / Terrain / Road / Night tiles)
+     • HERE Geocoding Search (mine, town, farm, SEZ lookup)
+   Get a free key at: https://developer.here.com
+══════════════════════════════════════════════════════════════════════════ */
+const HERE_KEY = 'X-R1Z4_87kfgWRrTI1Ln--fPbFDcwCG7FmhLkGEkP9I';
+const HERE_HOST = 'https://maps.hereapi.com/v3/base/mc';
+const HERE_AIR  = 'https://maps.hereapi.com/v3/base/mc';
+const hereAttrib = 'Map &copy; <a href="https://here.com">HERE</a>';
+const hereLayers = {
+  hybrid:  L.tileLayer(`${HERE_AIR}/{z}/{x}/{y}/png8?style=explore.satellite.day&apiKey=${HERE_KEY}`, {attribution:hereAttrib,maxZoom:20}),
+  terrain: L.tileLayer(`${HERE_HOST}/{z}/{x}/{y}/png8?style=satellite.day&apiKey=${HERE_KEY}`,{attribution:hereAttrib,maxZoom:20}),
+  road:    L.tileLayer(`${HERE_HOST}/{z}/{x}/{y}/png8?style=explore.day&apiKey=${HERE_KEY}`, {attribution:hereAttrib,maxZoom:20}),
+  night:   L.tileLayer(`${HERE_HOST}/{z}/{x}/{y}/png8?style=explore.night&apiKey=${HERE_KEY}`,{attribution:hereAttrib,maxZoom:20}),
+};
+let currentHereMode = 'hybrid';
+let hereSearchMarker = null;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GEOLOGICAL FORMATION POLYGONS (Bushveld, Karoo, Witwatersrand, etc.)
+══════════════════════════════════════════════════════════════════════════ */
+const saGeoLayer = L.layerGroup();
+const SA_GEO = [
+  {shortName:'BIC — Eastern Limb',name:'Bushveld Igneous Complex — Eastern Limb',color:'#8B0000',fillColor:'#e24c4b',age:'Paleoproterozoic ~2.055 Ga',type:'Layered mafic–ultramafic intrusion',minerals:'Pt · Pd · Rh · Chromite · Vanadium · Fe',desc:'Home to Blue Ridge Platinum, Two Rivers, and Modikwa mines. The UG2 chromitite and Merensky Reef host world-class PGM deposits. 80% of global platinum reserves lie within the Bushveld Complex.',coords:[[-23.7,29.4],[-23.5,29.9],[-23.6,30.5],[-24.0,31.0],[-24.5,31.1],[-25.0,31.0],[-25.5,30.6],[-25.9,30.0],[-25.6,29.4],[-25.0,29.1],[-24.4,29.1],[-23.7,29.4]]},
+  {shortName:'BIC — Western Limb',name:'Bushveld Igneous Complex — Western Limb',color:'#8B0000',fillColor:'#f08080',age:'Paleoproterozoic ~2.055 Ga',type:'Layered mafic–ultramafic intrusion',minerals:'Pt · Pd · Chromite · Vanadium',desc:'Rustenburg — the platinum capital of the world. Impala, Northam, Sibanye-Stillwater and Anglo Platinum operate here. Merensky Reef and UG2 chromitite are the primary ore bodies.',coords:[[-25.8,26.9],[-25.2,26.8],[-24.5,27.0],[-24.1,27.4],[-24.3,27.9],[-24.8,28.0],[-25.4,27.7],[-25.9,27.3],[-25.8,26.9]]},
+  {shortName:'BIC — Northern Limb',name:'Bushveld Igneous Complex — Northern Limb (Platreef)',color:'#8B0000',fillColor:'#ffb3b3',age:'Paleoproterozoic ~2.055 Ga',type:'Layered mafic–ultramafic intrusion',minerals:'Pt · Pd · Ni · Cu · Au',desc:'The Platreef/Flatreef deposit (Ivanhoe Mines) — one of the world\'s next great PGM projects. Extremely wide mineralised reef (30–100m) enabling bulk mining. Also rich in nickel and copper.',coords:[[-24.0,28.5],[-23.5,28.7],[-23.2,29.3],[-23.6,29.8],[-24.2,29.5],[-24.5,29.0],[-24.3,28.5],[-24.0,28.5]]},
+  {shortName:'Witwatersrand Basin',name:'Witwatersrand Basin — Gold Reefs',color:'#b45309',fillColor:'#fbbf24',age:'Mesoarchean 2.7–3.1 Ga',type:'Sedimentary basin — gold-bearing conglomerate reefs',minerals:'Gold · Uranium · Silver',desc:'Contains more than half of all gold ever mined by humanity — over 50,000 tonnes. The gold reefs dip outward from the Johannesburg ridge to depths exceeding 4km. Most gold mining is at 2,000–4,000m depth.',coords:[[-25.8,27.2],[-25.7,28.0],[-25.9,28.5],[-26.4,28.7],[-27.0,28.4],[-27.2,27.8],[-27.0,27.1],[-26.4,26.9],[-25.8,27.2]]},
+  {shortName:'Waterberg Coalfield',name:'Waterberg Coalfield — Karoo Supergroup',color:'#1565c0',fillColor:'#90caf9',age:'Carboniferous–Triassic 300–240 Ma',type:'Continental sedimentary basin',minerals:'Coal · Natural gas',desc:'South Africa\'s largest coal reserve — ~72 billion tonnes. Grootegeluk mine (Exxaro) feeds Medupi and Matimba power stations. The Karoo Supergroup also contains world-famous therapsid fossils.',coords:[[-23.0,26.5],[-22.5,27.0],[-22.4,28.5],[-23.0,29.0],[-23.8,29.0],[-24.2,28.5],[-24.3,27.5],[-24.5,26.8],[-23.5,26.3],[-23.0,26.5]]},
+  {shortName:'Kalahari Manganese',name:'Kalahari Manganese Field',color:'#7B3F00',fillColor:'#C87941',age:'Paleoproterozoic ~2.2 Ga',type:'Stratiform sedimentary Mn deposit',minerals:'Manganese · Iron',desc:'80% of the world\'s known manganese ore reserves. The stratiform deposit formed in an ancient Proterozoic sea. South Africa dominates global manganese supply — critical for steelmaking and EV batteries.',coords:[[-27.0,22.5],[-26.8,22.5],[-26.5,22.8],[-26.8,23.2],[-27.3,23.2],[-27.8,23.0],[-27.8,22.6],[-27.0,22.5]]},
+  {shortName:'Limpopo Mobile Belt',name:'Limpopo Mobile Belt — Ancient Collision Zone',color:'#6a1b9a',fillColor:'#ce93d8',age:'Neoarchean ~2.7 Ga',type:'High-grade metamorphic terrain',minerals:'Iron · Mn · Diamonds (kimberlites)',desc:'One of Earth\'s oldest continental collision zones — where the Kaapvaal and Zimbabwe Cratons collided ~2.7 billion years ago. Rocks here were metamorphosed at 40–50 km depth. Some of the oldest crust on Earth.',coords:[[-21.8,27.5],[-21.5,29.0],[-21.8,30.5],[-22.3,31.0],[-22.8,31.0],[-23.0,30.0],[-22.8,28.8],[-22.5,27.5],[-22.0,27.2],[-21.8,27.5]]},
+  {shortName:'Cape Fold Belt',name:'Cape Fold Belt — TMG Aquifer',color:'#155e75',fillColor:'#7dd3fc',age:'Late Palaeozoic 280–240 Ma',type:'Fold-thrust belt — quartzite sandstone',minerals:'Iron · Base metals · Rare earths (potential)',desc:'The Cape Fold Mountains (Swartberg, Hex River, Cederberg) are formed of folded Table Mountain Group (TMG) sandstones. The TMG is also SA\'s largest aquifer — critical for Western Cape water security. Spectacular scenery and world-class wine country.',coords:[[-33.5,18.0],[-33.0,19.5],[-33.5,21.0],[-34.0,22.0],[-34.5,22.5],[-34.5,20.0],[-34.0,18.5],[-33.5,18.0]]}
+];
+(function(){
+  SA_GEO.forEach(f=>{
+    const poly=L.polygon(f.coords,{color:f.color,fillColor:f.fillColor,fillOpacity:0.27,weight:1.8,dashArray:'4,3'});
+    poly.on('mouseover',function(){this.setStyle({fillOpacity:0.48,weight:2.5});});
+    poly.on('mouseout', function(){this.setStyle({fillOpacity:0.27,weight:1.8});});
+    poly.bindTooltip(`<strong style="color:#fff">${f.name}</strong><br><small style="color:rgba(255,255,255,0.5)">${f.type}</small><br><small style="color:rgba(255,255,255,0.35)">${f.age}</small>`,{sticky:true});
+    poly.on('click',()=>{try{const ctr=poly.getBounds().getCenter();showInfo('geo',{name:f.name,notes:f.desc,area:f.type,status:f.age,source:f.minerals,_lat:ctr.lat,_lng:ctr.lng});}catch(e){showInfo('geo',{name:f.name,notes:f.desc,area:f.type,status:f.age,source:f.minerals});}});
+    saGeoLayer.addLayer(poly);
+  });
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SOUTH AFRICA COMPREHENSIVE MINERAL DATABASE
+   Sources: Council for Geoscience SA · DMRE Annual Reports · Company Annual Reports 2023
+══════════════════════════════════════════════════════════════════════════ */
+const MCOL = {
+  gold:     {color:'#FFD700',label:'Gold (Au)',         icon:'Au'},
+  pgm:      {color:'#D4D8E0',label:'PGM / Platinum',   icon:'Pt'},
+  diamond:  {color:'#93c5fd',label:'Diamonds',          icon:'Di'},
+  coal:     {color:'#92400e',label:'Coal',              icon:'Co'},
+  iron:     {color:'#ef4444',label:'Iron Ore',          icon:'Fe'},
+  manganese:{color:'#c87941',label:'Manganese',         icon:'Mn'},
+  copper:   {color:'#B87333',label:'Copper (Cu)',       icon:'Cu'},
+  zinc:     {color:'#818cf8',label:'Zinc / Lead',       icon:'Zn'},
+  chromite: {color:'#9ca3af',label:'Chromite (Cr)',     icon:'Cr'},
+  vanadium: {color:'#c084fc',label:'Vanadium (V)',      icon:'V'},
+  titanium: {color:'#67e8f9',label:'Titanium / Sands',icon:'Ti'},
+  rare_earth:{color:'#f0abfc',label:'Rare Earths',      icon:'RE'},
+  industrial:{color:'#94a3b8',label:'Industrial Min.',  icon:'In'},
+  phosphate:{color:'#86efac',label:'Phosphate',         icon:'Ph'},
+};
+
+const SA_MINERALS = [
+  /* ── GOLD ── */
+  {lat:-26.36,lng:27.40,t:'gold',s:'active',
+   name:'West Rand Gold District — Carletonville',
+   company:'Sibanye-Stillwater / Gold Fields (South Deep)',
+   reserves:'~3 000 t Au measured+indicated',production:'8–10 t Au/year',
+   grade:'6–10 g/t Au',depth:'2 500–4 000 m (deepest on Earth)',
+   province:'Gauteng / North West',
+   notes:'Deepest gold mines on Earth. South Deep (Gold Fields) is one of the largest single gold deposits globally. Also hosts Kloof-Driefontein Complex. Extreme depth creates seismic and temperature challenges. Reef width: 30–90 cm Witwatersrand conglomerate.'},
+
+  {lat:-26.26,lng:28.02,t:'gold',s:'active',
+   name:'Central Rand — Johannesburg Gold Origin',
+   company:'DRDGold (tailings retreatment)',
+   reserves:'~1.5 Bt tailings containing ~400 Moz Au',production:'Gold from tailings: 0.3–0.5 g/t',
+   grade:'Surface retreatment',depth:'Surface dumps',
+   province:'Gauteng',
+   notes:'The birthplace of the 1886 gold rush that built Johannesburg. Primary ore exhausted. DRDGold and other tailings retreatment companies are recovering gold and uranium from historical mine dumps. Largest urban tailings retreatment operation in the world.'},
+
+  {lat:-26.90,lng:26.68,t:'gold',s:'active',
+   name:'Klerksdorp / Stilfontein Gold Fields',
+   company:'Sibanye-Stillwater',
+   reserves:'~1 500 t Au',production:'5–7 t Au/year',
+   grade:'4–8 g/t Au',depth:'2 000–3 500 m',
+   province:'North West',
+   notes:'Active since early 1900s. The Vaal Reef is a major ore body. Klerksdorp hosts 25,000+ mine workers. Area faces challenges with deep seismicity and ageing infrastructure.'},
+
+  {lat:-26.43,lng:29.08,t:'gold',s:'active',
+   name:'Evander Gold Mine (Mpumalanga)',
+   company:'Pan African Resources',
+   reserves:'~200 t Au',production:'2–3 t Au/year',
+   grade:'6–12 g/t Au',depth:'1 000–2 000 m',
+   province:'Mpumalanga',
+   notes:'Pan African Resources uses solar power for >40% of energy — a green mining pioneer. Elikhulu tailings retreatment plant adds significant production. Located in Mpumalanga highveld.'},
+
+  {lat:-25.367,lng:30.674,t:'gold',s:'active',
+   name:'Elandshoogte Gold Mine — Omaruru Minerals',
+   company:'Omaruru Minerals (Pty) Ltd / Elandshoogte & Bagale Consortium',
+   reserves:'1.5Mt @ 7.3g/t (350Koz IND) + 3.2Mt @ 7.3g/t (750Koz INF) + 225 000t tailings (545kg Au)',production:'Development stage — plant on site',
+   grade:'10.4 g/t channel mean · 30–45cm reef width',depth:'Shallow underground + surface tailings',
+   province:'Mpumalanga (Nelspruit district, Houtbosloop Valley)',
+   notes:'Narrow-reef quartz-sulphide gold vein near Sudwala Caves. Gold hosted in pyrite-bearing brecciated quartz veins. Three tailings dumps (A: 30 000t @ 1.9g/t · B: 145 000t @ 2.5g/t · C: 50 000t @ 2.75g/t). Business rescue completed late 2023. Total asset valuation R34.1B. Anglo American and PMC confirmed economic mineralisation. NNE trending pay-shoots. Water right: ad infinitum RMT 7/245. 464ha mineral rights.'},
+
+  {lat:-25.80,lng:31.05,t:'gold',s:'active',
+   name:'Barberton Greenstone Belt',
+   company:'Pan African Resources (Barberton Mines)',
+   reserves:'~80 t Au measured',production:'1–2 t Au/year',
+   grade:'8–20 g/t Au (high-grade)',depth:'200–1 200 m',
+   province:'Mpumalanga',
+   notes:'One of the oldest gold-bearing greenstone belts on Earth (~3.5 Ga). High-grade gold in Archean shear zones. Also critical for palaeontology — the oldest known microfossils occur in these rocks.'},
+
+  {lat:-26.28,lng:28.42,t:'gold',s:'active',
+   name:'East Rand / Springs Gold Fields',
+   company:'Harmony Gold',
+   reserves:'~400 t Au',production:'3–4 t Au/year',
+   grade:'5–7 g/t Au',depth:'1 500–3 000 m',
+   province:'Gauteng',
+   notes:'Harmony Gold operates Doornkop and Kusasalethu mines on the East Rand. Significant environmental rehabilitation requirements from 100+ years of mining. Area impacted by acid mine drainage.'},
+
+  /* ── PGMs ── */
+  {lat:-25.70,lng:27.22,t:'pgm',s:'active',
+   name:'Rustenburg PGM District — Western Limb Hub',
+   company:'Impala Platinum / Sibanye-Stillwater (Marikana)',
+   reserves:'~58 Mt ore (4E PGM)',production:'~60 t PGM/year (combined)',
+   grade:'4–5 g/t 4E (Pt+Pd+Rh+Au)',depth:'400–1 800 m',
+   province:'North West',
+   notes:'Rustenburg is the platinum capital of the world. Merensky Reef (30–90 cm) and UG2 Chromitite (50–200 cm) host world-class PGM mineralisation. 80% of global platinum reserves in a 30 km belt. Over 100,000 mine workers in the Rustenburg–Brits corridor.'},
+
+  {lat:-24.70,lng:27.80,t:'pgm',s:'active',
+   name:'Northam — Zondereinde Mine (Western Limb)',
+   company:'Northam Platinum',
+   reserves:'~20 Mt ore',production:'~15 t PGM/year',
+   grade:'4.5 g/t 4E',depth:'800–2 000 m',
+   province:'Limpopo',
+   notes:'Zondereinde is the deepest PGM mine in South Africa. Northam has expanded aggressively acquiring Booysendal (eastern limb) and Eland Platinum. Unique palladium-rich profile compared to Rustenburg.'},
+
+  {lat:-24.57,lng:30.03,t:'pgm',s:'active',
+   name:'Anglo Platinum — Eastern Limb (Burgersfort hub)',
+   company:'Anglo American Platinum (Amplats)',
+   reserves:'~35 Mt ore',production:'~50 t PGM/year',
+   grade:'4–6 g/t 4E',depth:'300–1 200 m',
+   province:'Limpopo (Sekhukhune)',
+   notes:'Anglo Platinum operates Modikwa, Two Rivers, and Bokoni (care+maintenance) in the eastern limb. Shallower and lower-cost than western limb. Sekhukhune communities benefit from royalties and employment. Proximity to Blue Ridge mine.'},
+
+  {lat:-25.2441,lng:29.5583,t:'pgm',s:'active',
+   name:'Blue Ridge Platinum Mine — Mzilikazi Kingdom',
+   company:'Mzilikazi ka Mashobane Kingdom',
+   reserves:'~3.2 Mt ore (89.8 Mt indicated total deposit)',production:'Care & Maintenance — Restart Ready',
+   grade:'3.5–5 g/t 4E',depth:'200–800 m',
+   province:'Limpopo (Sekhukhune)',
+   notes:'Located within Mzilikazi Kingdom territory in the Bushveld Eastern Limb. Hosts Merensky Reef and UG2 layers. Resources: 89.8 Mt (9.14 Moz 4E PGM) + 19.5 Mt Cr₂O₃. Life of mine: 18–25 years. Mining Right MR-LP177 MRC. Brownfield — infrastructure intact.'},
+
+  {lat:-23.95,lng:28.90,t:'pgm',s:'exploration',
+   name:'Platreef / Flatreef — Waterberg (Ivanhoe Mines)',
+   company:'Ivanhoe Mines / Ivanplats',
+   reserves:'~590 Mt resource (346 Mt 4E indicated)',production:'Pre-production — shaft sinking underway',
+   grade:'3.5 g/t 4E + Ni + Cu + Au',depth:'800–1 200 m',
+   province:'Limpopo (Waterberg)',
+   notes:'Potentially the world\'s next great PGM mine. The Flatreef deposit is 20–100m wide — enabling bulk mining unlike narrow-reef Bushveld mines. Also contains significant nickel, copper, and gold. Community partnership with Mokopane tribal authority.'},
+
+  /* ── DIAMONDS ── */
+  {lat:-22.79,lng:29.29,t:'diamond',s:'active',
+   name:'Venetia Diamond Mine — De Beers (Largest in SA)',
+   company:'De Beers (Anglo American)',
+   reserves:'~96.5 Mt ore at 13 cpht',production:'~3 Mct/year',
+   grade:'13 cpht (carats per 100 tonnes)',depth:'400–1 000 m (open pit → underground)',
+   province:'Limpopo',
+   notes:'Largest diamond mine in SA. Transitioning from open-pit to underground block caving — extending mine life to 2046+. Produces large, gem-quality diamonds. Community upliftment programme in Alldays/Venetia area.'},
+
+  {lat:-25.70,lng:28.52,t:'diamond',s:'active',
+   name:'Cullinan Diamond Mine (Petra Diamonds)',
+   company:'Petra Diamonds',
+   reserves:'~30 Mt at 30 cpht',production:'~1.5 Mct/year',
+   grade:'30 cpht (highest-grade kimberlite in SA)',depth:'600–1 000 m',
+   province:'Gauteng',
+   notes:'Most famous diamond mine in the world. The Cullinan Diamond (3,106 ct — largest gem diamond ever found) was discovered here in 1905, now in the British Crown Jewels. Still produces exceptional large Type IIa diamonds regularly.'},
+
+  {lat:-28.60,lng:23.40,t:'diamond',s:'active',
+   name:'Finsch Diamond Mine (Petra Diamonds)',
+   company:'Petra Diamonds',
+   reserves:'~25 Mt at 20 cpht',production:'~1.2 Mct/year',
+   grade:'20 cpht',depth:'200–800 m underground',
+   province:'Northern Cape',
+   notes:'Ancient kimberlite pipe discovered in 1961. Underground block-caving operation. Proximity to the Sol Plaatje Municipality (Kimberley area). Steady gem-quality production. Significant economic contributor to the Northern Cape.'},
+
+  {lat:-28.74,lng:24.76,t:'diamond',s:'active',
+   name:'Kimberley — Big Hole & Diamond Capital',
+   company:'Heritage Site / De Beers Museum',
+   reserves:'Exhausted: 14.5 Mct mined 1871–1914',production:'Historical only',
+   grade:'Historical',depth:'240 m open pit + 1 100 m shaft',
+   province:'Northern Cape',
+   notes:'The largest hand-dug excavation on Earth. Birthplace of the world\'s greatest diamond rush (1871). Now a UNESCO Tentative World Heritage Site. Kimberley is where De Beers was founded and where the term "kimberlite" was coined. Major tourism asset.'},
+
+  {lat:-29.50,lng:17.00,t:'diamond',s:'active',
+   name:'Namaqualand / Atlantic Marine Diamonds',
+   company:'De Beers Marine / Trans Hex',
+   reserves:'~7 Mct marine (vast offshore resource)',production:'~200 000 ct/year',
+   grade:'Very high quality: avg >1 ct stones',depth:'Ocean floor 50–300 m',
+   province:'Northern Cape (Atlantic coast)',
+   notes:'The Orange River transported diamonds to the sea over millions of years, concentrating them on the ocean floor. Marine diamonds are wave-sorted — exceptionally pure and large. Specialised diamond mining vessels operate off Namaqualand. Highest average stone quality in the world.'},
+
+  {lat:-22.80,lng:28.10,t:'diamond',s:'active',
+   name:'Venetia Kimberlite Cluster — Limpopo Basin',
+   company:'De Beers',
+   reserves:'Multiple pipes in the cluster',production:'Shared with Venetia main',
+   grade:'Variable, 8–15 cpht',depth:'Surface to 600 m',
+   province:'Limpopo',
+   notes:'The Venetia cluster contains multiple kimberlite pipes around the main Venetia pipe — K01, K02, etc. Some are satellite pipes being evaluated for future development. The Limpopo region has several known and suspected kimberlite occurrences along the Limpopo Mobile Belt.'},
+
+  /* ── COAL ── */
+  {lat:-25.88,lng:29.24,t:'coal',s:'active',
+   name:'Witbank / eMalahleni Coalfield (Mpumalanga Core)',
+   company:'Exxaro / South32 / Glencore / Thungela',
+   reserves:'~20 Gt coal measured',production:'~100 Mt/year (combined area)',
+   grade:'5 000–6 200 kcal/kg bituminous',depth:'Surface to 300 m',
+   province:'Mpumalanga',
+   notes:'The heart of SA coal industry. Feeds Eskom\'s Kendal, Duvha, and Matla power stations and Sasol\'s Secunda CTL plant. No. 2, 4, and 5 seams are primary targets. Transnet\'s coal rail corridor exports via Richards Bay Coal Terminal (RBCT — 91 Mt/year capacity).'},
+
+  {lat:-26.52,lng:29.18,t:'coal',s:'active',
+   name:'Secunda — Sasol Coal-to-Liquids Complex',
+   company:'Sasol',
+   reserves:'~8 Gt coal for Secunda operations',production:'~45 Mt/year coal feed',
+   grade:'Witbank seams',depth:'Surface + underground',
+   province:'Mpumalanga',
+   notes:'Largest coal-to-liquids (CTL) plant in the world. Produces ~7 billion litres of synthetic fuel annually — 25% of SA\'s liquid fuel. Also produces chemicals and gas. Major CO₂ emitter transitioning under Just Energy Transition commitments.'},
+
+  {lat:-26.49,lng:30.00,t:'coal',s:'active',
+   name:'Ermelo Coalfield — Export Quality',
+   company:'Universal Coal / Wescoal',
+   reserves:'~5 Gt coal',production:'~20 Mt/year',
+   grade:'5 500 kcal/kg (export quality)',depth:'Surface to 150 m',
+   province:'Mpumalanga',
+   notes:'High-quality export coal with good rail access to Richards Bay. Several new mines developing rapidly. Water management and acid mine drainage are primary environmental concerns.'},
+
+  {lat:-23.98,lng:28.18,t:'coal',s:'active',
+   name:'Waterberg Coalfield — Lephalale (Largest Reserve)',
+   company:'Exxaro (Grootegeluk) / Eskom (Medupi)',
+   reserves:'~72 Gt coal — SA\'s largest by resource',production:'~25 Mt/year (Grootegeluk)',
+   grade:'3 000–5 000 kcal/kg',depth:'Open pit (shallow)',
+   province:'Limpopo',
+   notes:'South Africa\'s largest coal reserve. Grootegeluk mine feeds Medupi (4,764 MW) and Matimba (3,990 MW) power stations — the world\'s largest dry-cooled power stations. Rail and water infrastructure constraints limit further expansion. Just Energy Transition planning underway.'},
+
+  {lat:-27.77,lng:30.33,t:'coal',s:'active',
+   name:'Utrecht / Northern KZN Coalfield',
+   company:'Kangra Coal / Universal Coal',
+   reserves:'~2 Gt coal',production:'~5 Mt/year',
+   grade:'5 500–6 200 kcal/kg (high quality)',depth:'100–300 m underground',
+   province:'KwaZulu-Natal',
+   notes:'High-quality KZN coal exported via Durban. Smaller but premium-grade coal preferred for some export markets. Labour-intensive underground mining. Community land claims and water management are key challenges.'},
+
+  /* ── IRON ORE ── */
+  {lat:-27.78,lng:22.87,t:'iron',s:'active',
+   name:'Sishen Iron Ore Mine — Largest in Africa',
+   company:'Kumba Iron Ore (Anglo American 70%)',
+   reserves:'~1.3 Bt at 64% Fe (direct shipping ore)',production:'~37 Mt Fe ore/year',
+   grade:'63–67% Fe DSO — highest grade globally',depth:'Open pit 200 m deep',
+   province:'Northern Cape',
+   notes:'Africa\'s largest open-pit mine by area. High-grade direct shipping ore railed 800 km to Saldanha Bay via the Ore Rail (Orex) line. Supplies steel mills in China, Japan, South Korea, and Europe. SA\'s largest export commodity by volume.'},
+
+  {lat:-28.10,lng:22.96,t:'iron',s:'active',
+   name:'Khumani / Beeshoek Iron Ore (Assmang)',
+   company:'Assmang (ARM + Assore JV)',
+   reserves:'~800 Mt ore',production:'~13 Mt/year',
+   grade:'61–65% Fe',depth:'Open pit',
+   province:'Northern Cape',
+   notes:'Assmang is the world\'s second-largest manganese producer and also produces iron ore at Khumani and Beeshoek. Exports through Saldanha Bay. Iron ore is SA\'s highest-value export per tonne.'},
+
+  {lat:-24.60,lng:27.40,t:'iron',s:'care',
+   name:'Thabazimbi Iron Ore — Historic Kumba',
+   company:'Kumba Iron Ore (care & maintenance)',
+   reserves:'~35 Mt lower-grade ore',production:'Reduced / care & maintenance',
+   grade:'55–60% Fe',depth:'Open pit + limited underground',
+   province:'Limpopo',
+   notes:'One of SA\'s oldest iron ore mines (opened 1931). Supplied the former Highveld Steel works. Placed on care & maintenance by Kumba in 2015 due to ore depletion. Historical contribution to SA\'s steel industry was enormous. Rehabilitation ongoing.'},
+
+  /* ── MANGANESE ── */
+  {lat:-27.18,lng:22.89,t:'manganese',s:'active',
+   name:'Kalahari Manganese Field — World\'s Largest Mn Reserve',
+   company:'South32 / Samancor (Anglo+BHP JV) / Assmang / United Manganese',
+   reserves:'SA holds 80% of world\'s known Mn reserves (~15 Bt)',production:'~16 Mt Mn ore/year (SA total)',
+   grade:'30–48% Mn',depth:'Open pit + underground',
+   province:'Northern Cape (John Taolo Gaetsewe)',
+   notes:'The most significant manganese deposit on Earth. Stratiform Mn ore formed in a Proterozoic shallow sea. Critical for steelmaking (90% use) and EV battery cathodes (Li-Mn). SA dominates global manganese supply. Rail link to Hotazel–Port Elizabeth via Sishen–Saldanha is being expanded.'},
+
+  {lat:-27.28,lng:22.82,t:'manganese',s:'active',
+   name:'Mamatwan / Gloria Mn Mines (Samancor)',
+   company:'Samancor (Anglo American / South32)',
+   reserves:'~2 Bt ore',production:'~4 Mt/year',
+   grade:'36–40% Mn',depth:'Open pit',
+   province:'Northern Cape',
+   notes:'Mamatwan is a lower-grade open-pit manganese operation. Samancor is the world\'s largest manganese producer (combined SA + Australian operations). Key export routes through Port Elizabeth and Durban.'},
+
+  /* ── COPPER ── */
+  {lat:-23.93,lng:31.13,t:'copper',s:'active',
+   name:'Phalaborwa — Multi-Commodity Copper Mine',
+   company:'Vedanta Resources / Rio Tinto heritage',
+   reserves:'~10 Mt Cu ore (lower grades)',production:'~55 000 t Cu/year',
+   grade:'0.5–0.7% Cu',depth:'Underground block cave',
+   province:'Limpopo',
+   notes:'Unique multi-commodity mine — copper PLUS phosphate (Foskor), baddeleyite (zirconium), vermiculite, magnetite, and uranium by-products. The open pit (converted to underground block caving) is adjacent to Kruger National Park. The carbonatite body is geologically unique in the world.'},
+
+  {lat:-29.59,lng:17.85,t:'copper',s:'historic',
+   name:"O'Okiep Copper District — SA's Oldest Mining Area",
+   company:'Historic (De Beers → Newmont — closed 1999)',
+   reserves:'historic',production:'Historical: 147 years of production',
+   grade:'Was 1–2% Cu',depth:'Underground',
+   province:'Northern Cape (Namaqualand)',
+   notes:"South Africa's oldest mining district. Nama people mined copper before European contact. Commercial mining from 1852. Now being rehabilitated. The Springbok Copper Museum preserves this rich history. Namaqualand's spring wildflower display (August-September) attracts tourists."},
+
+  /* ── ZINC / LEAD ── */
+  {lat:-29.31,lng:18.81,t:'zinc',s:'active',
+   name:'Black Mountain — Aggeneys SEDEX Deposit',
+   company:'Vedanta Resources',
+   reserves:'~40 Mt ore (Pb+Zn+Cu+Ag)',production:'~25 000 t Zn/year + Pb + Cu',
+   grade:'3.5% Zn · 1.5% Pb · 0.6% Cu · 45 g/t Ag',depth:'Open pit + underground',
+   province:'Northern Cape',
+   notes:'Aggeneys district hosts four SEDEX (sediment-hosted) base metal deposits: Black Mountain, Broken Hill, Gamsberg, Big Syncline. Extremely remote — Bushmanland desert. Significant silver credits. Vedanta is developing Gamsberg as a major zinc producer.'},
+
+  {lat:-29.38,lng:18.74,t:'zinc',s:'active',
+   name:'Gamsberg Zinc Mine — World Class (Vedanta)',
+   company:'Vedanta Zinc International',
+   reserves:'~212 Mt at 6.8% Zn (world-class resource)',production:'~100 000 t Zn/year (ramping up)',
+   grade:'6.8% Zn — among world\'s highest',depth:'Open pit initially → underground',
+   province:'Northern Cape',
+   notes:'One of the world\'s largest zinc deposits. Among the top-10 global zinc operations when at full capacity. Zinc is critical for galvanising steel and zinc-air/Zn-ion battery technologies for energy storage. Will transform the Northern Cape mining landscape significantly.'},
+
+  /* ── VANADIUM ── */
+  {lat:-25.30,lng:29.68,t:'vanadium',s:'active',
+   name:'Mapochs / Steelpoort Vanadium Mine',
+   company:'Glencore / Bushveld Minerals',
+   reserves:'~100 Mt magnetite ore bearing vanadium',production:'~3 000 t V₂O₅/year',
+   grade:'1.5–2.2% V₂O₅ in magnetite',depth:'Open pit → underground',
+   province:'Mpumalanga / Limpopo border',
+   notes:'SA produces ~35% of world vanadium from the Bushveld magnetite layers. Vanadium redox flow batteries (VRFBs) are a key energy storage technology for grid-scale renewables. SA is positioned to be a major green-economy battery materials supplier.'},
+
+  {lat:-25.58,lng:27.83,t:'vanadium',s:'active',
+   name:'Vametco / Rhovan Vanadium Mine (Brits)',
+   company:'Bushveld Minerals (Vametco Minerals)',
+   reserves:'~45 Mt ore',production:'~2 400 t V₂O₅/year',
+   grade:'1.1–1.4% V₂O₅',depth:'Open pit',
+   province:'North West',
+   notes:'Vametco produces vanadium flake for high-strength steel alloys and VRFB battery electrolyte. Bushveld Minerals is developing VRFB energy storage systems commercially — SA vanadium powering SA\'s energy transition.'},
+
+  /* ── CHROMITE ── */
+  {lat:-25.50,lng:29.80,t:'chromite',s:'active',
+   name:'UG2 Chromite — Eastern Limb (Steelpoort Hub)',
+   company:'Glencore Chrome / Samancor / Assmang',
+   reserves:'SA = ~70% of world chrome reserves (~3.5 Bt)',production:'~18 Mt chromite ore/year (SA total)',
+   grade:'40–46% Cr₂O₃',depth:'100–1 500 m',
+   province:'Limpopo (Steelpoort / Dwars River)',
+   notes:'Steelpoort is the chrome capital of the world. Chrome from the Bushveld UG2 and Lower Group seams. SA produces stainless steel via ferrochrome smelters. China buys 70%+ of SA ferrochrome. Chrome critical for stainless steel (18% Cr standard composition) and hard chrome plating.'},
+
+  {lat:-25.60,lng:27.15,t:'chromite',s:'active',
+   name:'Chromite — Western Limb (Rustenburg / Brits)',
+   company:'Samancor Chrome (Western Ores) / Glencore',
+   reserves:'~800 Mt LG/MG chrome ore',production:'~8 Mt chrome ore/year',
+   grade:'38–44% Cr₂O₃',depth:'Open pit + underground',
+   province:'North West',
+   notes:'Western limb chrome from LG6 and MG1 seams plus UG2 chromitite (by-product of PGM processing). Many small and medium-scale chromite miners operate here. Integrated ferrochrome smelters in the Rustenburg area convert ore to ferrochrome for export.'},
+
+  /* ── TITANIUM / MINERAL SANDS ── */
+  {lat:-28.80,lng:32.10,t:'titanium',s:'active',
+   name:'Richards Bay Minerals — Titanium Sand Mining',
+   company:'Rio Tinto (74%) / Exxaro (26%)',
+   reserves:'~1.4 Bt heavy mineral sands',production:'~2 Mt Ti slag + 200 kt rutile + 450 kt zircon/year',
+   grade:'3–4% total heavy minerals in dunes',depth:'Surface / open-cast dune mining',
+   province:'KwaZulu-Natal (Empangeni)',
+   notes:'One of the world\'s largest and lowest-cost titanium operations. Heavy mineral sands (ilmenite, rutile, zircon, leucoxene) mined from coastal dunes. Products: TiO₂ pigment (paint, sunscreen), zircon (ceramics, foundry sand). Rehabilitation: mine strip, process, replant indigenous vegetation.'},
+
+  {lat:-31.29,lng:17.68,t:'titanium',s:'active',
+   name:'Tormin Mineral Sands — Atlantic West Coast',
+   company:'Tronox / Tormin Mine',
+   reserves:'~16 Mt heavy minerals',production:'~150 kt total heavy minerals/year',
+   grade:'Variable (high-grade beach placers)',depth:'Surface / beach placer',
+   province:'Northern Cape (West Coast)',
+   notes:'Mines heavy mineral sands from ancient beach placer deposits. Operations seasonal due to Atlantic wave conditions. Products: zircon, ilmenite, garnet. High garnet content (for abrasives and waterjet cutting). West Coast seasonal wildflower environment requires sensitive management.'},
+
+  /* ── PHOSPHATE ── */
+  {lat:-23.93,lng:31.10,t:'phosphate',s:'active',
+   name:'Foskor — Phalaborwa Phosphate',
+   company:'Foskor (IDC majority owned)',
+   reserves:'~2.7 Bt phosphate ore (pyroxenite)',production:'~2.3 Mt phosphate rock/year',
+   grade:'5–8% P₂O₅ in pyroxenite host',depth:'Open pit (vast)',
+   province:'Limpopo',
+   notes:'SA\'s primary phosphate producer. Phosphate is the essential fertiliser ingredient — no substitute for food production. Processed into phosphoric acid, MAP and DAP fertilisers. The Phalaborwa carbonatite hosts both copper AND phosphate — remarkable geological efficiency. Feeds SA and sub-Saharan African agriculture.'},
+
+  /* ── RARE EARTHS ── */
+  {lat:-24.62,lng:26.41,t:'rare_earth',s:'exploration',
+   name:'Glenover REE + Phosphate + Niobium Deposit',
+   company:'Pensana / African Pioneer Mining',
+   reserves:'~120 Mt ore (REE + P₂O₅ + Nb₂O₅)',production:'Exploration / feasibility stage',
+   grade:'1.2% total rare earth oxides (TREO)',depth:'Near-surface carbonatite',
+   province:'Limpopo (Mokopane area)',
+   notes:'One of Africa\'s most significant REE projects. Carbonatite-hosted rare earths (La, Ce, Nd, Pr) are critical for EV motors and wind turbines. Also contains niobium (for high-strength steel alloys) and phosphate. Could position SA as a EU-aligned critical minerals supplier.'},
+
+  {lat:-30.97,lng:18.55,t:'rare_earth',s:'active',
+   name:'Steenkampskraal — World\'s Highest-Grade REE',
+   company:'Steenkampskraal Thorium (STL)',
+   reserves:'~606 kt ore at 13.9% TREO (world\'s highest grade)',production:'In development / restart',
+   grade:'13.9% TREO — world record grade',depth:'Underground',
+   province:'Northern Cape (West Coast)',
+   notes:'The world\'s highest-grade rare earth deposit by TREO content. Contains critical Nd-Pr (neodymium-praseodymium) for permanent magnets in EV motors and wind generators. Historically mined for monazite/thorium. Restart underway to supply the global green-energy transition.'},
+
+  /* ── INDUSTRIAL MINERALS ── */
+  {lat:-25.55,lng:30.50,t:'industrial',s:'active',
+   name:'Penge Andalusite Mine (Imerys)',
+   company:'Imerys Group',
+   reserves:'~50 Mt andalusite ore',production:'~180 000 t andalusite/year',
+   grade:'55–60% Al₂O₃ (high purity)',depth:'Open pit + underground',
+   province:'Limpopo (Sekhukhune — adjacent Blue Ridge)',
+   notes:'SA produces ~75% of the world\'s andalusite — a heat-resistant mineral used in steelmaking refractories (furnace linings, ladles, tundishes). Competitive advantage for SA in global high-tech refractory markets. Located adjacent to the Blue Ridge platinum mine area.'},
+
+  {lat:-25.82,lng:27.95,t:'industrial',s:'active',
+   name:'Vergenoeg Fluorspar Mine (Solvay / AfriMat)',
+   company:'Solvay / African Minerals',
+   reserves:'~90 Mt ore at 25% CaF₂',production:'~200 000 t acid-grade fluorspar/year',
+   grade:'95%+ CaF₂ (acid grade)',depth:'Open pit ring dyke',
+   province:'Gauteng (Bronkhorstspruit)',
+   notes:'SA produces ~14% of world fluorspar. Unique ring-dyke geological structure. Critical for aluminium smelting (fluoride bath), refrigerant manufacturing (HFCs/HFOs), and nuclear industry (uranium hexafluoride UF₆). Downstream fluorochemical industry based in Sasolburg (Pelchem).'},
+
+  {lat:-23.93,lng:31.05,t:'industrial',s:'active',
+   name:'Phalaborwa Vermiculite (Omnia / Palabora)',
+   company:'Palabora Mining / Omnia',
+   reserves:'~40 Mt vermiculite',production:'~170 000 t expanded vermiculite/year',
+   grade:'Commercial grade',depth:'By-product of copper mining',
+   province:'Limpopo',
+   notes:'SA produces ~40% of world vermiculite — a phyllosilicate that expands dramatically when heated (exfoliation). Used in horticulture, construction insulation, fire protection, and packaging. Completely co-produced with copper and phosphate at Palabora — model of resource efficiency.'},
+  {lat:-24.20,lng:29.80,t:'chromite',s:'active',name:'Steelpoort Chrome District',company:'Glencore / Samancor / Tharisa',reserves:'~1 500 Mt LG6/MG chrome ore',production:'~8 Mt/year',grade:'40-46% Cr2O3',depth:'Open pit + underground 400m',province:'Limpopo',notes:'Part of Bushveld Critical Minerals Province. World largest chrome reserve belt. LG6 and MG chromitite seams. 12 active chrome mines within 50km of Steelpoort Valley.'},
+  {lat:-25.60,lng:27.20,t:'chromite',s:'active',name:'Brits Chrome District',company:'Samancor / Hernic Ferrochrome / ASA Metals',reserves:'~800 Mt LG6 chrome ore',production:'~5 Mt/year',grade:'42-44% Cr2O3',depth:'Underground 200-600m',province:'North West',notes:'Western limb Bushveld chrome district. Feeds Hernic Ferrochrome smelter at Brits. SA produces 45% of global chrome ore. LG6 chromitite reef 1.2-2.0m thick. Co-produced with UG2 PGM at several operations.'},
+  {lat:-25.90,lng:29.20,t:'coal',s:'active',name:'Witbank-Middelburg Coalfield',company:'Anglo American Thungela / Exxaro / Seriti',reserves:'~50 Gt thermal coal',production:'~130 Mt/year (50% of SA total)',grade:'20-26 MJ/kg',depth:'Open pit + underground 30-150m',province:'Mpumalanga',notes:'SA largest coalfield. Feeds Eskom Duvha, Kendal, Matla, Kriel and Arnot power stations directly. Richards Bay Coal Terminal exports 91 Mt/year from here. Major contributor to SA CO2 emissions.'},
+  {lat:-23.90,lng:28.40,t:'coal',s:'active',name:'Waterberg Coalfield',company:'Exxaro Grootegeluk / Mmakau Mining',reserves:'~40 Gt thermal + coking coal',production:'~28 Mt/year',grade:'10-28 MJ/kg multi-seam',depth:'Open pit - massive strip',province:'Limpopo',notes:'SA largest single coal deposit by resource. Grootegeluk mine supplies Matimba and Medupi power stations. Low-grade beneficiated to higher energy product. Dedicated railway to Lephalale. Future export potential via proposed Waterberg rail link.'},
+  {lat:-27.65,lng:23.05,t:'iron',s:'active',name:'Khumani Iron Ore Mine',company:'Kumba Iron Ore / Anglo American',reserves:'~900 Mt measured',production:'~16 Mt/year',grade:'63-65% Fe direct ship',depth:'Open pit 300m',province:'Northern Cape',notes:'Sister mine to Sishen 30km north. High-grade haematite direct shipping ore. Connected to Saldanha Bay via 861km Sishen-Saldanha railway - longest iron ore railway in Africa. Combined Sishen+Khumani supply 60% of SA iron ore exports.'},
+  {lat:-24.40,lng:31.10,t:'iron',s:'active',name:'Thabazimbi Iron Ore Mine',company:'ArcelorMittal South Africa',reserves:'~200 Mt declining',production:'~2.5 Mt/year captive',grade:'60-64% Fe',depth:'Open pit + underground',province:'Limpopo',notes:'Captive iron ore mine supplying AMSA Vanderbijlpark and Pretoria steelworks. Banded ironstone formation in Transvaal Supergroup. Historic mine producing since 1930s. Declining reserves forcing AMSA to supplement with Sishen ore.'},
+  {lat:-27.40,lng:22.60,t:'manganese',s:'active',name:'Mamatwan Manganese Mine',company:'South32 / Samancor Manganese',reserves:'~4 000 Mt manganese ore district',production:'~6 Mt/year',grade:'36-40% Mn',depth:'Open pit 60m + underground expansion',province:'Northern Cape',notes:'Part of Kalahari Manganese Field - 80% of world known manganese reserves in one district. Used in steel alloys and battery cathodes. Critical mineral for energy transition. Exports via Port Elizabeth and Durban.'},
+  {lat:-22.40,lng:29.90,t:'diamond',s:'active',name:'Venetia Diamond Mine',company:'De Beers / Anglo American',reserves:'~96 Mt ore at 55 cpht',production:'~3.5 Mcts/year',grade:'55 cpht average',depth:'Open pit transitioning to underground 1000m',province:'Limpopo',notes:'SA largest diamond mine by carat production. Two kimberlite pipes K1 and K2. Transitioning to underground block cave - R25 billion project. Produces 40% of SA diamond output. Mine life extended to 2046 with underground expansion.'},
+  {lat:-28.73,lng:24.77,t:'diamond',s:'active',name:'Finsch Diamond Mine',company:'Petra Diamonds',reserves:'~24 Mt at 60 cpht',production:'~1.6 Mcts/year',grade:'60 cpht',depth:'Underground block cave 630m',province:'Northern Cape',notes:'Fourth largest kimberlite pipe in SA. Block cave mining method. Consistent gem quality output. Located in Northern Cape semi-arid zone. Petra Diamonds also operates Cullinan mine near Pretoria.'},
+  {lat:-29.08,lng:25.43,t:'diamond',s:'historic',name:'Jagersfontein Mine',company:'Stargems Group - care & maintenance',reserves:'Est. 20 Mt tailings',production:'Suspended - tailings dam failure 2022',grade:'0.08-0.12 cpht large stones',depth:'Underground 1 200m historic + tailings',province:'Free State',notes:'Historic kimberlite pipe - one of world oldest diamond mines (1870). Famous for Excelsior (995ct) and Reitz (269ct) diamonds. Catastrophic tailings dam failure September 2022. Kimberlite pipe 640m diameter. Recovery and remediation ongoing.'},
+  {lat:-25.65,lng:27.35,t:'pgm',s:'active',name:'Mogalakwena Platinum Mine',company:'Anglo American Platinum',reserves:'~800 Mt Platreef ore',production:'~500 000 oz 4E PGM/year',grade:'2.5-4 g/t 4E',depth:'Open pit - largest PGM mine in world',province:'Limpopo',notes:'World largest open-pit PGM mine. Platreef deposit 10-400m thick - much thicker than Merensky/UG2. Also produces nickel, copper, cobalt. Lower grade but vastly larger tonnage. Future underground expansion Mogalakwena North planned.'},
+  {lat:-25.46,lng:27.11,t:'pgm',s:'active',name:'Bafokeng Rasimone Platinum Mine',company:'Royal Bafokeng Platinum / Impala Platinum',reserves:'~160 Mt UG2 + Merensky',production:'~250 000 oz 4E/year',grade:'4.5 g/t 4E Merensky',depth:'Underground 600-1 200m',province:'North West',notes:'Unique community ownership - Royal Bafokeng Nation holds majority stake. Dual reef mining Merensky and UG2. Royalty income funds community schools and hospitals. Model for community benefit from mining in SA.'},
+  {lat:-26.72,lng:26.85,t:'gold',s:'active',name:'Driefontein Gold Mine',company:'Sibanye-Stillwater',reserves:'~18 Mt at 8.2 g/t',production:'~10 t Au/year',grade:'8.2 g/t Au',depth:'2 800-3 400m',province:'Gauteng / North West',notes:'One of world deepest and richest gold mines. Carbon Leader Reef. Virgin rock temperature 65 degrees - refrigeration required. Part of Sibanye West Operations. Historic producer since 1952 - over 2 000 t Au produced lifetime.'},
+  {lat:-26.45,lng:27.83,t:'gold',s:'care',name:'Blyvooruitzicht Gold Mine',company:'DRD Gold - care and maintenance',reserves:'Surface tailings 170 Mt at 0.35 g/t',production:'Tailings retreatment 0.8 t Au/year',grade:'0.35 g/t tailings',depth:'Surface retreatment only',province:'Gauteng',notes:'Historic deep-level gold mine - underground ceased 2013. Now tailings retreatment only. Significant AMD challenge from flooded shafts. Community affected by land subsidence. Dolomite sinkhole risk zone. Rehabilitation ongoing.'},
+  {lat:-27.46,lng:26.33,t:'gold',s:'exploration',name:'De Bron-Merriespruit OFS Goldfields',company:'Pan African Resources / Harmony',reserves:'~12 Mt at 5.2 g/t inferred',production:'Exploration stage',grade:'5.2 g/t Au',depth:'600-1 200m Basal Reef',province:'Free State',notes:'Free State Goldfields exploration target. Basal Reef and B-Reef targets. Feasibility studies ongoing. Lower cost underground mining potential vs deep Witwatersrand operations.'},
+  {lat:-25.45,lng:30.04,t:'vanadium',s:'active',name:'Vametco Vanadium Mine',company:'Bushveld Minerals',reserves:'~90 Mt magnetite ore',production:'~3 000t vanadium pentoxide/year',grade:'1.85% V2O5',depth:'Open pit 80m',province:'North West',notes:'Primary vanadium producer from Bushveld magnetite layer. Vanadium critical for vanadium redox flow batteries for grid energy storage. SA holds 30% of world vanadium reserves in Bushveld magnetite seams. Strategic mineral for energy transition.'},
+  {lat:-28.80,lng:32.10,t:'titanium',s:'active',name:'Fairbreeze Titanium Mine KZN',company:'Tronox Holdings',reserves:'~400 Mt heavy mineral sands',production:'~300 000t ilmenite + 70 000t zircon/year',grade:'4-6% total heavy minerals',depth:'Open pit dune mining surface',province:'KwaZulu-Natal',notes:'Coastal dune heavy mineral sands. Ilmenite processed to titanium dioxide white pigment. Zircon for ceramics. Rehabilitation and dune restoration ongoing. Sensitive coastal zone community engagement critical.'}
+];
+
+/* Build mineral layer — uses markerClusterGroup if available, otherwise plain layerGroup */
+const mineralLayer = (typeof L.markerClusterGroup === 'function')
+  ? L.markerClusterGroup({
+      maxClusterRadius: 15,
+      disableClusteringAtZoom: 5,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      iconCreateFunction: function(cluster){
+        const count = cluster.getChildCount();
+        return L.divIcon({
+          className:'',
+          html:`<div style="width:30px;height:30px;border-radius:50%;
+            background:rgba(31,60,47,0.92);border:2px solid #c9a84c;
+            display:flex;align-items:center;justify-content:center;
+            font-size:11px;font-weight:700;color:#fbbf24;
+            box-shadow:0 2px 10px rgba(0,0,0,0.6);
+            font-family:Inter,sans-serif;">${count}</div>`,
+          iconSize:[30,30],iconAnchor:[15,15]
+        });
+      }
+    })
+  : L.layerGroup();
+const mineralMarkers = [];
+(function(){
+  SA_MINERALS.forEach(d=>{
+    const mc = MCOL[d.t] || MCOL.industrial;
+    const statusOpacity = d.s==='exploration' ? '0.55' : d.s==='reduced'||d.s==='historic' ? '0.4' : '1';
+    const size = d.t==='pgm'||d.t==='gold'||d.t==='diamond' ? 22 : 18;
+    const icon = L.divIcon({
+      className:'',
+      html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:${mc.color};
+        border:2px solid ${d.s==='active'?'rgba(255,255,255,0.85)':d.s==='care'?'#f59e0b':d.s==='exploration'?'#38bdf8':d.s==='historic'||d.s==='closed'?'#ef4444':'rgba(255,255,255,0.4)'};
+        display:flex;align-items:center;justify-content:center;
+        font-size:${size>19?7:6}px;font-weight:800;color:rgba(0,0,0,0.85);
+        box-shadow:0 2px 8px rgba(0,0,0,0.6),0 0 12px ${mc.color}44;
+        opacity:${statusOpacity};font-family:Inter,sans-serif;">${mc.icon}</div>`,
+      iconSize:[size,size],iconAnchor:[size/2,size/2]
+    });
+    const m = L.marker([d.lat,d.lng],{icon});
+    m.bindTooltip(`<strong style="color:#fff">${d.name}</strong><br><small style="color:${mc.color}">${mc.label}</small><br><small style="color:rgba(255,255,255,0.45)">${d.province}</small>`,{sticky:true});
+    m.on('click',()=>showInfo('mineral',{
+      name:d.name,notes:d.notes,
+      area:d.province,status:`${d.s.charAt(0).toUpperCase()+d.s.slice(1)} | ${d.company}`,
+      source:`Reserves: ${d.reserves}`,
+      capital:`Production: ${d.production} | Grade: ${d.grade} | Depth: ${d.depth}`,
+      _lat:d.lat,_lng:d.lng
+    }));
+    m._mineralType = d.t;
+    mineralMarkers.push(m);
+    mineralLayer.addLayer(m);
+  });
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SOUTH AFRICA FARMING REGIONS
+══════════════════════════════════════════════════════════════════════════ */
+const farmingLayer = L.layerGroup();
+const SA_FARMING = [
+  {id:'fs-maize',name:'Free State Maize Triangle',crop:'Maize · Soya · Sunflower · Wheat',type:'grain',color:'#b45309',fill:'#fde68a',
+   area:'~5 million ha cultivated',rainfall:'450–600 mm/year (summer)',soil:'Hutton, Clovelly, Bainsvlei (deep red-yellow apedal)',
+   season:'Plant: Nov–Dec | Harvest: Mar–May',province:'Free State / North West / S Gauteng',
+   notes:'The breadbasket of South Africa. Produces ~10 Mt white and yellow maize per year — feeding SA and much of sub-Saharan Africa. White maize for human consumption; yellow for animal feed and ethanol. Mechanised commercial farming on deep, well-drained soils. Hail and drought are primary risks.',
+   coords:[[-26.5,24.5],[-26.5,28.5],[-30.5,28.5],[-30.5,24.5]]},
+
+  {id:'wc-wine',name:'Cape Winelands (Stellenbosch · Paarl · Franschhoek)',crop:'Wine Grapes · Table Grapes · Olives · Fruit',type:'viticulture',color:'#7c3aed',fill:'#ddd6fe',
+   area:'~95 000 ha wine grape vines',rainfall:'500–800 mm/year (winter Mediterranean)',soil:'Tukulu, Hutton (sandstone / granite derived)',
+   season:'Harvest: Feb–Apr (Cape Vintage)',province:'Western Cape',
+   notes:'SA wine industry dates to 1659 (Jan van Riebeeck). 300+ wineries in the Winelands. Famous cultivars: Chenin Blanc (30% of SA vines — world\'s largest), Pinotage (uniquely South African), Cabernet Sauvignon, Shiraz. Exports worth ~R10 billion/year. A UNESCO World Heritage landscape (Boland Mountains).',
+   coords:[[-33.5,18.6],[-33.5,19.5],[-34.3,19.5],[-34.3,18.6]]},
+
+  {id:'wc-grain',name:'Swartland — Western Cape Grain Belt',crop:'Wheat · Canola · Barley · Legumes',type:'grain',color:'#d97706',fill:'#fef3c7',
+   area:'~600 000 ha wheat; 200 000 ha canola',rainfall:'250–400 mm/year (Mediterranean winter)',soil:'Oakleaf, Sepane (dark clay duplex)',
+   season:'Plant: May–Jun | Harvest: Oct–Dec',province:'Western Cape',
+   notes:'The Swartland ("black land" — dark clay soils) produces most of SA\'s wheat. Excellent for barley (malting grade for SAB/AB InBev), canola, and legumes. Artisan grain economy growing — boutique bread wheat, rye, and emmer. Overberg (Walker Bay hinterland) contributes significantly to wheat production.',
+   coords:[[-32.5,18.0],[-32.5,19.1],[-33.6,19.1],[-33.6,18.0]]},
+
+  {id:'kzn-sugar',name:'KwaZulu-Natal Sugarcane Belt',crop:'Sugarcane · Bananas · Pineapples · Avocados',type:'sugar',color:'#16a34a',fill:'#bbf7d0',
+   area:'~400 000 ha sugarcane (25 sugar mills)',rainfall:'800–1 400 mm/year (summer)',soil:'Avalon, Longlands, Cartref (coastal & midlands)',
+   season:'Year-round cutting; peak: Jun–Dec',province:'KwaZulu-Natal',
+   notes:'KZN produces 80% of SA\'s sugar. Sugarcane cultivation dates to 1848 — Indian indentured labourers arrived to work the fields, shaping KZN\'s multicultural demographics. Illovo, RCL Foods, Tongaat Hulett are millers. Bagasse (cane waste) generates electricity for mills. Ethanol blend programme underway.',
+   coords:[[-27.5,30.4],[-27.5,32.0],[-31.0,32.0],[-31.0,30.4]]},
+
+  {id:'lim-subtropical',name:'Limpopo Subtropical Belt (Tzaneen / Hoedspruit)',crop:'Citrus · Avocado · Mango · Litchi · Tea · Macadamia',type:'subtropical',color:'#ea580c',fill:'#fed7aa',
+   area:'~150 000 ha subtropical fruits',rainfall:'800–1 200 mm/year (summer)',soil:'Hutton, Clovelly (well-drained colluvial)',
+   season:'Citrus: May–Aug | Avocado: Mar–Aug | Mango: Oct–Feb',province:'Limpopo',
+   notes:'SA is the world\'s largest avocado exporter and a top-3 citrus exporter. The Tzaneen-Hoedspruit corridor produces the bulk of SA\'s subtropical fruits. Sapekoe tea estates in Magoebaskloof. Litchi concentrated around Tzaneen. Macadamia nuts growing rapidly — SA is now the world\'s largest producer.',
+   coords:[[-23.0,29.5],[-23.0,31.2],[-24.8,31.2],[-24.8,29.5]]},
+
+  {id:'mpu-lowveld',name:'Mpumalanga Lowveld (Nelspruit / White River)',crop:'Citrus · Avocado · Banana · Sugar · Vegetables',type:'subtropical',color:'#f97316',fill:'#ffedd5',
+   area:'~80 000 ha lowveld farming',rainfall:'650–1 000 mm/year',soil:'Sandy loam to clay loam (alluvial)',
+   season:'Year-round with irrigation',province:'Mpumalanga',
+   notes:'The Mpumalanga lowveld (Mbombela, White River, Hazyview) is frost-free year-round. Citrus estates, avocado orchards, and banana plantations. Proximity to Mozambique creates export corridor opportunities. Barberton area is famous for indigenous plants and the ancient Barberton Greenstone Belt.',
+   coords:[[-24.5,30.5],[-24.5,32.0],[-26.3,32.0],[-26.3,30.5]]},
+
+  {id:'ec-citrus',name:'Sundays River Valley Citrus (Eastern Cape)',crop:'Navel Oranges · Valencia · Lemons · Soft Citrus',type:'citrus',color:'#f59e0b',fill:'#fde68a',
+   area:'~45 000 ha citrus',rainfall:'300–400 mm/year (supplemented by irrigation)',soil:'Deep alluvial soils (river valley)',
+   season:'Navel: May–Aug | Valencia: Aug–Oct',province:'Eastern Cape',
+   notes:'The Sundays River Valley (Addo, Kirkwood, Sunlands) produces SA\'s finest export navel oranges. Warm days, cool nights, minimal disease pressure — ideal growing conditions. Coega IDZ and Gqeberha port provide world-class export logistics. Adjacent Addo Elephant Park creates eco-agri-tourism potential.',
+   coords:[[-33.0,24.8],[-33.0,26.0],[-33.8,26.0],[-33.8,24.8]]},
+
+  {id:'nc-orange',name:'Orange River Irrigated Corridor (Northern Cape)',crop:'Table Grapes · Wine Grapes · Raisins · Dates · Citrus · Olives',type:'grapes',color:'#7c3aed',fill:'#ede9fe',
+   area:'~70 000 ha irrigated (Orange/Gariep River)',rainfall:'<200 mm/year (fully irrigated)',soil:'Rich alluvial river terrace soils',
+   season:'Table grapes: Dec–Feb | Wine: Mar–May',province:'Northern Cape (Upington, Keimoes, Kakamas)',
+   notes:'The Orange River (Gariep) enables intensive farming in the Kalahari desert. SA\'s finest seedless table grapes — exported globally as "Cape grapes." Intense desert sunshine and low humidity (no mildew pressure) produce clean, sweet fruit. Dates grow at Upington. Cotton historically grown here.',
+   coords:[[-28.0,18.0],[-28.0,24.0],[-29.0,24.0],[-29.0,18.0]]},
+
+  {id:'karoo-sheep',name:'Karoo — Merino Wool / Dorper Mutton / Mohair',crop:'Merino Sheep · Dorper Sheep · Angora Goat',type:'livestock',color:'#78716c',fill:'#d6d3d1',
+   area:'~400 000+ farms (vast, very low density)',rainfall:'100–300 mm/year (semi-arid)',soil:'Shallow rocky lithosols and arenosols',
+   season:'Year-round grazing; shearing: Sep–Oct; lambing: Aug',province:'Northern Cape / Eastern Cape / Western Cape (Karoo biome)',
+   notes:'The Karoo covers ~400,000 km² — one-third of SA. Merino sheep produce fine wool (Cape Wool Board — world-renowned). Dorper sheep (SA breed) produce the finest mutton. Angora goats for mohair — SA produces 60% of world\'s mohair. Typical farm: 2,000–20,000 ha. Karoo lamb is a premium product. Shale gas potential creates environmental controversy.',
+   coords:[[-30.0,20.0],[-30.0,26.5],[-33.5,26.5],[-33.5,20.0]]},
+
+  {id:'mpu-highveld',name:'Mpumalanga Highveld Grain Belt',crop:'Maize · Soya Beans · Sunflower · Wheat',type:'grain',color:'#ca8a04',fill:'#fef9c3',
+   area:'~1 million ha cultivated',rainfall:'550–750 mm/year (summer)',soil:'Hutton, Avalon, Westleigh (deep red-yellow)',
+   season:'Plant: Oct–Dec | Harvest: Apr–May',province:'Mpumalanga',
+   notes:'Bethal, Standerton, Volksrust, and Middelburg are prime maize and soya territory. More reliable rainfall than Free State. Soya exports growing rapidly (Chinese demand). Sunflower feeds Mpumalanga\'s cooking oil industry. Mixed land use with coal mining creates land-use conflicts.',
+   coords:[[-25.5,28.5],[-25.5,30.5],[-27.0,30.5],[-27.0,28.5]]},
+
+  {id:'kzn-midlands',name:'KZN Midlands — Dairy · Timber · Vegetables',crop:'Dairy Cattle · Timber (Pine/Eucalyptus) · Vegetables · Soya',type:'mixed',color:'#15803d',fill:'#dcfce7',
+   area:'~300 000 ha mixed farming',rainfall:'700–900 mm/year',soil:'Oakleaf, Estcourt (well-drained clay soils)',
+   season:'Year-round dairy; winter vegetables',province:'KwaZulu-Natal',
+   notes:'SA\'s most productive dairy belt — Clover, Nestlé, Darling Brew use KZN milk. Commercial timber plantations (Sappi, Mondi) cover foothills — producing pulp for paper and packaging. English-settler heritage: village atmosphere, horse-racing (Midlands Meander), craft beer, fly fishing. Pietermaritzburg, Mooi River, Howick.',
+   coords:[[-29.0,29.5],[-29.0,30.8],[-30.5,30.8],[-30.5,29.5]]},
+
+  {id:'lim-marble-hall',name:'Limpopo Midveld — Marble Hall / Groblersdal Citrus',crop:'Citrus · Tomatoes · Vegetables · Cotton',type:'citrus',color:'#f59e0b',fill:'#fef3c7',
+   area:'~60 000 ha irrigation (Olifants River scheme)',rainfall:'450–600 mm/year + irrigation',soil:'Deep sandy loam (valley bushveld soils)',
+   season:'Citrus: May–Sep | Tomatoes: year-round with irrigation',province:'Limpopo (Sekhukhune District)',
+   notes:'Marble Hall and Groblersdal are at the heart of Limpopo\'s midveld citrus production. The Groblersdal Irrigation Scheme (Olifants River) is one of the largest in Limpopo. Adjacent to the Mzilikazi Kingdom mining area — agriculture and mining co-exist in this corridor.',
+   coords:[[-24.8,28.8],[-24.8,29.8],[-25.6,29.8],[-25.6,28.8]]},
+];
+
+(function(){
+  SA_FARMING.forEach(f=>{
+    const poly=L.polygon(f.coords,{color:f.color,fillColor:f.fill,fillOpacity:0.3,weight:1.5,dashArray:'3,4'});
+    poly.on('mouseover',function(){this.setStyle({fillOpacity:0.52,weight:2});});
+    poly.on('mouseout', function(){this.setStyle({fillOpacity:0.3,weight:1.5});});
+    poly.bindTooltip(`<strong style="color:#fff">${f.name}</strong><br><small style="color:rgba(255,255,255,0.55)">${f.crop}</small>`,{sticky:true});
+    poly.on('click',()=>showInfo('farming',{
+      name:f.name,notes:f.notes,
+      area:`${f.province} | ${f.area}`,
+      status:`${f.rainfall} | ${f.soil}`,
+      source:`Season: ${f.season}`,
+      capital:f.crop,
+      _lat:L.latLngBounds(f.coords).getCenter().lat,_lng:L.latLngBounds(f.coords).getCenter().lng
+    }));
+    farmingLayer.addLayer(poly);
+
+    // Centre label marker
+    const c=L.latLngBounds(f.coords).getCenter();
+    farmingLayer.addLayer(L.marker([c.lat,c.lng],{
+      icon:L.divIcon({className:'',html:`<div style="font-size:9px;color:#fff;font-weight:700;text-shadow:0 0 4px #000,0 0 8px #000;white-space:nowrap;pointer-events:none;">${f.name}</div>`,iconAnchor:[0,6]}),interactive:false
+    }));
+  });
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SOUTH AFRICA WATER RESOURCES (Dams, Aquifers, Systems)
+══════════════════════════════════════════════════════════════════════════ */
+const waterLayer = L.layerGroup();
+const SA_WATER = [
+  {lat:-30.62,lng:25.52,t:'dam',name:'Gariep Dam — SA\'s Largest Dam',capacity:'5 341 Mm³',river:'Orange (Gariep) River',built:1971,purpose:'Water supply + 240 MW hydro + irrigation',province:'Free State / Eastern Cape border',notes:'South Africa\'s largest dam by volume. The Orange River Scheme (Gariep+Vanderkloof) transfers water to the Eastern Cape via the Great Fish River Tunnel (82.8 km — longest in Southern Africa). Hydroelectric plant. Scenic holiday destination.'},
+  {lat:-29.96,lng:24.70,t:'dam',name:'Vanderkloof Dam — 2nd Largest',capacity:'3 171 Mm³',river:'Orange River (series with Gariep)',built:1977,purpose:'Hydropower 240 MW + water transfer to Eastern Cape',province:'Northern Cape',notes:'Second largest SA dam. In series with Gariep. Water pumped into the Great Fish River Tunnel for Eastern Cape irrigation. Generates 240 MW. Named after "vanishing ravine" (Afrikaans). Spectacular gorge setting.'},
+  {lat:-28.40,lng:28.60,t:'dam',name:'Sterkfontein Dam — Tugela–Vaal Transfer',capacity:'2 617 Mm³',river:'Pumped from Tugela River (KZN)',built:1996,purpose:'Pumped-storage hydro 1 000 MW + Vaal augmentation',province:'Free State (Drakensberg)',notes:'Second largest SA dam by volume. Part of the Tugela–Vaal Transfer Scheme — pumping water from KZN over the Drakensberg to augment the Vaal system. Reversible turbines generate 1,000 MW during peak demand. Engineering marvel in the Maluti foothills.'},
+  {lat:-26.89,lng:28.12,t:'dam',name:'Vaal Dam — Gauteng\'s Lifeline',capacity:'2 603 Mm³',river:'Vaal River',built:1938,purpose:'Primary water supply for 15 million people in Gauteng',province:'Free State / Gauteng / Mpumalanga border',notes:'Most critical dam in SA. When Vaal falls below 50%, level 1–4 water restrictions trigger across Johannesburg, Pretoria, and Ekurhuleni. The LHWP (Lesotho Highlands Water Project) tunnels water from Lesotho to augment the Vaal system.'},
+  {lat:-27.40,lng:31.90,t:'dam',name:'Pongolapoort Dam (Lake Jozini)',capacity:'2 467 Mm³',river:'Pongola River',built:1973,purpose:'Irrigation + fisheries + flood control',province:'KwaZulu-Natal (near Eswatini border)',notes:'Lake Jozini is a spectacular dam near the Eswatini border. The Pongola flood plains downstream support traditional Zulu flood-pulse agriculture. Rich tiger fish, tilapia, and catfish resources. Houseboats, fishing lodges, and Ndumo Game Reserve nearby.'},
+  {lat:-29.33,lng:28.51,t:'dam',name:'Katse Dam — Lesotho Highlands Water Project',capacity:'1 950 Mm³',river:'Malibamatso River (Lesotho)',built:1996,purpose:'Water export to Gauteng via Vaal + 72 MW hydro',province:'Lesotho',notes:'The LHWP is the largest infrastructure project in Africa. Katse Dam — 185 m high double-curvature arch dam in the Maluti Mountains. Water tunnelled under the Drakensberg to the Vaal system (Katse–Ash–Liebenbergsvlei–Wilge tunnels). Lesotho receives ~R500M/year in royalties — White Gold.'},
+  {lat:-34.09,lng:19.22,t:'dam',name:'Theewaterskloof — Cape Town Water Supply',capacity:'480 Mm³ (91% of Cape Town supply)',river:'Sonderend River / Palmiet system',built:1979,purpose:'Primary water supply for Cape Town (4.5 million people)',province:'Western Cape',notes:'Cape Town\'s primary water source. In 2018, fell to 13.5% during worst drought in 100 years — "Day Zero" (first major city nearly running out of water) was narrowly avoided through extreme restrictions. Alternative sources (groundwater, desalination, water reuse) now being developed. Climate change is increasing Western Cape drought frequency.'},
+  {lat:-27.70,lng:25.90,t:'dam',name:'Bloemhof Dam — Vaal–Harts Irrigation',capacity:'1 269 Mm³',river:'Vaal River',built:1970,purpose:'Vaal–Harts Irrigation Scheme + flood attenuation',province:'Northern Cape / North West border',notes:'Feeds the Vaal–Harts Irrigation Scheme — one of SA\'s largest state irrigation schemes. Wheat, groundnuts, pecans, and cotton are irrigated downstream. The Bloemhof Wetlands are a significant Ramsar wetland site — critical for waterbirds.'},
+  {lat:-25.74,lng:27.89,t:'dam',name:'Hartbeespoort Dam — Crocodile River',capacity:'173 Mm³',river:'Crocodile River',built:1923,purpose:'Irrigation + recreation + Magalies water',province:'North West / Gauteng border',notes:'One of SA\'s most visited dams — close to Johannesburg and Pretoria. Seriously eutrophied from nutrient runoff. Major ecological restoration programme (Harties Metsi A Me) underway. The Magaliesberg mountains backdrop makes it a prime holiday destination.'},
+  /* Aquifer Systems */
+  {lat:-31.00,lng:23.00,t:'aquifer',name:'Karoo Fractured Rock Aquifer System',capacity:'~1 100 Gm³ in storage',catchment:'~700 000 km²',purpose:'Rural water for ~2.5 million people + stock watering',province:'Entire Karoo biome',notes:'Not a single aquifer but a system of fractured rock aquifers in Karoo mudstones and sandstones. Boreholes supply most Karoo towns and farms. Yields: 0.5–10 L/s per borehole. Recharge: 1–5 mm/year (very slow). Shale gas (fracking) threatens groundwater contamination — a major political and environmental battle.'},
+  {lat:-26.50,lng:20.50,t:'aquifer',name:'Kalahari / Stampriet Transboundary Aquifer',capacity:'~5 000 Gm³ total (shared SA, Namibia, Botswana)',catchment:'~600 000 km² (transboundary)',purpose:'Strategic reserve for Northern Cape + livestock + small towns',province:'Northern Cape (Kalahari)',notes:'The Stampriet Artesian Aquifer — deep confined aquifer in Jurassic Ecca sandstone. Artesian pressure means boreholes flow naturally. Shared by SA, Namibia, and Botswana under a transboundary aquifer agreement. Climate change and extraction are threatening long-term sustainability.'},
+  {lat:-33.50,lng:19.50,t:'aquifer',name:'Table Mountain Group (TMG) Aquifer',capacity:'~19 000 Gm³ (vast strategic reserve)',catchment:'~250 000 km² (Cape Fold Mountains)',purpose:'Strategic Western Cape water security + irrigation',province:'Western Cape / Northern Cape / Eastern Cape',notes:'Massive fractured sandstone aquifer in the Cape Fold Mountains. Considered a key strategic reserve for long-term Western Cape water security. After Day Zero (2018), deep TMG borehole exploration accelerated. High-altitude catchment recharge (1,000–2,000 mm/year). Among SA\'s purest groundwater.'},
+  {lat:-32.20,lng:20.50,t:'aquifer',name:'Table Mountain Group (TMG) Aquifer',capacity:'800+ km3 storage',river:'Cape Fold Belt mountains',built:2000,purpose:'Municipal supply, irrigation, drought resilience',province:'Western Cape / Eastern Cape',notes:'SA largest aquifer system. Fractured sandstone and quartzite of the Cape Fold Belt. Depth to water: 50-300m. Yield: 0.5-15 L/s per borehole. Critical for Cape Town drought resilience after 2018 Day Zero crisis. Recharge rate 800-2000mm/year in mountain zones.'},
+  {lat:-30.50,lng:23.00,t:'aquifer',name:'Karoo Basin Aquifer System',capacity:'Est. 150 000 km3 total (fractured)',river:'Great Karoo sedimentary basin',built:2000,purpose:'Rural water supply, stock watering, irrigation',province:'Northern Cape / Eastern Cape / Free State',notes:'SA largest sedimentary aquifer covering 700 000 km2. Fractured dolerite intrusions create secondary porosity. Depth: 20-150m. Yield: 0.1-2 L/s. Supplies 70% of rural Karoo communities. Contains fossil water up to 10 000 years old. Highly sensitive to fracking risk.'},
+  {lat:-24.80,lng:29.50,t:'aquifer',name:'Limpopo Basin Crystalline Aquifer',capacity:'Regional fractured basement',river:'Limpopo River watershed',built:2000,purpose:'Rural supply, mining process water, agriculture',province:'Limpopo',notes:'Fractured crystalline basement aquifer in granite-gneiss terrain. Depth: 15-80m. Yield: 0.2-3 L/s. Supports Limpopo farming and mining. 50 000+ boreholes. Vulnerable to over-abstraction near platinum and chrome mines. Recharge: 400-600mm/year summer rainfall.'},
+  {lat:-27.50,lng:26.80,t:'aquifer',name:'Kalahari Group Aquifer',capacity:'Est. 250 km3 exploitable',river:'Kalahari sedimentary basin',built:2000,purpose:'Mining, livestock, rural supply',province:'Northern Cape',notes:'Porous sandstone and calcrete aquifer under Kalahari sands. Depth: 30-120m. Yield: 1-10 L/s. Critical for Kalahari manganese field operations. Shared transboundary resource with Botswana and Namibia. Recharge: 5-15mm/year.'},
+  {lat:-26.50,lng:28.00,t:'aquifer',name:'Witwatersrand Dolomite Aquifer',capacity:'Productive karst limestone system',river:'Gauteng dolomite belt',built:2000,purpose:'Municipal, industrial, mine dewatering',province:'Gauteng / North West',notes:'Karst dolomite aquifer underlying Gauteng. Depth: 10-60m. Yield: 2-20 L/s. Serious sinkhole risk - 16 fatal events since 1960. Mine dewatering has lowered water table significantly. Acid Mine Drainage from gold mines threatens groundwater. Contains 5-6 billion litres of AMD currently.'},
+  {lat:-29.00,lng:30.50,t:'aquifer',name:'KwaZulu-Natal Coastal Aquifer',capacity:'Sandy coastal aquifer - moderate yield',river:'KZN coastal plain',built:2000,purpose:'Municipal supply, tourism, agriculture',province:'KwaZulu-Natal',notes:'Unconsolidated sandy coastal aquifer. Depth: 5-40m. Yield: 0.5-5 L/s. Vulnerable to seawater intrusion. Supplies coastal municipalities and sugar cane irrigation. Recharge: 600-900mm/year. Critical buffer during Umgeni River low-flow periods.'},
+  {lat:-25.70,lng:27.00,t:'aquifer',name:'Bushveld Complex Aquifer',capacity:'Fractured igneous - variable yield',river:'Bushveld watershed',built:2000,purpose:'Mining process water - PGM and Chrome operations',province:'Limpopo / North West / Mpumalanga',notes:'Fractured aquifer within the Bushveld Igneous Complex. Depth: 30-200m. Yield: 0.2-5 L/s. Heavily used by platinum and chromite mining. Dewatering contributes 200-500 ML/day to local water balance. Risk of contamination from tailings seepage.'},
+  {lat:-31.80,lng:26.50,t:'aquifer',name:'Uitenhage Artesian Basin',capacity:'Artesian - naturally pressurised',river:'Sundays River Valley',built:2000,purpose:'Irrigation (citrus), municipal supply',province:'Eastern Cape',notes:'One of SA few true artesian aquifer systems - water rises naturally under pressure. Depth: 100-600m. Yield: 2-30 L/s flowing. Table Mountain Group sandstone confined under shale. Supplies Kariega city and Sundays River Valley citrus industry. Recharge area in Baviaanskloof Mountains.'}
+];
+
+(function(){
+  SA_WATER.forEach(w=>{
+    const isDam = w.t==='dam';
+    const icon = L.divIcon({
+      className:'',
+      html:`<div style="width:${isDam?18:22}px;height:${isDam?18:22}px;
+        border-radius:${isDam?'4px':'50%'};
+        background:${isDam?'#1d4ed8':w.t==='aquifer'?'#065f46':'#0e7490'};
+        border:2px solid ${isDam?'rgba(103,232,249,0.7)':w.t==='aquifer'?'rgba(52,211,153,0.8)':'rgba(103,232,249,0.7)'};
+        display:flex;align-items:center;justify-content:center;
+        font-size:10px;font-weight:700;color:#fff;
+        box-shadow:0 2px 8px rgba(0,0,0,0.5),0 0 10px #67e8f944;
+        font-family:Inter,sans-serif;">${isDam?'■':w.t==='aquifer'?'●':'■'}</div>`,
+      iconSize:[isDam?18:22,isDam?18:22],iconAnchor:[isDam?9:11,isDam?9:11]
+    });
+    const mk = L.marker([w.lat,w.lng],{icon});
+    mk.bindTooltip(`<strong style="color:#fff">${w.name}</strong><br><small style="color:#67e8f9">${isDam?w.capacity:w.catchment}</small>`,{sticky:true});
+    mk.on('click',()=>showInfo('water',{
+      name:w.name,notes:w.notes,
+      area:w.province,
+      status:isDam?`Built ${w.built} | ${w.river}`:`Catchment: ${w.catchment}`,
+      source:`Purpose: ${w.purpose}`,
+      capital:`Capacity: ${w.capacity||w.capacity}`,
+      _lat:w.lat,_lng:w.lng
+    }));
+    waterLayer.addLayer(mk);
+  });
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SPECIAL ECONOMIC ZONES (SEZs) — shown in Map & Smart city layers
+══════════════════════════════════════════════════════════════════════════ */
+const sezLayer = L.layerGroup();
+const SA_SEZ = [
+  {lat:-33.79,lng:25.62,name:'Coega IDZ — Gqeberha (Port Elizabeth)',focus:'Automotive · Petrochemicals · Agro-processing · Green Energy',jobs:'~20 000 direct',province:'Eastern Cape',notes:'SA\'s largest IDZ. Adjacent to Port of Ngqura (deepwater container terminal). VW, Daimler, PETROSA. Manganese export terminal. Wind and solar suppliers. Eastern Cape is SA\'s automotive heartland.'},
+  {lat:-33.00,lng:27.90,name:'East London IDZ',focus:'Automotive (Mercedes-Benz SA) · Beverages · Logistics',jobs:'~10 000 direct',province:'Eastern Cape',notes:'Mercedes-Benz SA manufactures C-Class and Vito vans for global export here. IDZ focuses on export-oriented manufacturing. Rail, road, and port connectivity from Buffalo City.'},
+  {lat:-28.72,lng:32.10,name:'Richards Bay IDZ',focus:'Aluminium · Titanium Processing · Mineral Chemicals',jobs:'~8 000 direct',province:'KwaZulu-Natal',notes:'Adjacent to Africa\'s largest bulk export terminal. South32 BAZAN aluminium, RBM titanium, Tronox zircon. Lithium battery materials park in development. The largest bulk coal, aluminium and titanium export hub in Africa.'},
+  {lat:-32.98,lng:17.97,name:'Saldanha Bay IDZ',focus:'Oil & Gas Support · Ship Repair · Steel Fabrication · Green H₂',jobs:'~5 000 direct',province:'Western Cape',notes:'Africa\'s deepest natural harbour. Offshore oil/gas support services and ship repair. Transnet iron ore export terminal (Sishen-Saldanha rail). Prime green hydrogen hub — world-class wind resources. Aquaculture and marine biotech expanding.'},
+  {lat:-22.44,lng:29.99,name:'Musina-Makhado SEZ (Limpopo)',focus:'Critical Minerals Processing · Energy · Agro-industry',jobs:'~100 000 projected (full build)',province:'Limpopo (Zimbabwe border)',notes:'Potentially transformative SEZ at the Beitbridge border. Focus on critical minerals (vanadium, PGMs, chrome), energy, and agro-processing. Chinese consortium (CMSEZ) is primary developer. Would be the largest SEZ in Africa when built.'},
+  {lat:-25.72,lng:28.10,name:'Tshwane Automotive SEZ',focus:'Automotive Manufacturing · Components · R&D · EV Transition',jobs:'~8 000 direct + 30 000 indirect',province:'Gauteng (Tshwane)',notes:'Africa\'s largest automotive cluster. Ford (Ranger — exported to 100+ countries), BMW (3 Series), Nissan SA. Tier-1 and Tier-2 auto component suppliers. Moving toward EV manufacturing. TUT (Tshwane University of Technology) provides automotive engineering graduates.'},
+  {lat:-29.62,lng:31.11,name:'Dube TradePort SEZ (King Shaka Airport)',focus:'Logistics · Fresh Produce Export · ICT · Light Manufacturing',jobs:'~12 000 direct',province:'KwaZulu-Natal',notes:'Adjacent to King Shaka International Airport — Africa\'s first aerotropolis. Fresh avocados, citrus, and flowers flown to EU and Middle East. ICT assembly. AgriZone: high-value perishable products for global markets.'},
+  {lat:-26.14,lng:28.22,name:'OR Tambo Aerotropolis — Ekurhuleni',focus:'Pharma · Logistics · Electronics · Medical Tourism',jobs:'~40 000 in precinct',province:'Gauteng (Ekurhuleni)',notes:'SA\'s busiest airport precinct. Pharma companies (MSD, Aspen, Adcock Ingram), electronics, and advanced manufacturing. Ekurhuleni — the City of Industry. Medical tourism and health innovation hub planned around the aerotropolis concept.'},
+  {lat:-33.61,lng:18.50,name:'Atlantis SEZ — Green Economy Hub',focus:'Wind Turbine Manufacturing · Solar Equipment · Green Hydrogen · EVs',jobs:'~3 500 current; ~15 000 targeted',province:'Western Cape (Cape Town North)',notes:'Atlantis was a struggling apartheid-era dormitory town. Now hosting wind turbine component manufacturers (Nordex, Powerway), solar equipment producers, and green hydrogen start-ups. Western Cape\'s Just Energy Transition flagship project. Prime wind and solar resources on the Atlantic coast.'},
+];
+
+(function(){
+  SA_SEZ.forEach(z=>{
+    const icon = L.divIcon({
+      className:'',
+      html:`<div style="width:16px;height:16px;
+        background:#f59e0b;
+        clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);
+        box-shadow:0 0 8px #f59e0b88;"></div>`,
+      iconSize:[16,16],iconAnchor:[8,8]
+    });
+    const mk=L.marker([z.lat,z.lng],{icon});
+    mk.bindTooltip(`<strong style="color:#fff">${z.name}</strong><br><small style="color:#fbbf24">${z.focus}</small>`,{sticky:true});
+    mk.on('click',()=>showInfo('smart',{
+      name:z.name,notes:z.notes,
+      area:z.province,status:`Jobs: ${z.jobs}`,
+      source:z.focus,
+      _lat:z.lat,_lng:z.lng
+    }));
+    sezLayer.addLayer(mk);
+  });
+  sezLayer.addTo(map); // always visible on map base
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NASA GIBS SCIENCE LAYERS
+══════════════════════════════════════════════════════════════════════════ */
+const GIBS = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best';
+const sciLayers = {
+  ndvi:      L.tileLayer(`${GIBS}/MODIS_Terra_NDVI_8Day/default/2024-06-01/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`,{attribution:'NDVI &copy; NASA GIBS / MODIS Terra',maxNativeZoom:9,maxZoom:19,opacity:0.78}),
+  sentinel2: L.tileLayer(`${GIBS}/MODIS_Terra_CorrRefl_TrueColor/default/2024-06-15/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,{attribution:'Sentinel-2 proxy &copy; NASA GIBS',maxNativeZoom:9,maxZoom:19,opacity:0.85}),
+  landsat:   L.tileLayer(`${GIBS}/Landsat_WELD_CorrRefl_TrueColor_Global_Annual/default/2013-01-01/GoogleMapsCompatible_Level12/{z}/{y}/{x}.jpg`,{attribution:'Landsat &copy; NASA GIBS / USGS',maxNativeZoom:12,maxZoom:19,opacity:0.82}),
+  grace:     L.tileLayer(`${GIBS}/GRACE_FO_Land_Groundwater_Drought_Indicator/default/2024-05-01/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`,{attribution:'GRACE-FO &copy; NASA GIBS / JPL',maxNativeZoom:6,maxZoom:19,opacity:0.82}),
+  sar:       L.tileLayer(`${GIBS}/SMAP_L4_Soil_Moisture_Surface/default/2024-06-15/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`,{attribution:'SMAP SAR &copy; NASA GIBS / JPL',maxNativeZoom:6,maxZoom:19,opacity:0.82})
+};
+
+const sciState = {ndvi:false,sentinel2:false,landsat:false,grace:false,sar:false};
+const sciDesc = {
+  ndvi:      '&#x1F33F; <b>NDVI</b> — Vegetation health (MODIS Terra, 8-day). <span style="color:#4ade80">Green</span> = dense/healthy vegetation. Brown = stressed, sparse or bare soil. Use for crop monitoring and mine footprint.',
+  sentinel2: '&#x1F6F0;&#xFE0E; <b>Sentinel-2</b> — True colour optical 10m. Best for crop mapping, land cover, mine extent, and farm field delineation.',
+  landsat:   '&#x1FA90; <b>Landsat</b> — Annual surface reflectance mosaic. Geologists use band combinations to map iron oxide and clay alteration minerals — surface footprints of underground mineralisation.',
+  grace:     '&#x1F4A7; <b>GRACE-FO</b> — Groundwater drought indicator (JPL). <span style="color:#67e8f9">Blue</span> = above-normal water. <span style="color:#fb7185">Red</span> = severe deficit. Regional scale (district level).',
+  sar:       '&#x1F4E1; <b>SAR / Soil Moisture</b> — NASA SMAP L-band radar. Penetrates dry topsoil. <span style="color:#67e8f9">Blue</span> = moist. Proxy for shallow groundwater and recharge zones.'
+};
+
+function toggleSciLayer(type,btn){
+  sciState[type]=!sciState[type];
+  btn.classList.toggle('on',sciState[type]);
+  if(sciState[type]){
+    sciLayers[type].addTo(map);
+    let loaded=false;
+    sciLayers[type].once('tileload',()=>{loaded=true;btn.classList.remove('err');});
+    setTimeout(()=>{
+      if(!loaded&&sciState[type]){
+        btn.classList.add('err');
+        const badge=document.getElementById('sciActiveBadge');
+        badge.innerHTML='&#x26A0;&#xFE0E; <b>'+btn.textContent.trim()+'</b> tiles loading slowly — try zoom 5–6 or toggle off and back on.';
+        badge.classList.add('show');
+      }
+    },14000);
+  } else {
+    map.removeLayer(sciLayers[type]);
+    btn.classList.remove('err');
+  }
+  const active=Object.keys(sciState).filter(k=>sciState[k]);
+  const badge=document.getElementById('sciActiveBadge');
+  if(active.length){badge.innerHTML=sciDesc[active[active.length-1]];badge.classList.add('show');}
+  else badge.classList.remove('show');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   COLOURS, LABELS & INFO PANEL
+══════════════════════════════════════════════════════════════════════════ */
+const colors={mining:{fill:'#f59e0b',stroke:'#d97706'},agri:{fill:'#22c55e',stroke:'#16a34a'},land:{fill:'#3b82f6',stroke:'#2563eb'},smart:{fill:'#a855f7',stroke:'#7c3aed'}};
+const labels={mining:'&#x26CF;&#xFE0E; Mining Zone',agri:'&#x1F33E;&#xFE0E; Agricultural Zone',land:'&#x1F4D0;&#xFE0E; Protected Land',smart:'&#x1F3D9;&#xFE0E; Infrastructure Node'};
+const tagColors={
+  mining:{bg:'rgba(245,158,11,0.2)',border:'#f59e0b',color:'#fbbf24'},
+  agri:  {bg:'rgba(34,197,94,0.2)', border:'#22c55e',color:'#4ade80'},
+  land:  {bg:'rgba(59,130,246,0.2)',border:'#3b82f6',color:'#60a5fa'},
+  smart: {bg:'rgba(168,85,247,0.2)',border:'#a855f7',color:'#c084fc'}
+};
+
+function buildMeta(type,z){
+  const parts=[];
+  if(z.area)   parts.push(`<span>Location: <strong>${z.area}</strong></span>`);
+  if(z.status) parts.push(`<span>Status: <strong>${z.status}</strong></span>`);
+  if(z.source) parts.push(`<span>${z.source}</span>`);
+  if(z.capital)parts.push(`<span>${z.capital}</span>`);
+  if(z.commodities)parts.push(`<span>Commodities: <strong>${z.commodities}</strong></span>`);
+  if(z.employment) parts.push(`<span>Employment: <strong>${z.employment}</strong></span>`);
+  return parts.join('');
+}
+
+function showInfo(type,z){
+  const panel=document.getElementById('infoPanel');
+  const hint=document.getElementById('mapHint');
+  // Extended tag colours for new types
+  const extTC={
+    mineral:{bg:'rgba(252,211,77,0.15)',border:'#fbbf24',color:'#fde68a'},
+    geo:    {bg:'rgba(245,158,11,0.15)',border:'#b45309',color:'#fbbf24'},
+    farming:{bg:'rgba(34,197,94,0.15)', border:'#22c55e',color:'#86efac'},
+    water:  {bg:'rgba(103,232,249,0.15)',border:'#67e8f9',color:'#a5f3fc'},
+    field:  {bg:'rgba(201,168,76,0.2)', border:'#c9a84c',color:'#fbbf24'},
+  };
+  const extLabels={
+    mineral:'&#x26CF; Mineral Deposit',geo:'&#x1FAA8; Geological Formation',
+    farming:'&#x1F33E; Farming Region',water:'&#x1F4A7; Water Resource',field:'&#x1F4CD; Field Report'
+  };
+  const tc=extTC[type]||tagColors[type]||tagColors.mining;
+  const lb=extLabels[type]||labels[type]||type;
+  document.getElementById('infoTag').innerHTML=lb;
+  document.getElementById('infoTag').style.cssText=`background:${tc.bg};border:1px solid ${tc.border};color:${tc.color};`;
+  document.getElementById('infoTitle').textContent=z.name;
+  document.getElementById('infoDesc').textContent=z.notes;
+  document.getElementById('infoMeta').innerHTML=buildMeta(type,z);
+  panel.classList.add('visible');
+  hint.style.display='none';
+  // Store coords for street view if available
+  const svBtn=document.getElementById('svBtn');
+  if(z._lat!=null && z._lng!=null){
+    svBtn.style.display='inline-flex';
+    svBtn._lat=z._lat; svBtn._lng=z._lng;
+    svBtn._name=z.name;
+  } else {
+    svBtn.style.display='none';
+  }
+}
+
+let satOn=false, labelsOn=false;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   STREET VIEW MODAL
+══════════════════════════════════════════════════════════════════════════ */
+let svMap=null;
+function openSV(){
+  const btn=document.getElementById('svBtn');
+  const lat=btn._lat, lng=btn._lng, name=btn._name||'Location';
+  const modal=document.getElementById('svModal');
+  document.getElementById('svTitle').textContent='🛰 Satellite View — '+name;
+  document.getElementById('svCoords').textContent=Math.abs(lat).toFixed(4)+(lat<0?'°S':'°N')+', '+Math.abs(lng).toFixed(4)+(lng<0?'°W':'°E');
+  modal.style.display='flex';
+  document.body.style.overflow='hidden';
+  setTimeout(()=>{
+    const container=document.getElementById('svFrame');
+    if(svMap){svMap.remove();svMap=null;}
+    container.innerHTML='';
+    svMap=L.map(container,{zoomControl:true,attributionControl:false}).setView([lat,lng],18);
+    L.tileLayer('https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png8?style=explore.satellite.day&apiKey='+HERE_KEY,
+      {maxZoom:20}).addTo(svMap);
+    L.circleMarker([lat,lng],{radius:8,color:'#fff',fillColor:'#f59e0b',fillOpacity:1,weight:2}).addTo(svMap);
+  },50);
+}
+
+function closeSV(){
+  const modal=document.getElementById('svModal');
+  modal.style.display='none';
+  if(svMap){svMap.remove();svMap=null;}
+  document.getElementById('svFrame').innerHTML='';
+  document.body.style.overflow='';
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SET VIEW — Map / Satellite / Topo / Geology / Minerals / Farming / Water
+══════════════════════════════════════════════════════════════════════════ */
+function setView(mode){
+  const btnIds=['btnMap','btnSat','btnTopo','btnGeo','btnMin','btnFarm','btnWat'];
+  const baseLayers=[darkLayer,satelliteLayer,topoLayer,geoLayer,lightLabels];
+  const overlays=[saGeoLayer,mineralLayer,farmingLayer,waterLayer];
+  const terrain=document.getElementById('terrainToggle');
+
+  baseLayers.forEach(l=>{if(map.hasLayer(l))map.removeLayer(l);});
+  overlays.forEach(l=>{if(map.hasLayer(l))map.removeLayer(l);});
+  btnIds.forEach(id=>{const b=document.getElementById(id);if(b)b.classList.remove('active');});
+  if(labelsOn){map.removeLayer(labelsLayer);labelsOn=false;terrain.classList.remove('on');}
+  terrain.classList.remove('show');
+  satOn=false;
+  const badge=document.getElementById('sciActiveBadge');
+  if(badge){badge.classList.remove('show');badge.innerHTML='';}
+  document.getElementById('mineralFilter').classList.remove('show');
+  removeMineralLegend();
+  document.getElementById('mineralLegendPanel').style.display = 'none';
+
+  if(mode==='satellite'){
+    satOn=true;
+    satelliteLayer.addTo(map);
+    map.setView([-25.2441,29.5583],15);
+    terrain.classList.add('show');
+    document.getElementById('btnSat').classList.add('active');
+
+  } else if(mode==='topo'){
+    topoLayer.addTo(map);
+    map.setView([-25.1,29.0],9);
+    document.getElementById('btnTopo').classList.add('active');
+
+  } else if(mode==='geology'){
+    topoLayer.addTo(map);
+    geoLayer.addTo(map);      // Macrostrat vivid geological colours
+    saGeoLayer.addTo(map);    // Custom SA formation polygons
+    map.setView([-25.1,28.5],6);
+    document.getElementById('btnGeo').classList.add('active');
+
+  } else if(mode==='minerals'){
+    satelliteLayer.addTo(map);
+    labelsLayer.addTo(map);
+    mineralLayer.addTo(map);  // All mineral deposit markers
+    document.getElementById('mineralFilter').classList.add('show');
+    document.getElementById('mineralLegendPanel').style.display = 'block';
+    map.setView([-29.0,25.5],5);
+    document.getElementById('btnMin').classList.add('active');
+
+  } else if(mode==='farming'){
+    satelliteLayer.addTo(map); // Satellite shows actual farmland best
+    farmingLayer.addTo(map);   // Farming region overlays
+    map.setView([-29.5,25.5],5);
+    document.getElementById('btnFarm').classList.add('active');
+    satOn=true;
+
+  } else if(mode==='water'){
+    satelliteLayer.addTo(map);
+    labelsLayer.addTo(map);
+    waterLayer.addTo(map);
+    map.setView([-29.5,25.5],5);
+    document.getElementById('btnWat').classList.add('active');
+    if(!sciState.grace){
+      const graceBtn=document.querySelector('.layer-btn.grace');
+      if(graceBtn) toggleSciLayer('grace',graceBtn);
+    }
+
+  } else if(mode==='sa'){
+    // HERE Maps SA Tab — Hybrid by default, zoomed to Mpumalanga / Elandshoogte region
+    hereLayers[currentHereMode].addTo(map);
+    document.getElementById('saBar').style.display    = 'flex';
+    document.getElementById('saSearch').style.display = 'block';
+    map.setView([-25.367,30.674],12);
+    document.getElementById('btnSA').classList.add('active');
+    satOn=true;
+    terrain.classList.add('show');
+    // Show notice if key not set
+    const result=document.getElementById('saSearchResult');
+    if(HERE_KEY==='PASTE_HERE_API_KEY'){
+      result.innerHTML='&#x26A0; Paste your HERE API key into the code to activate HERE map tiles &amp; search.';
+      result.style.color='#fbbf24';
+    }
+
+  } else {
+    darkLayer.addTo(map);
+    map.setView([-25.2441,29.5583],11);
+    document.getElementById('btnMap').classList.add('active');
+  }
+}
+
+/* ── HERE: switch SA sub-mode ── */
+function setSAMode(mode, btn){
+  document.querySelectorAll('.sa-mode-btn').forEach(b=>{
+    b.style.background='transparent';
+    b.style.borderColor='rgba(255,255,255,0.2)';
+    b.style.color='rgba(255,255,255,0.5)';
+  });
+  btn.style.background='rgba(0,191,255,0.12)';
+  btn.style.borderColor='rgba(0,191,255,0.5)';
+  btn.style.color='#67e8f9';
+  Object.values(hereLayers).forEach(l=>{if(map.hasLayer(l))map.removeLayer(l);});
+  currentHereMode=mode;
+  hereLayers[mode].addTo(map);
+}
+
+/* ── HERE: Geocoding search ── */
+async function hereSearch(){
+  const q=document.getElementById('saSearchInput').value.trim();
+  if(!q)return;
+  const result=document.getElementById('saSearchResult');
+  if(HERE_KEY==='PASTE_HERE_API_KEY'){
+    result.innerHTML='&#x26A0; HERE API key not yet set — add it to the code first.';
+    result.style.color='#fbbf24';
+    return;
+  }
+  result.innerHTML='Searching...';
+  result.style.color='rgba(255,255,255,0.4)';
+  try{
+    const url=`https://geocode.search.hereapi.com/v1/geocode?q=${encodeURIComponent(q+' South Africa')}&in=countryCode:ZAF&limit=1&apiKey=${HERE_KEY}`;
+    const data=await(await fetch(url)).json();
+    if(data.items&&data.items.length>0){
+      const item=data.items[0];
+      const pos=item.position;
+      map.setView([pos.lat,pos.lng],12);
+      if(hereSearchMarker)map.removeLayer(hereSearchMarker);
+      hereSearchMarker=L.marker([pos.lat,pos.lng],{
+        icon:L.divIcon({className:'',html:`<div style="width:16px;height:16px;border-radius:50%;background:#00bfff;border:3px solid #fff;box-shadow:0 0 0 5px rgba(0,191,255,0.3);"></div>`,iconSize:[16,16],iconAnchor:[8,8]})
+      }).addTo(map).bindTooltip(`<strong style="color:#fff">${item.title}</strong>`,{permanent:true,direction:'top'});
+      result.innerHTML=`&#x2705; Found: <strong style="color:#fff">${item.title}</strong>`;
+      result.style.color='#4ade80';
+    } else {
+      result.innerHTML='No results found for "'+q+'" in South Africa.';
+      result.style.color='#fb7185';
+    }
+  }catch(e){
+    result.innerHTML='Search failed — check API key and connection.';
+    result.style.color='#fb7185';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RAIL & LOGISTICS LAYER
+══════════════════════════════════════════════════════════════════════════ */
+const railLayer = L.layerGroup();
+let railOn = false;
+
+const SA_RAIL_LINES = [
+  {name:'Ore Rail (OREX) — Sishen to Saldanha Bay',color:'#ef4444',weight:3,
+   capacity:'60 Mt/year iron ore',length:'861 km',operator:'Transnet Freight Rail',
+   desc:'The world\'s longest ore rail line. Carries iron ore from Kumba\'s Sishen and Khumani mines to Saldanha Bay for export. Electrified heavy-haul railway. Manganese spurs from Hotazel also join this corridor.',
+   coords:[[-27.78,22.87],[-27.85,22.75],[-28.10,22.97],[-28.35,23.08],[-30.65,24.01],[-31.08,23.7],[-31.9,23.0],[-33.23,20.58],[-33.64,19.45],[-33.9,18.6],[-33.0,17.97]]},
+  {name:'Coal Rail — Mpumalanga to Richards Bay',color:'#92400e',weight:3,
+   capacity:'91 Mt/year coal',length:'~580 km',operator:'Transnet Freight Rail',
+   desc:'One of the world\'s busiest coal export lines. Carries coal from Witbank, Ermelo, and surrounding Mpumalanga coalfields to Richards Bay Coal Terminal for export to Asia and Europe.',
+   coords:[[-25.88,29.24],[-25.80,29.46],[-26.07,30.11],[-26.49,29.99],[-27.01,30.79],[-27.5,31.2],[-28.72,32.1]]},
+  {name:'Manganese Rail — Kalahari to Gqeberha',color:'#c87941',weight:2.5,
+   capacity:'~16 Mt/year manganese',length:'~960 km',operator:'Transnet Freight Rail',
+   desc:'Carries manganese ore from the Kalahari Manganese Field (Hotazel, Black Rock) to the export terminal at Gqeberha/Port Elizabeth.',
+   coords:[[-27.18,22.89],[-27.5,23.2],[-28.74,24.76],[-30.0,24.5],[-31.16,25.0],[-32.17,25.62],[-33.76,25.4],[-33.96,25.6]]},
+  {name:'N4 Maputo Corridor',color:'#3b82f6',weight:2,dashArray:'6,3',
+   capacity:'Major trans-Africa freight road',length:'~550 km SA portion',operator:'SANRAL',
+   desc:'Connects Mozambique (Maputo Port) to Gauteng and Botswana. Critical for mineral exports from Limpopo and fuel imports from Maputo. One of the busiest freight corridors in sub-Saharan Africa.',
+   coords:[[-25.97,32.57],[-25.47,30.98],[-25.74,28.19],[-24.8,26.0],[-24.0,25.7]]},
+  {name:'N3 Corridor — Johannesburg to Durban',color:'#0ea5e9',weight:2,dashArray:'6,3',
+   capacity:'12 000+ heavy vehicles/day',length:'~588 km',operator:'SANRAL',
+   desc:'SA\'s most important freight corridor. Connects the industrial Gauteng heartland to Durban port. 12,000+ heavy vehicles per day. Van Reenen Pass is the major mountain crossing.',
+   coords:[[-26.2,28.04],[-26.5,28.36],[-27.5,29.4],[-28.38,29.4],[-29.4,30.4],[-29.86,30.98]]},
+  {name:'N1 National Corridor — Cape Town to Beit Bridge',color:'#22c55e',weight:2,dashArray:'6,3',
+   capacity:'SA\'s longest national road',length:'~1 900 km',operator:'SANRAL',
+   desc:'The N1 is SA\'s spine — Cape Town to Zimbabwe border at Beit Bridge. Carries agricultural exports from the Western Cape, minerals from Limpopo, and general freight across the country.',
+   coords:[[-33.9,18.43],[-33.0,19.5],[-32.0,20.5],[-30.5,22.5],[-28.74,24.76],[-26.2,28.04],[-25.74,28.19],[-23.8,29.0],[-22.23,30.03]]},
+];
+
+const SA_PORTS = [
+  {lat:-33.92,lng:18.43,name:'Port of Cape Town',capacity:'~1 Mt general cargo/year',notes:'SA\'s oldest commercial port. Containers, automotive, fishing, Antarctic research vessels. Main cruise ship terminal.'},
+  {lat:-33.01,lng:17.97,name:'Saldanha Bay Port',capacity:'~60 Mt iron ore/year',notes:'Africa\'s deepest natural harbour. World\'s largest iron ore loading terminal — fed by the 861km OREX rail. Also handles manganese and bulk cargo.'},
+  {lat:-33.79,lng:25.62,name:'Port of Ngqura — Gqeberha',capacity:'~4.2 M TEU containers/year',notes:'SA\'s newest deepwater container port. Adjacent to Coega IDZ. Automotive exports (VW). Manganese terminal.'},
+  {lat:-33.02,lng:27.90,name:'Port of East London',capacity:'~1 Mt cargo/year',notes:'Serves East London IDZ. Mercedes-Benz SA vehicle exports. Single-berth container terminal.'},
+  {lat:-29.86,lng:31.05,name:'Port of Durban',capacity:'~3 M TEU + 30 Mt bulk/year',notes:'Africa\'s busiest port by cargo volume. Container, bulk, automotive (Toyota), oil terminals. Gateway for SA, Zimbabwe, Zambia, DRC regional trade.'},
+  {lat:-28.72,lng:32.10,name:'Richards Bay Bulk Port',capacity:'~91 Mt coal + bulk/year',notes:'Africa\'s largest bulk export terminal. Richards Bay Coal Terminal (RBCT) exports coal to Asia and Europe. Also handles aluminium, titanium, fertilisers.'},
+];
+
+(function buildRailLayer(){
+  SA_RAIL_LINES.forEach(r=>{
+    const line=L.polyline(r.coords,{color:r.color,weight:r.weight,opacity:0.85,dashArray:r.dashArray||null});
+    line.bindTooltip(`<strong style="color:#fff">${r.name}</strong><br><small style="color:rgba(255,255,255,0.55)">${r.capacity} | ${r.length}</small>`,{sticky:true});
+    line.on('click',()=>showInfo('rail',{name:r.name,notes:r.desc,area:r.operator,status:`Length: ${r.length}`,source:`Capacity: ${r.capacity}`,_lat:r.coords[Math.floor(r.coords.length/2)][0],_lng:r.coords[Math.floor(r.coords.length/2)][1]}));
+    railLayer.addLayer(line);
+  });
+  SA_PORTS.forEach(p=>{
+    const icon=L.divIcon({
+      className:'',
+      html:`<div style="width:18px;height:18px;background:#0ea5e9;border:2px solid #fff;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.5);font-family:Inter,sans-serif;">P</div>`,
+      iconSize:[18,18],iconAnchor:[9,9]
+    });
+    const mk=L.marker([p.lat,p.lng],{icon});
+    mk.bindTooltip(`<strong style="color:#fff">${p.name}</strong><br><small style="color:#67e8f9">${p.capacity}</small>`,{sticky:true});
+    mk.on('click',()=>showInfo('rail',{name:p.name,notes:p.notes,area:'South Africa — Major Port',status:p.capacity,source:'Transnet National Ports Authority',_lat:p.lat,_lng:p.lng}));
+    railLayer.addLayer(mk);
+  });
+})();
+
+function toggleRailLayer(btn){
+  railOn=!railOn;
+  btn.classList.toggle('on',railOn);
+  if(railOn)railLayer.addTo(map);
+  else map.removeLayer(railLayer);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GPS — LOCATE ME + NEARBY FEATURES
+══════════════════════════════════════════════════════════════════════════ */
+let gpsMarker=null, gpsCircle=null;
+
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371,dL=(lat2-lat1)*Math.PI/180,dG=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dG/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function locateMe(){
+  const btn=document.getElementById('gpsBtn');
+  if(!navigator.geolocation){alert('GPS not available on this device.');return;}
+  btn.classList.add('locating');
+  btn.textContent='Locating...';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    btn.classList.remove('locating');
+    btn.textContent='&#x1F4E1; Near Me';
+    const lat=pos.coords.latitude, lng=pos.coords.longitude;
+    if(gpsMarker)map.removeLayer(gpsMarker);
+    if(gpsCircle)map.removeLayer(gpsCircle);
+    gpsMarker=L.marker([lat,lng],{icon:L.divIcon({
+      className:'',
+      html:`<div style="width:16px;height:16px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,0.3),0 2px 8px rgba(0,0,0,0.5);"></div>`,
+      iconSize:[16,16],iconAnchor:[8,8]
+    })}).addTo(map).bindTooltip('<strong style="color:#fff">Your Location</strong>',{permanent:false});
+    gpsCircle=L.circle([lat,lng],{radius:150000,color:'#3b82f6',fillColor:'#3b82f6',fillOpacity:0.04,weight:1,dashArray:'4,4'}).addTo(map);
+    map.setView([lat,lng],8);
+    showNearby(lat,lng,150);
+  },err=>{
+    btn.classList.remove('locating');
+    btn.textContent='&#x1F4E1; Near Me';
+    alert('Could not get GPS location. Enable location access and try again.');
+  },{enableHighAccuracy:true,timeout:12000});
+}
+
+function showNearby(lat,lng,radiusKm){
+  const all=[];
+  SA_MINERALS.forEach(d=>{const dist=haversine(lat,lng,d.lat,d.lng);if(dist<=radiusKm)all.push({label:MCOL[d.t]?.label||'Mineral',name:d.name,dist:Math.round(dist),lat:d.lat,lng:d.lng,color:MCOL[d.t]?.color||'#aaa'});});
+  SA_WATER.forEach(d=>{if(!d.lat)return;const dist=haversine(lat,lng,d.lat,d.lng);if(dist<=radiusKm)all.push({label:d.t==='dam'?'Dam':'Aquifer',name:d.name,dist:Math.round(dist),lat:d.lat,lng:d.lng,color:'#67e8f9'});});
+  SA_SEZ.forEach(d=>{const dist=haversine(lat,lng,d.lat,d.lng);if(dist<=radiusKm)all.push({label:'SEZ',name:d.name,dist:Math.round(dist),lat:d.lat,lng:d.lng,color:'#fbbf24'});});
+  all.sort((a,b)=>a.dist-b.dist);
+  const panel=document.getElementById('nearbyPanel');
+  panel.style.display='block';
+  if(all.length===0){
+    panel.innerHTML=`<div class="np-head">&#x1F4E1; No features found within ${radiusKm}km</div>`;
+    return;
+  }
+  panel.innerHTML=`<div class="np-head">&#x1F4E1; ${all.length} feature${all.length>1?'s':''} within ${radiusKm}km of your location — tap to zoom</div>`
+    +all.slice(0,10).map(f=>`
+    <div class="np-row" onclick="map.setView([${f.lat},${f.lng}],10)">
+      <div style="width:10px;height:10px;border-radius:50%;background:${f.color};flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="np-name">${f.name}</div>
+        <div class="np-type">${f.label}</div>
+      </div>
+      <div class="np-dist">${f.dist}km</div>
+    </div>`).join('');
+}
+
+/* ── Update filterMinerals to work with markerClusterGroup ── */
+function filterMinerals(type,btn){
+  document.querySelectorAll('.mf-btn').forEach(b=>b.classList.remove('active'));
+  if(btn&&btn.classList&&btn.classList.contains('mf-btn'))btn.classList.add('active');
+  document.querySelectorAll('.leg-row').forEach(r=>{r.classList.remove('active');r.style.opacity='0.5';});
+  if(type==='all'){
+    document.querySelectorAll('.leg-row').forEach(r=>r.style.opacity='1');
+  } else {
+    document.querySelectorAll('.leg-row').forEach(r=>{
+      if(r.getAttribute('onclick')&&r.getAttribute('onclick').includes("'"+type+"'")){
+        r.classList.add('active');r.style.opacity='1';
+      }
+    });
+  }
+  // Re-populate cluster group with filtered markers
+  mineralLayer.clearLayers();
+  mineralMarkers.forEach(m=>{
+    if(type==='all'||m._mineralType===type) mineralLayer.addLayer(m);
+  });
+}
+
+/* tagColors for new types */
+tagColors.field={bg:'rgba(201,168,76,0.2)',border:'#c9a84c',color:'#fbbf24'};
+labels.field='&#x1F4CD;&#xFE0E; Field Report';
+tagColors.geo={bg:'rgba(245,158,11,0.15)',border:'#b45309',color:'#fbbf24'};
+labels.geo='&#x1FAA8;&#xFE0E; Geological Formation';
+tagColors.rail={bg:'rgba(239,68,68,0.15)',border:'#ef4444',color:'#fca5a5'};
+labels.rail='&#x1F686;&#xFE0E; Rail / Port';
+
+/* ── Mineral Legend Control ── */
+let mineralLegendCtrl = null;
+
+function buildMineralLegend(){
+  if(mineralLegendCtrl) return; // already on map
+  mineralLegendCtrl = L.control({position:'bottomleft'});
+  mineralLegendCtrl.onAdd=function(){
+    const div=L.DomUtil.create('div','');
+    div.id='minLegend';
+    div.innerHTML=`<div class="mineral-legend-box">
+      <div class="min-leg-title">Mineral Types — tap to filter</div>
+      ${Object.entries(MCOL).map(([k,v])=>`
+        <div class="min-leg-row" onclick="filterMinerals('${k}',null);document.querySelectorAll('.mf-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.mf-btn').forEach(b=>{if(b.textContent.includes('${v.label.split('/')[0].trim()}'))b.classList.add('active');})">
+          <div class="min-leg-dot" style="background:${v.color}"></div>
+          <span class="min-leg-lbl">${v.label}</span>
+        </div>`).join('')}
+      <div class="min-leg-row" onclick="filterMinerals('all',document.querySelector('.mf-btn'))" style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.08);padding-top:4px;">
+        <div class="min-leg-dot" style="background:#aaa;"></div>
+        <span class="min-leg-lbl">Show All</span>
+      </div>
+    </div>`;
+    L.DomEvent.disableClickPropagation(div);
+    return div;
+  };
+  mineralLegendCtrl.addTo(map);
+}
+
+function removeMineralLegend(){
+  if(mineralLegendCtrl){
+    mineralLegendCtrl.remove();
+    mineralLegendCtrl = null;
+  }
+}
+
+function toggleLabels(){
+  const btn=document.getElementById('btnLabels');
+  labelsOn=!labelsOn;
+  btn.classList.toggle('active',labelsOn);
+  if(labelsOn) labelsLayer.addTo(map);
+  else map.removeLayer(labelsLayer);
+}
+
+function toggleTerrain(btn){
+  labelsOn=!labelsOn;
+  btn.classList.toggle('on',labelsOn);
+  if(labelsOn)labelsLayer.addTo(map);
+  else map.removeLayer(labelsLayer);
+}
+
+function zoomToMine(){map.setView([-25.2441,29.5583],satOn?16:13);}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   KINGDOM-SPECIFIC OVERPASS & STATIC DATA (Sekhukhune District)
+══════════════════════════════════════════════════════════════════════════ */
+const OVERPASS='https://overpass-api.de/api/interpreter';
+const BBOX='-25.9,29.0,-24.2,30.4';
+
+async function fetchOverpass(query){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),18000);
+  try{const r=await fetch(OVERPASS,{method:'POST',body:'data='+encodeURIComponent(query),signal:ctrl.signal});clearTimeout(t);return await r.json();}
+  catch(e){clearTimeout(t);throw e;}
+}
+
+const layerGroups={mining:[],agri:[],land:[],smart:[]};
+const activeState={mining:true,agri:true,land:true,smart:true};
+
+function setLoading(type,on){const b=document.querySelector(`.layer-btn.${type}`);if(b)b.classList.toggle('loading',on);}
+function updateCount(type,count){const b=document.querySelector(`.layer-btn.${type}`);if(!b)return;let c=b.querySelector('.osm-count');if(!c){c=document.createElement('span');c.className='osm-count';b.appendChild(c);}c.textContent=`(${count})`;}
+function osmName(t){return t?.name||t?.['name:en']||t?.['name:af']||null;}
+
+function addPoly(type,coords,z,dashed){
+  const c=colors[type];
+  const poly=L.polygon(coords,{color:c.stroke,fillColor:c.fill,fillOpacity:0.22,weight:1.5,dashArray:dashed?'5,4':null});
+  poly.on('click',()=>{
+    const ctr=poly.getBounds().getCenter();
+    showInfo(type,Object.assign({},z,{_lat:ctr.lat,_lng:ctr.lng}));
+  });
+  poly.on('mouseover',function(){this.setStyle({fillOpacity:0.42,weight:2.5});});
+  poly.on('mouseout', function(){this.setStyle({fillOpacity:0.22,weight:1.5});});
+  poly.bindTooltip(`<strong style="color:#fff">${z.name}</strong><br><small style="color:rgba(255,255,255,0.55)">${z.area||''}</small>`,{sticky:true});
+  if(activeState[type])poly.addTo(map);
+  layerGroups[type].push(poly);
+}
+
+function addNode(type,lat,lon,z){
+  const c=colors[type];
+  const circle=L.circleMarker([lat,lon],{radius:6,color:c.stroke,fillColor:c.fill,fillOpacity:0.85,weight:2});
+  circle.on('click',()=>showInfo(type,Object.assign({},z,{_lat:lat,_lng:lon})));
+  circle.bindTooltip(`<strong style="color:#fff">${z.name}</strong>`,{sticky:true});
+  if(activeState[type])circle.addTo(map);
+  layerGroups[type].push(circle);
+}
+
+function toggleLayer(type,btn){
+  activeState[type]=!activeState[type];
+  btn.classList.toggle('on',activeState[type]);
+  layerGroups[type].forEach(l=>{activeState[type]?l.addTo(map):map.removeLayer(l);});
+}
+
+/* Kingdom mining zones */
+const miningZones=[{
+  name:'Blue Ridge Platinum Mine',
+  coords:[[-25.22,29.53],[-25.22,29.59],[-25.27,29.59],[-25.27,29.53]],
+  area:'Groblersdal, Sekhukhune, Limpopo (Bushveld Eastern Limb)',
+  status:'Care & Maintenance — Restart Ready',
+  capital:'R2.8B Infrastructure · R2.38B Restart Capital',
+  notes:'Brownfield UG2 PGM & Chrome mine. GPS: 25°14\'38.77"S, 29°33\'29.75"E. 6 500ha surface rights. Resources: 89.8Mt (9.14Moz 4E PGM) + 19.5Mt Cr₂O₃. Life of mine: 18–25 years. Concentrator: 120 000 tpm. Off-take: Impala Refinery Services. Mining Right: MR-LP177 MRC (30 years).',
+  commodities:'Platinum · Palladium · Rhodium · Gold · Ru · Ir · Chrome · Ni · Cu',
+  employment:'1 600 at steady state'
+},{
+  name:'Rhenosterkraal 132JP — Prospecting Right',
+  coords:[[-24.99497,26.961034],[-24.975871,26.99910],[-25.02725,26.928368],[-25.05159,26.989401]],
+  area:'Mankwe District, North West Province',
+  status:'Prospecting Right Application — Section 16 MPRDA',
+  capital:'Prospecting phase',
+  notes:'Section 16 MPRDA prospecting right area on Farm Rhenosterkraal 132JP. 3 055 hectares. Topo Maps Ref: 2426. WGS84. Excludes 100m buffer from public roads, railways, cemeteries and residential areas.',
+  commodities:'Chrome · Iron · Andalusite · Gold · Limestone · Ni · U · V · REE · PGMs',
+  employment:'Prospecting phase — TBD'
+},{
+  name:'Elandshoogte Gold Mine',
+  coords:[[-25.364,30.668],[-25.364,30.678],[-25.372,30.678],[-25.372,30.668]],
+  area:'Houtbosloop Valley, Nelspruit district, Mpumalanga',
+  status:'Development — Business Rescue Completed 2023',
+  capital:'R34.1B Total Asset Valuation · R795M Estimated Mining Cost (15 years)',
+  notes:'Narrow-reef gold mine near Sudwala Caves. Owner: Omaruru Minerals (Pty) Ltd / Elandshoogte & Bagale consortium. 464ha mineral rights (39 precious metal claims). 3x tailings dumps: 225 000t @ avg 2.5g/t (545kg Au recoverable). Underground resource: 1.5Mt @ 7.3g/t (350Koz indicated) + 3.2Mt @ 7.3g/t (750Koz inferred). Grade: 10.4g/t channel mean. Gold hosted in brecciated quartz-sulphide vein ~30–45cm wide. Water right: ad infinitum RMT 7/245. Processing plant and buildings on site.',
+  commodities:'Gold (Au) · Pyrite · Chalcopyrite',
+  employment:'Development phase — TBD'
+}];
+miningZones.forEach(z=>addPoly('mining',z.coords,z,false));
+
+const blueRidgeIcon=L.divIcon({className:'',html:`<div style="width:14px;height:14px;border-radius:50%;background:#f59e0b;border:2px solid #fff;box-shadow:0 0 0 4px rgba(245,158,11,0.3);"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
+const blueRidgeMarker=L.marker([-25.2441,29.5583],{icon:blueRidgeIcon}).addTo(map);
+blueRidgeMarker.bindTooltip(`<strong style="color:#fff">Blue Ridge Mine Shaft</strong><br><small style="color:rgba(255,255,255,0.6)">25°14'38.77"S 29°33'29.75"E</small>`,{sticky:true});
+blueRidgeMarker.on('click',function(){showInfo('mining',{name:'Blue Ridge Mine Shaft',notes:'UG2 PGM shaft. Sekhukhune, Limpopo. GPS: 25.2441S 29.5583E',area:'Sekhukhune, Limpopo',_lat:-25.2441,_lng:29.5583});});
+
+const elandshoogteIcon=L.divIcon({className:'',html:`<div style="width:14px;height:14px;border-radius:50%;background:#FFD700;border:2px solid #fff;box-shadow:0 0 0 4px rgba(255,215,0,0.3);"></div>`,iconSize:[14,14],iconAnchor:[7,7]});
+const elandshoogteMarker=L.marker([-25.3670,30.6740],{icon:elandshoogteIcon}).addTo(map);
+elandshoogteMarker.bindTooltip(`<strong style="color:#fff">Elandshoogte Gold Mine</strong><br><small style="color:rgba(255,255,255,0.6)">25°22'02"S 30°40'59"E · Sudwala Caves, Mpumalanga</small>`,{sticky:true});
+elandshoogteMarker.on('click',function(){showInfo('mining',{name:'Elandshoogte Gold Mine',notes:'Narrow-reef gold mine near Sudwala Caves. Owner: Omaruru Minerals / Elandshoogte & Bagale Consortium. 464ha mineral rights. Processing plant on site. GPS: 25.367S 30.674E',area:'Houtbosloop Valley, Nelspruit, Mpumalanga',_lat:-25.3670,_lng:30.6740});});
+
+/* ── OSM: Agriculture ── */
+async function loadAgri(){
+  setLoading('agri',true);
+  const q=`[out:json][timeout:20];way["landuse"~"^(farmland|farm|orchard|vineyard|meadow|plant_nursery|greenhouse_horticulture)$"](${BBOX});out geom qt 60;`;
+  try{
+    const data=await fetchOverpass(q);const els=data.elements||[];let count=0;
+    els.forEach(el=>{
+      if(el.type!=='way'||!el.geometry||el.geometry.length<3)return;
+      const coords=el.geometry.map(p=>[p.lat,p.lon]);
+      const z={name:osmName(el.tags)||'Agricultural Land',area:'Sekhukhune District, Limpopo',status:'Active — OSM verified',notes:`Landuse: ${el.tags?.landuse||'farmland'}. OSM Way ID: ${el.id}.`,source:'OpenStreetMap Live'};
+      addPoly('agri',coords,z,false);count++;
+    });
+    updateCount('agri',count);if(count===0)loadAgriFallback();
+  }catch(e){loadAgriFallback();}
+  finally{setLoading('agri',false);}
+}
+
+function loadAgriFallback(){
+  [{name:'Sekhukhune Agricultural Zone',coords:[[-25.1,29.4],[-25.1,29.8],[-25.5,29.8],[-25.5,29.4]],area:'Sekhukhune, Limpopo',status:'active',notes:'Dryland and irrigation farming. Maize, sorghum, citrus.',source:'Fallback'},
+   {name:'Groblersdal Irrigation Scheme',coords:[[-25.15,29.35],[-25.15,29.55],[-25.3,29.55],[-25.3,29.35]],area:'Groblersdal, Limpopo',status:'active',notes:'One of the largest irrigation schemes in Limpopo. Citrus and vegetables.',source:'Fallback'}
+  ].forEach(z=>addPoly('agri',z.coords,z,false));
+  updateCount('agri','~');
+}
+
+/* ── OSM: Protected Land ── */
+async function loadLand(){
+  setLoading('land',true);
+  const q=`[out:json][timeout:20];(way["leisure"="nature_reserve"](${BBOX});way["boundary"="protected_area"](${BBOX});way["landuse"="conservation"](${BBOX});way["natural"="wood"](${BBOX});relation["leisure"="nature_reserve"](${BBOX}););out geom qt 30;`;
+  try{
+    const data=await fetchOverpass(q);const els=data.elements||[];let count=0;
+    els.forEach(el=>{
+      if(!el.geometry||el.geometry.length<3)return;
+      const coords=el.geometry.filter(p=>p&&p.lat).map(p=>[p.lat,p.lon]);
+      if(coords.length<3)return;
+      const z={name:osmName(el.tags)||'Protected Area',area:'Sekhukhune District, Limpopo',status:'active',notes:`Type: ${el.tags?.leisure||el.tags?.boundary||el.tags?.landuse||el.tags?.natural||'nature reserve'}.`,source:'OpenStreetMap'};
+      addPoly('land',coords,z,true);count++;
+    });
+    updateCount('land',count);
+  }catch(e){}
+  finally{setLoading('land',false);}
+}
+
+/* ── OSM: Smart City Nodes ── */
+async function loadSmart(){
+  setLoading('smart',true);
+  const q=`[out:json][timeout:20];(node["power"="substation"](${BBOX});node["amenity"~"^(hospital|clinic|police)$"](${BBOX});node["man_made"="water_tower"](${BBOX});node["telecom"](${BBOX}););out body qt 80;`;
+  try{
+    const data=await fetchOverpass(q);const els=data.elements||[];let count=0;
+    els.forEach(el=>{
+      if(!el.lat||!el.lon)return;
+      const z={name:osmName(el.tags)||el.tags?.amenity||el.tags?.power||'Infrastructure Node',area:'Sekhukhune District',status:'active',nodes:el.tags?.amenity||el.tags?.power||el.tags?.man_made||'node',notes:`OSM node ${el.id}. Type: ${el.tags?.amenity||el.tags?.power||el.tags?.man_made||'infrastructure'}.`,source:'OpenStreetMap'};
+      addNode('smart',el.lat,el.lon,z);count++;
+    });
+    updateCount('smart',count);
+  }catch(e){}
+  finally{setLoading('smart',false);}
+}
+
+/* ── Field Reports (placeholder) ── */
+let fieldPinsVisible=true;
+const fieldPinsGroup=L.layerGroup().addTo(map);
+function toggleFieldPins(){
+  const btn=document.getElementById('fieldPinsBtn');
+  fieldPinsVisible=!fieldPinsVisible;
+  btn.classList.toggle('on',fieldPinsVisible);
+  fieldPinsVisible?fieldPinsGroup.addTo(map):map.removeLayer(fieldPinsGroup);
+}
+async function loadFieldReports(){}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   KICK OFF
+══════════════════════════════════════════════════════════════════════════ */
+loadAgri();
+loadLand();
+loadSmart();
+loadFieldReports();
+
+/* Tooltip style */
+const style=document.createElement('style');
+style.textContent=`.leaflet-tooltip{background:rgba(10,15,13,0.95)!important;border:1px solid rgba(255,255,255,0.12)!important;border-radius:8px!important;color:#fff!important;padding:7px 11px!important;box-shadow:0 4px 16px rgba(0,0,0,0.5)!important;font-family:Inter,sans-serif!important;font-size:12px!important;}.leaflet-tooltip::before{display:none!important;}`;
+document.head.appendChild(style);
+
+/* Default view */
+setTimeout(()=>setView('geology'),0);
+</script>
+</body>
+</html>
