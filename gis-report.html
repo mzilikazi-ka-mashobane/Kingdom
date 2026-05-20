@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIS Report Generator – Mzilikazi Kingdom</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--green:#1f3c2f;--gold:#c9a84c;--border:rgba(201,168,76,0.2);--muted:rgba(255,255,255,0.45);--glass:rgba(15,26,19,0.6);}
+body{background:#0a0f0d;font-family:'Syne',sans-serif;overflow-x:hidden;padding-bottom:80px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#fff;position:sticky;top:0;z-index:3000;}
+.topbar img{height:38px;}
+.topbar h2{font-size:15px;color:var(--green);font-weight:700;}
+.header{background:linear-gradient(135deg,#0d1f17,#1a3828);padding:20px 18px;border-bottom:1px solid var(--border);}
+.header h1{font-size:20px;font-weight:800;color:#fff;margin-bottom:2px;}
+.header p{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+.section-lbl{padding:16px 14px 6px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;}
+.card{margin:0 14px 12px;background:var(--glass);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.field{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.field:last-child{border-bottom:none;}
+.field label{display:block;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;}
+input,select,textarea{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;font-family:'Syne',sans-serif;outline:none;-webkit-appearance:none;transition:border-color 0.2s;}
+input:focus,select:focus,textarea:focus{border-color:rgba(201,168,76,0.5);}
+select option{background:#111;}
+textarea{min-height:80px;resize:vertical;line-height:1.6;}
+.report-types{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px;}
+.rt-btn{padding:12px 8px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,0.3);color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;cursor:pointer;text-align:center;font-family:'Syne',sans-serif;transition:all 0.2s;line-height:1.4;}
+.rt-btn.selected{background:rgba(201,168,76,0.15);border-color:var(--gold);color:var(--gold);}
+.rt-icon{font-size:20px;display:block;margin-bottom:4px;}
+.check-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.check-row:last-child{border-bottom:none;}
+.check-label{font-size:12px;color:#fff;font-weight:600;}
+.check-sub{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:1px;}
+.toggle-switch{position:relative;width:40px;height:22px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;border-radius:11px;cursor:pointer;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);transition:all 0.25s;}
+.toggle-track::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform 0.25s;}
+input:checked + .toggle-track{background:var(--gold);border-color:var(--gold);}
+input:checked + .toggle-track::after{transform:translateX(18px);}
+
+/* MAP SNAPSHOT PREVIEW */
+.snapshot-card{margin:0 14px 12px;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:rgba(0,0,0,0.4);}
+.snapshot-header{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);}
+.snapshot-header span{font-size:11px;font-weight:600;color:var(--gold);font-family:'DM Mono',monospace;}
+.snapshot-header small{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+#snapshotPreview{width:100%;display:block;max-height:200px;object-fit:cover;}
+.snapshot-missing{padding:20px 14px;text-align:center;color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;line-height:1.8;}
+.snapshot-missing b{color:var(--gold);}
+
+.gen-btn{width:calc(100% - 28px);margin:0 14px;padding:15px;border-radius:12px;border:none;background:var(--gold);color:#000;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;letter-spacing:0.3px;transition:opacity 0.2s;}
+.gen-btn:active{opacity:0.85;}
+.gen-btn:disabled{opacity:0.5;cursor:not-allowed;}
+#progressBar{width:calc(100% - 28px);margin:12px 14px 0;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;display:none;}
+#progressFill{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width 0.4s ease;}
+#progressMsg{text-align:center;padding:8px 0 0;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;display:none;}
+.report-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.report-row:last-child{border-bottom:none;}
+.report-icon{font-size:22px;flex-shrink:0;}
+.report-info{flex:1;}
+.report-name{font-size:12px;font-weight:600;color:#fff;}
+.report-meta{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;}
+.report-dl{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(201,168,76,0.1);color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;}
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:#fff;border-top:1px solid #ddd;z-index:2000;}
+.nav div{flex:1;text-align:center;padding:14px;font-size:13px;color:#6b7280;cursor:pointer;font-family:'Syne',sans-serif;}
+.nav div.active{color:var(--green);font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="logo.png" alt="Mzilikazi Kingdom">
+  <h2>Mzilikazi Kingdom</h2>
+</div>
+
+<div class="header">
+  <h1>GIS Report Generator</h1>
+  <p>AUTO-GENERATE · PDF REPORTS · REGULATORY-READY</p>
+</div>
+
+<!-- REPORT TYPE -->
+<div class="section-lbl">Report Type</div>
+<div class="card" style="margin-bottom:0;border-radius:14px;">
+  <div class="report-types">
+    <button class="rt-btn selected" onclick="selectType('site',this)"><span class="rt-icon">⛏︎</span>Site Survey</button>
+    <button class="rt-btn" onclick="selectType('environmental',this)"><span class="rt-icon">🌿︎</span>Environmental</button>
+    <button class="rt-btn" onclick="selectType('land',this)"><span class="rt-icon">📐︎</span>Land Parcel</button>
+    <button class="rt-btn" onclick="selectType('investment',this)"><span class="rt-icon">📊︎</span>Investor Summary</button>
+  </div>
+</div>
+
+<!-- ZONE / SITE INFO -->
+<div class="section-lbl">Zone / Site Details</div>
+<div class="card">
+  <div class="field">
+    <label>Zone / Project Name</label>
+    <input id="rZone" value="Blue Ridge Platinum Mine" placeholder="e.g. Blue Ridge Platinum Mine">
+  </div>
+  <div class="field">
+    <label>Location</label>
+    <input id="rLocation" value="Groblersdal, Greater Sekhukhune, Limpopo" placeholder="Province / District">
+  </div>
+  <div class="field">
+    <label>GPS Coordinates</label>
+    <input id="rGPS" placeholder="Lat, Long">
+  </div>
+  <div class="field">
+    <label>Prepared By</label>
+    <input id="rAuthor" placeholder="Field officer / analyst name">
+  </div>
+  <div class="field">
+    <label>Prepared For</label>
+    <input id="rClient" placeholder="Client / stakeholder name">
+  </div>
+</div>
+
+<!-- MAP SNAPSHOT -->
+<div class="section-lbl">GIS Map Snapshot</div>
+<div class="snapshot-card" id="snapshotCard">
+  <div class="snapshot-header">
+    <span>📍 Captured Map View</span>
+    <small id="snapshotMeta">—</small>
+  </div>
+  <div id="snapshotContainer">
+    <div class="snapshot-missing">
+      <b>No snapshot captured yet</b><br>
+      Go to the GIS Portal and tap<br>
+      <b>📄 Report</b> to capture the current map view,<br>
+      then open this page.
+    </div>
+  </div>
+</div>
+
+<!-- INCLUDE SECTIONS -->
+<div class="section-lbl">Include Sections</div>
+<div class="card">
+  <div class="check-row">
+    <div><div class="check-label">Executive Summary</div><div class="check-sub">High level overview</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incSummary" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">GIS Map Snapshot</div><div class="check-sub">Captured satellite/geology view</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incSnapshot" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Mine / Zone Data</div><div class="check-sub">Verified Blue Ridge PDF data</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incMine" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Resources & Reserves</div><div class="check-sub">PGM, Chrome, tonnage, grade, depth</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incResource" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Geological Formations</div><div class="check-sub">Rock type, age, lithology, formation</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incGeo" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Electricity Infrastructure</div><div class="check-sub">Power stations, grid, transmission</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incPower" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Water Resources</div><div class="check-sub">Dams, aquifers, capacity, usage</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incWater" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Mineral Deposits</div><div class="check-sub">Gold, PGM, coal, iron, manganese</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incMinerals" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">AMD Risk Zones</div><div class="check-sub">Acid mine drainage, risk levels</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incAMD"><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Infrastructure Summary</div><div class="check-sub">Power, water, plant, equipment</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incInfra" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">GIS Field Notes</div><div class="check-sub" id="fieldDataBadge">Fetching live data...</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incField"><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Regulatory Status</div><div class="check-sub">EIA, mining rights, licences</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incReg" checked><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Community Relations</div><div class="check-sub">Bakgagabakopa community</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incComm"><span class="toggle-track"></span></label>
+  </div>
+  <div class="check-row">
+    <div><div class="check-label">Contact Directory</div><div class="check-sub">MZL team contacts</div></div>
+    <label class="toggle-switch"><input type="checkbox" id="incContact" checked><span class="toggle-track"></span></label>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div class="section-lbl">Additional Notes</div>
+<div class="card">
+  <div class="field">
+    <label>Notes / Recommendations</label>
+    <textarea id="rNotes" placeholder="Any additional context, site observations or recommendations..."></textarea>
+  </div>
+</div>
+
+<button class="gen-btn" id="genBtn" onclick="generateReport()">📥︎ Generate PDF Report</button>
+<div id="progressBar"><div id="progressFill"></div></div>
+<div id="progressMsg"></div>
+
+<div class="section-lbl" style="margin-top:16px;">Recent Reports</div>
+<div class="card">
+  <div id="recentList">
+    <div style="padding:14px;color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;">Generated reports will appear here</div>
+  </div>
+</div>
+
+<div class="nav">
+  <div onclick="location.href='index.html'">Home</div>
+  <div onclick="location.href='index.html'">Submit</div>
+  <div onclick="location.href='index.html'">Citizen</div>
+  <div onclick="location.href='index.html'">Invest</div>
+  <div class="active" onclick="location.href='gis-portal.html'">GIS</div>
+</div>
+
+<script>
+const { jsPDF } = window.jspdf;
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3cpb5rUI2uzst5cphvS5GsRCOedqazwoT2NNSSSKlamBAm8kcFtiLlBKKjT7-8G8IJw/exec';
+let reportType = 'site';
+let liveFieldData = [];
+const recentReports = [];
+
+// ── Load snapshot + context from localStorage (written by the portal)
+let mapSnapshotDataUrl = null;
+let mapContext = null;
+
+(function loadSnapshot(){
+  try{
+    const snap = localStorage.getItem('mzl_map_snapshot');
+    const ctx  = localStorage.getItem('mzl_map_context');
+    if(ctx)  mapContext = JSON.parse(ctx);
+    if(snap) mapSnapshotDataUrl = snap;
+
+    const container = document.getElementById('snapshotContainer');
+    const meta      = document.getElementById('snapshotMeta');
+
+    if(snap){
+      const img = document.createElement('img');
+      img.id  = 'snapshotPreview';
+      img.src = snap;
+      img.style.cssText = 'width:100%;display:block;max-height:220px;object-fit:cover;';
+      container.innerHTML = '';
+      container.appendChild(img);
+
+      if(mapContext){
+        const d = new Date(mapContext.timestamp);
+        meta.textContent = `${mapContext.lat}°S, ${mapContext.lng}°E · zoom ${mapContext.zoom} · ${d.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})}`;
+        // Auto-fill GPS from snapshot context
+        document.getElementById('rGPS').value = `${mapContext.lat}°S, ${mapContext.lng}°E`;
+      }
+    }
+  } catch(e){}
+})();
+
+async function fetchFieldData(){
+  try{
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getFieldReports');
+    const data = await res.json();
+    liveFieldData = data.reports || [];
+    if(liveFieldData.length){
+      document.getElementById('fieldDataBadge').textContent = `${liveFieldData.length} live reports available`;
+      document.getElementById('fieldDataBadge').style.color = '#4ade80';
+    }
+  } catch(e){
+    document.getElementById('fieldDataBadge').textContent = 'Using demo field data';
+  }
+}
+fetchFieldData();
+
+function selectType(t,btn){
+  reportType=t;
+  document.querySelectorAll('.rt-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function setProgress(pct,msg){
+  document.getElementById('progressBar').style.display='block';
+  document.getElementById('progressMsg').style.display='block';
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressMsg').textContent=msg;
+}
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// ── PDF HELPERS ────────────────────────────────────────────────
+const W=210, H=297;
+const GOLD=[201,168,76], DARK=[13,32,24], GREEN=[31,60,47];
+const WHITE=[255,255,255], LGREY=[235,240,236], MUTED=[120,140,130];
+
+function newPage(doc){
+  doc.addPage();
+  doc.setFillColor(...DARK); doc.rect(0,0,W,H,'F');
+  doc.setFillColor(...GOLD); doc.rect(0,0,6,H,'F');
+  return 20;
+}
+function chk(doc,y,need=30){
+  if(y+need>H-18) return newPage(doc);
+  return y;
+}
+function secHead(doc,title,y){
+  doc.setFillColor(...GREEN); doc.rect(6,y-5,W-6,12,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+  doc.text(title,14,y+3);
+  return y+14;
+}
+function body(doc,text,y,maxW=180){
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...LGREY);
+  const lines=doc.splitTextToSize(text,maxW);
+  doc.text(lines,14,y);
+  return y+lines.length*5.5;
+}
+function kv(doc,lbl,val,y){
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...GOLD);
+  doc.text(lbl+':',14,y);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...LGREY);
+  const lines=doc.splitTextToSize(String(val||'—'),128);
+  doc.text(lines,72,y);
+  return y+Math.max(lines.length*5.5,7);
+}
+
+// ── MAIN GENERATE ─────────────────────────────────────────────
+async function generateReport(){
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;
+  setProgress(5,'Initialising...');
+
+  const zone  =document.getElementById('rZone').value||'Mzilikazi Kingdom Zone';
+  const loc   =document.getElementById('rLocation').value;
+  const gps   =document.getElementById('rGPS').value;
+  const author=document.getElementById('rAuthor').value||'Mzilikazi Kingdom GIS Team';
+  const client=document.getElementById('rClient').value||'Stakeholder';
+  const notes =document.getElementById('rNotes').value;
+  const today =new Date().toLocaleDateString('en-ZA',{day:'2-digit',month:'long',year:'numeric'});
+  const refNo ='MZL-RPT-'+Date.now().toString().slice(-6);
+
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+
+  // ── COVER PAGE ─────────────────────────────────────
+  await delay(200); setProgress(10,'Building cover page...');
+  doc.setFillColor(...DARK); doc.rect(0,0,W,H,'F');
+  doc.setFillColor(...GOLD); doc.rect(0,0,6,H,'F');
+  doc.setFillColor(...GREEN); doc.rect(6,0,W-6,82,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+  doc.text('MZILIKAZI KINGDOM',20,22);
+  doc.setFontSize(7); doc.setTextColor(...MUTED);
+  doc.text('LOCATE · ANALYSE · MANAGE',20,29);
+  doc.setDrawColor(...GOLD); doc.setLineWidth(0.3); doc.line(20,32,190,32);
+  doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(...WHITE);
+  doc.text('GIS INTELLIGENCE',20,48); doc.text('REPORT',20,58);
+  doc.setFontSize(11); doc.setTextColor(...GOLD);
+  doc.text(zone.toUpperCase(),20,69);
+  doc.setFontSize(7); doc.setTextColor(...MUTED);
+  doc.text(loc.toUpperCase(),20,76);
+  doc.setFillColor(20,40,30); doc.roundedRect(20,96,170,52,3,3,'F');
+  const meta=[['REPORT TYPE',reportType.toUpperCase()+' SURVEY'],['REFERENCE',refNo],
+    ['PREPARED BY',author],['PREPARED FOR',client],['DATE ISSUED',today],['GPS',gps]];
+  let mx=28,my=107;
+  meta.forEach(([l,v])=>{
+    doc.setFontSize(7); doc.setTextColor(...GOLD); doc.text(l,mx,my);
+    doc.setFontSize(8); doc.setTextColor(...WHITE); doc.text(v||'—',mx+46,my);
+    my+=7.5;
+  });
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...MUTED);
+  doc.text('CONFIDENTIAL — FOR AUTHORISED RECIPIENTS ONLY',20,260);
+  doc.setFontSize(7); doc.setTextColor(60,80,70);
+  doc.text('Mzilikazi Kingdom · mzilikazicorp@outlook.com · 061 512 9042',20,267);
+  doc.text('www.mzilikazi-ka-mashobane.github.io/Kingdom',20,272);
+
+  // ── MAP SNAPSHOT PAGE ────────────────────────────────
+  if(document.getElementById('incSnapshot').checked && mapSnapshotDataUrl){
+    await delay(100); setProgress(18,'Embedding map snapshot...');
+    let y=newPage(doc);
+    y=secHead(doc,'GIS MAP SNAPSHOT — CAPTURED VIEW',y);
+    try{
+      // Work out dimensions to fit width 180mm, max height 120mm
+      const tmpImg=new Image();
+      await new Promise(res=>{tmpImg.onload=res; tmpImg.src=mapSnapshotDataUrl;});
+      const iw=tmpImg.naturalWidth, ih=tmpImg.naturalHeight;
+      const maxW=180, maxH=120;
+      let pw=maxW, ph=Math.round(ih*(maxW/iw));
+      if(ph>maxH){ ph=maxH; pw=Math.round(iw*(maxH/ih)); }
+      const ox=14+(maxW-pw)/2;
+      doc.addImage(mapSnapshotDataUrl,'JPEG',ox,y,pw,ph);
+      y+=ph+6;
+    } catch(e){ y=body(doc,'[Map snapshot could not be embedded]',y)+4; }
+    if(mapContext){
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...MUTED);
+      const ts=new Date(mapContext.timestamp).toLocaleString('en-ZA');
+      doc.text(`Coordinates: ${mapContext.lat}°S, ${mapContext.lng}°E  |  Zoom: ${mapContext.zoom}  |  Captured: ${ts}`,14,y);
+      y+=10;
+    }
+  }
+
+  // ── CONTENT PAGES ────────────────────────────────────
+  await delay(200); setProgress(25,'Writing mine data...');
+  let y=newPage(doc);
+
+  if(document.getElementById('incSummary').checked){
+    y=secHead(doc,'EXECUTIVE SUMMARY',y);
+    y=body(doc,`This GIS Intelligence Report has been prepared by ${author} on behalf of ${client} for the ${zone}, located at ${loc}. The report presents verified geospatial, geological and operational data compiled from primary sources including title deeds, mining rights documentation, field survey records, power infrastructure data, water resource assessments and geological formation studies.`,y)+3;
+    y=body(doc,'The findings are intended to support informed decision-making in relation to investment, operational planning, regulatory compliance and community engagement. All coordinates are referenced to the WGS84 datum.',y)+8;
+  }
+
+  if(document.getElementById('incMine').checked){
+    y=chk(doc,y,60); y=secHead(doc,'MINE / ZONE PROFILE',y);
+    [['Mine Name','Blue Ridge Platinum Mine'],
+     ['Mining Right','MR-LP177 MRC dated 29 May 2014 (30 years)'],
+     ['Ownership','Blue Ridge Platinum Pty Ltd (Reg: 2002/002702/07)'],
+     ['Shareholders','Imbani Platinum SPV Pty Ltd (50%) · Ridge Mining Pty Ltd (50%)'],
+     ['Current Status','Brownfield — Care & Maintenance, Restart Ready'],
+     ['Mine Type','Shallow underground UG2 Chromite (PGM & Chrome)'],
+     ['Commissioned','March 2009 at R2.8 billion initial cost'],
+     ['Distance','20km SE of Groblersdal · 160km NE of Pretoria · 214km from Johannesburg'],
+    ].forEach(([l,v])=>{ y=chk(doc,y); y=kv(doc,l,v,y); });
+    y+=6;
+  }
+
+  if(document.getElementById('incResource').checked){
+    y=chk(doc,y,80); y=secHead(doc,'RESOURCES & RESERVES',y);
+    [['Total Resource','89.8 Mt (9.14 Moz 4E PGM) + 19.5 Mt Cr₂O₃ saleable'],
+     ['Total Reserves','25.08 Mt (2.42 Moz 4E PGM) proven and probable'],
+     ['PGM Grade','3.3 g/t 4E'],
+     ['Chrome Grade','22% Cr₂O₃'],
+     ['Reef Depth','UG2 at 150–450 m below surface'],
+     ['Rock Type','Norite · Anorthosite · Chromitite (UG2) · Pyroxenite'],
+     ['Reef Dip','8–12° — gently dipping, favourable for stope mining'],
+     ['Commodities','Pt · Pd · Rh · Au · Ru · Ir · Cr · Ni · Cu'],
+     ['Life of Mine','18–25 years @ 120 000 tpm (excl. Millennium shaft)'],
+     ['Concentrator','120 000 tpm MF2 plant (upgradable to 160 000 tpm)'],
+     ['Boreholes','207 exploration boreholes · 80 000m bore-core (2003–2005)'],
+     ['Off-take','Life-of-mine PGM off-take: Impala Refinery Services (IRS)'],
+    ].forEach(([l,v])=>{ y=chk(doc,y); y=kv(doc,l,v,y); });
+    y+=6;
+  }
+
+  // ── GEOLOGICAL FORMATIONS
+  if(document.getElementById('incGeo').checked){
+    await delay(100); setProgress(35,'Writing geological data...');
+    y=chk(doc,y,100); y=secHead(doc,'GEOLOGICAL FORMATIONS — SOUTH AFRICA',y);
+    const geos=[
+      ['Bushveld Igneous Complex (BIC)','Paleoproterozoic ~2.055 Ga','Layered mafic–ultramafic intrusion','Pt · Pd · Rh · Cr · V','World\'s largest layered intrusion. UG2 chromitite and Merensky Reef host 80% of global platinum reserves. Norite, anorthosite, and pyroxenite dominate stratigraphy. Reef dip: 8–12°.'],
+      ['Witwatersrand Basin','Mesoarchean 2.7–3.1 Ga','Sedimentary — gold-bearing conglomerate reefs','Au · U · Ag','Contains >50 000 t of gold mined — more than half of all gold in human history. Reefs dip to 4 000 m depth. Extreme seismicity and heat at depth.'],
+      ['Waterberg Coalfield (Karoo)','Carboniferous–Triassic 300–240 Ma','Continental sedimentary basin','Coal · Gas','SA\'s largest coal reserve (~72 billion tonnes). Feeds Medupi and Matimba power stations. Karoo mudstones host world-famous therapsid fossils.'],
+      ['Kalahari Manganese Field','Paleoproterozoic ~2.2 Ga','Stratiform sedimentary Mn deposit','Mn · Fe','80% of the world\'s known manganese ore reserves. Hotazel mine is the world\'s largest Mn producer. Critical for steelmaking and EV battery cathodes.'],
+      ['Limpopo Mobile Belt','Neoarchean ~2.7 Ga','High-grade metamorphic terrain','Fe · Mn · Diamonds','One of Earth\'s oldest continental collision zones. Rocks metamorphosed at 40–50 km depth. Hosts kimberlite pipes with diamond potential.'],
+      ['Cape Fold Belt / TMG Aquifer','Late Palaeozoic 280–240 Ma','Fold-thrust belt — quartzite sandstone','Fe · Base metals','Cape Fold Mountains of folded TMG sandstones. TMG is SA\'s largest aquifer — critical for Western Cape water security. Recharge: 1 000–2 000 mm/year.'],
+    ];
+    geos.forEach(([name,age,type,mins,desc])=>{
+      y=chk(doc,y,36);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHITE); doc.text(name,14,y); y+=5.5;
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...GOLD);
+      doc.text(`Age: ${age}  |  Type: ${type}`,14,y); y+=4.5;
+      doc.setTextColor(160,210,185); doc.text(`Minerals: ${mins}`,14,y); y+=4.5;
+      doc.setTextColor(...MUTED);
+      const lines=doc.splitTextToSize(desc,180); doc.text(lines,14,y); y+=lines.length*4.8+7;
+    });
+  }
+
+  // ── ELECTRICITY
+  if(document.getElementById('incPower').checked){
+    await delay(100); setProgress(45,'Writing electricity data...');
+    y=chk(doc,y,100); y=secHead(doc,'ELECTRICITY INFRASTRUCTURE — ESKOM GRID',y);
+    const pwr=[
+      ['Matimba','Lephalale, Limpopo','3 990 MW','Coal','World\'s largest dry-cooled coal station. 6 × 665 MW. Feeds Waterberg via Lephalale–Witbank 765kV corridor.'],
+      ['Medupi','Lephalale, Limpopo','4 764 MW','Coal','Newest Eskom coal station (completed 2021). Supercritical boilers. Captive Grootegeluk colliery via conveyor.'],
+      ['Kendal','Emalahleni, Mpumalanga','4 116 MW','Coal','One of the world\'s largest coal stations. Mpumalanga coalfields.'],
+      ['Lethabo','Vaal Triangle, Free State','3 708 MW','Coal','Largest SA coal station by capacity. Gauteng border — heart of industrial corridor.'],
+      ['Koeberg','Cape West Coast','1 860 MW','Nuclear','Africa\'s only nuclear power station. 2 PWR units. 30km north of Cape Town.'],
+      ['Drakensberg P/S','KwaZulu-Natal','1 000 MW','Hydro/Pumped','4 × 250 MW reversible turbines. Peak demand generation.'],
+      ['Ingula P/S','KZN / Free State border','1 332 MW','Hydro/Pumped','Completed 2017. 4 × 333 MW. Tugela–Vaal transfer scheme.'],
+      ['De Hoop Dam Hydro','Sekhukhune, Limpopo','15 MW','Hydro','Small hydro on Steelpoort River. Water and power for Sekhukhune district. Adjacent to Blue Ridge.'],
+    ];
+    pwr.forEach(([name,loc2,mw,fuel,desc])=>{
+      y=chk(doc,y,22);
+      const fc=fuel==='Nuclear'?[167,139,250]:fuel.includes('Hydro')?[56,189,248]:[251,191,36];
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...WHITE);
+      doc.text(`${name}  —  ${mw}`,14,y);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...fc);
+      doc.text(`${fuel} · ${loc2}`,14,y+5);
+      doc.setTextColor(...MUTED);
+      const lines=doc.splitTextToSize(desc,180); doc.text(lines,14,y+10); y+=10+lines.length*4.5+5;
+    });
+    y=chk(doc,y,30);
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...GOLD);
+    doc.text('KEY TRANSMISSION CORRIDORS:',14,y); y+=6;
+    ['Lephalale–Witbank 765kV — Waterberg coalfields to Mpumalanga grid',
+     'Witbank–Lethabo 400kV — Mpumalanga to Gauteng/Vaal industrial corridor',
+     'Cape–Mpumalanga Grid — Koeberg nuclear to national backbone',
+     'Witbank–Sekhukhune 132kV — feeds Sekhukhune mining district (Blue Ridge substation)',
+    ].forEach(c=>{ y=chk(doc,y,8); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...LGREY); doc.text('• '+c,16,y); y+=6; });
+    y+=4;
+  }
+
+  // ── WATER
+  if(document.getElementById('incWater').checked){
+    await delay(100); setProgress(55,'Writing water data...');
+    y=chk(doc,y,100); y=secHead(doc,'WATER RESOURCES — DAMS & AQUIFERS',y);
+    const wat=[
+      ['Gariep Dam','5 341 Mm³','Free State / E. Cape','SA\'s largest dam. Orange River Scheme — Great Fish River Tunnel (82.8 km) to Eastern Cape. 240 MW hydro.'],
+      ['Vaal Dam','2 603 Mm³','Free State / Gauteng','Primary supply for 15 million people in Gauteng. Augmented by LHWP (Lesotho Highlands Water Project).'],
+      ['Katse Dam (LHWP)','1 950 Mm³','Lesotho','185m arch dam. Water tunnelled under Drakensberg to Vaal system. Lesotho earns ~R500M/year in royalties.'],
+      ['Theewaterskloof','480 Mm³','Western Cape','91% of Cape Town\'s supply. 2018 Day Zero crisis: dropped to 13.5% — narrowly avoided becoming first major city to run dry.'],
+      ['Hartbeespoort Dam','173 Mm³','North West / Gauteng','Crocodile River. Most visited dam in SA. Major eutrophication restoration project (Harties Metsi A Me) underway.'],
+      ['Bushveld Complex GW System','50–200 L/s regional','Limpopo · NW · Mpumalanga','Fractured norite, anorthosite and pyroxenite aquifer within BIC. Supplies Sekhukhune, Mokopane, Rustenburg. Mine dewatering contributes flow. Depth: 30–500 m.'],
+      ['Karoo Fractured Rock Aquifer','~1 100 Gm³ storage','Karoo biome (700 000 km²)','Fractured mudstone/sandstone system. Supplies 2.5 million rural people. Recharge: 1–5 mm/year (very slow). Fracking threat ongoing.'],
+      ['TMG Aquifer','~19 000 Gm³','Western Cape / Northern Cape','SA\'s largest aquifer — Cape Fold Mountain sandstones. Strategic post-Day-Zero reserve. Recharge: 1 000–2 000 mm/year at altitude.'],
+    ];
+    wat.forEach(([name,cap,prov,desc])=>{
+      y=chk(doc,y,24);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...WHITE); doc.text(name,14,y);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor([56,189,248]);
+      doc.text(`Capacity: ${cap}  |  ${prov}`,14,y+5);
+      doc.setTextColor(...MUTED);
+      const lines=doc.splitTextToSize(desc,180); doc.text(lines,14,y+10); y+=10+lines.length*4.5+5;
+    });
+  }
+
+  // ── MINERAL DEPOSITS
+  if(document.getElementById('incMinerals').checked){
+    await delay(100); setProgress(65,'Writing mineral deposits...');
+    y=chk(doc,y,100); y=secHead(doc,'MINERAL DEPOSITS — SOUTH AFRICA',y);
+    const mins=[
+      ['Gold','West Rand (Carletonville)','Sibanye-Stillwater / Gold Fields','2 500–4 000 m','6–10 g/t Au','Deepest gold mines on Earth. South Deep holds one of the world\'s largest single gold deposits.'],
+      ['Gold','Witwatersrand Tailings (Gauteng)','DRDGold','Surface retreatment','0.3–0.5 g/t','~400 Moz Au in historical tailings dumps. Largest urban tailings retreatment operation in the world.'],
+      ['PGM','Blue Ridge Platinum (Sekhukhune)','Blue Ridge Platinum / Mzilikazi Kingdom','150–450 m','3.3 g/t 4E','UG2 reef. 89.8 Mt resource. 9.14 Moz 4E. Brownfield restart-ready. 18–25 yr life of mine.'],
+      ['PGM','Rustenburg Platinum Belt','Anglo Platinum · Impala · Sibanye-Stillwater','600–1 500 m','3.5–5.5 g/t 4E','Merensky Reef and UG2. Rustenburg — platinum capital of the world. Largest PGM production in SA.'],
+      ['Diamonds','Kimberley / Cullinan','De Beers · Petra Diamonds','Surface to 1 000 m','Variable carats/100t','Cullinan Mine — source of the largest gem-quality diamond ever found (3 106 carats, 1905). Still active.'],
+      ['Coal','Mpumalanga Coalfields','Anglo / Exxaro / Glencore','30–250 m','5 000–6 500 kcal/kg','SA\'s primary coal basin. Feeds 13 of 15 Eskom coal stations. Witbank, Highveld, Ermelo fields.'],
+      ['Manganese','Kalahari Manganese (Hotazel)','South32 / Assmang / Manganese Metal Co','50–200 m','36–48% Mn','80% of world\'s Mn reserves. Hotazel mine. Critical for steel and EV battery cathodes (NMC).'],
+      ['Iron Ore','Sishen / Khumani (Northern Cape)','Kumba Iron Ore (Anglo American)','Open pit 0–500 m','64–67% Fe','World\'s largest hematite iron ore deposit. Ships via Sishen–Saldanha ore line (860 km).'],
+      ['Vanadium','Bushveld Vanadium Layer','VanadiumCorp / Bushveld Minerals','Underground','~1.5–2.0% V₂O₅','Magnetite layers in BIC. SA produces ~35% of global vanadium. Critical for VRFB (flow batteries).'],
+      ['Chromite','Great Dyke extension / BIC','Samancor Chrome / Glencore','Underground','~30–38% Cr₂O₃','SA and Zimbabwe are world\'s dominant chromite producers. BIC UG2 is primary SA source.'],
+    ];
+    mins.forEach(([commodity,loc2,company,depth,grade,desc])=>{
+      y=chk(doc,y,28);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD); doc.text(commodity,14,y);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...WHITE); doc.text(loc2,14+doc.getTextWidth(commodity)+4,y);
+      doc.setFontSize(7); doc.setTextColor(...MUTED); doc.text(`${company} · Depth: ${depth} · Grade: ${grade}`,14,y+5);
+      doc.setTextColor(...LGREY);
+      const lines=doc.splitTextToSize(desc,180); doc.text(lines,14,y+10); y+=10+lines.length*4.5+5;
+    });
+  }
+
+  // ── AMD RISK
+  if(document.getElementById('incAMD').checked){
+    y=chk(doc,y,100); y=secHead(doc,'ACID MINE DRAINAGE (AMD) RISK ZONES',y);
+    const amd=[
+      ['Far West Rand AMD Zone','Critical','Gold mine dewatering halted post-closure. Witwatersrand dolomite compartments filling with acid water. DWS emergency pumping underway. Surface decant risk imminent.'],
+      ['Central Rand AMD Zone','High','Historic Central Rand goldfield. Crown Mines, City Deep, Rand Leases shafts flooded. Acid water threatens Johannesburg CBD infrastructure and Vaal River system.'],
+      ['East Rand AMD Zone','High','ERPM, Grootvlei, Modder East shafts flooded. DRDGold pumps and treats acid water. Risk of decant into Blesbokspruit Ramsar wetland.'],
+      ['Witbank Coalfield AMD Zone','High','Coal mining AMD and effluent. Olifants River catchment — flows into Limpopo. eMalahleni water reclamation plant treats some discharge.'],
+      ['Klerksdorp AMD Zone','Moderate','Historic gold mines. Vaal River catchment risk. Monitoring ongoing.'],
+      ['Welkom Free State AMD Zone','Moderate','Free State goldfield. Vaal River tributary risk. Some operations still pumping.'],
+    ];
+    amd.forEach(([name,risk,desc])=>{
+      y=chk(doc,y,22);
+      const rc=risk==='Critical'?[220,38,38]:risk==='High'?[249,115,22]:[234,179,8];
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...rc); doc.text(`⚠ ${name}  [${risk}]`,14,y); y+=5.5;
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...LGREY);
+      const lines=doc.splitTextToSize(desc,180); doc.text(lines,14,y); y+=lines.length*4.8+6;
+    });
+  }
+
+  // ── INFRASTRUCTURE
+  if(document.getElementById('incInfra').checked){
+    y=chk(doc,y,80); y=secHead(doc,'INFRASTRUCTURE SUMMARY',y);
+    [['Surface Rights','6 500 hectares owned (Title Deed T048517/2008)'],
+     ['Underground','4 levels fully equipped — 2 000m linear, 450m depth'],
+     ['Power Supply','Eskom live ring-feed — 2×20 MVA transformers (Mapog substation)'],
+     ['Water Supply','Boreholes + Loskop Dam via canal. Registered water use licence.'],
+     ['Concentrator Plant','120 000 tpm MF2 — operational quarterly by Minopex'],
+     ['Other Facilities','Mine offices · workshops · change houses · fire assay lab · conveyor decline · ventilation pumps'],
+     ['Rehabilitation','Guardrisk guarantee: R12 807 105 · Closure provision: R13M'],
+     ['Care & Maintenance','Ongoing since 2012 — 22 permanent + Bidvest security team'],
+     ['Annual C&M Cost','R30 million per year (from 2019)'],
+    ].forEach(([l,v])=>{ y=chk(doc,y); y=kv(doc,l,v,y); });
+    y+=6;
+  }
+
+  // ── FIELD NOTES
+  if(document.getElementById('incField').checked && liveFieldData.length){
+    y=chk(doc,y,60); y=secHead(doc,'GIS FIELD REPORTS',y);
+    liveFieldData.slice(0,8).forEach(r=>{
+      y=chk(doc,y,20);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...WHITE);
+      doc.text(r.title||r.zone||'Field Report',14,y); y+=5;
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...MUTED);
+      doc.text(`${r.date||''}  ${r.type||''}  ${r.location||''}`,14,y); y+=5;
+      if(r.notes){ const lines=doc.splitTextToSize(r.notes,180); doc.setTextColor(...LGREY); doc.text(lines,14,y); y+=lines.length*4.5; }
+      y+=4;
+    });
+  }
+
+  // ── REGULATORY
+  if(document.getElementById('incReg').checked){
+    y=chk(doc,y,80); y=secHead(doc,'REGULATORY & LEGAL STATUS',y);
+    [['Mining Right','MR-LP177 MRC · Converted new order · 30 years from May 2014'],
+     ['EIA Status','Approved and executed. Compliance reports on file.'],
+     ['Water Licence','Registered water use licence in place'],
+     ['BFS','Bankable Feasibility Study — SRK Cardiff & RSG Global (2007)'],
+     ['CPR','IGS Resource Statement & Competent Persons Report (2006)'],
+     ['Title Deed','T048517/2008 — filed under DropBox Folder 9: Legal'],
+     ['Share Capital','100% of issued share capital available for sale (ring-fenced proof of funds required)'],
+    ].forEach(([l,v])=>{ y=chk(doc,y); y=kv(doc,l,v,y); });
+    y+=6;
+  }
+
+  // ── COMMUNITY
+  if(document.getElementById('incComm').checked){
+    y=chk(doc,y,40); y=secHead(doc,'COMMUNITY RELATIONS',y);
+    y=body(doc,'Good relations maintained with the Bakgagabakopa Community (Traditional Council for Blue Ridge community). Community representative: Ghoshi Rammupudu Boleu Harry. Community holds shareholding and economic benefit agreement with Blue Ridge Platinum.',y)+8;
+  }
+
+  // ── NOTES
+  if(notes.trim()){
+    y=chk(doc,y,40); y=secHead(doc,'ADDITIONAL NOTES & RECOMMENDATIONS',y);
+    y=body(doc,notes,y)+8;
+  }
+
+  // ── CONTACTS
+  if(document.getElementById('incContact').checked){
+    y=chk(doc,y,50); y=secHead(doc,'CONTACT DIRECTORY',y);
+    [['Ms Zamanyathi Lisetti','Managing Director — Mzilikazi Kingdom','061 512 9042','mzilikazicorp@outlook.com'],
+     ['Mr Phuthi Senyatsi','Director — Mzilikazi Kingdom','073 148 1791','mzilikazicorp@outlook.com'],
+    ].forEach(([name,role,tel,email])=>{
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHITE); doc.text(name,14,y); y+=5.5;
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...MUTED); doc.text(role,14,y); y+=5;
+      doc.setTextColor(...GOLD); doc.text(`Tel: ${tel}   Email: ${email}`,14,y); y+=10;
+    });
+  }
+
+  // ── FOOTER on all pages
+  const pageCount=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+    doc.setPage(i);
+    doc.setFillColor(13,32,24); doc.rect(6,H-14,W-6,14,'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...MUTED);
+    doc.text(`Mzilikazi Kingdom GIS Report  ·  Ref: ${refNo}  ·  ${today}  ·  Page ${i} of ${pageCount}`,14,H-6);
+    doc.text('CONFIDENTIAL',W-30,H-6);
+  }
+
+  await delay(200); setProgress(95,'Saving PDF...');
+  const filename=`MZL_GIS_Report_${zone.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'')}_${refNo}.pdf`;
+  doc.save(filename);
+
+  recentReports.unshift({name:filename,ref:refNo,date:today,type:reportType});
+  renderRecent();
+  setProgress(100,'✅ Report downloaded!');
+  setTimeout(()=>{
+    document.getElementById('progressBar').style.display='none';
+    document.getElementById('progressMsg').style.display='none';
+  },3000);
+  btn.disabled=false;
+}
+
+function renderRecent(){
+  const icons={site:'⛏︎',environmental:'🌿︎',land:'📐︎',investment:'📊︎'};
+  document.getElementById('recentList').innerHTML=recentReports.slice(0,5).map(r=>`
+    <div class="report-row">
+      <div class="report-icon">${icons[r.type]||'📄︎'}</div>
+      <div class="report-info">
+        <div class="report-name">${r.ref}</div>
+        <div class="report-meta">${r.date} · ${r.type.toUpperCase()} REPORT</div>
+      </div>
+      <button class="report-dl" onclick="alert('Re-generate to download again')">⬇︎</button>
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>
