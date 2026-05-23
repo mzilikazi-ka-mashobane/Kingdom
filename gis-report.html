@@ -748,12 +748,13 @@ function parseWikipediaExtract(extract, title){
     /recovered[^.]*?([\d,]+(?:\.\d+)?\s*(?:carats?|oz|tonnes?)[^.]{0,80})/i,
   ], extract);
 
-  // ── Reserves / Resources — allow decimal points within numbers (e.g. grading 0.0036% uranium) ──
+  // ── Reserves / Resources — allow decimal points within numbers but stop at sentence boundaries ──
+  // (?:[^.]|\.\d) = match any non-period char, OR a period that's immediately followed by a digit (decimal point)
   result.reserves = firstMatch([
-    /reserves?[^.]*?([\d,]+(?:\.\d+)?\s*(?:Mt|million tonnes?|million carats?|Moz|billion carats?)[\d\s\w%.,()-]{0,120})/i,
-    /resources?[^.]*?([\d,]+(?:\.\d+)?\s*(?:Mt|million tonnes?|Moz|million carats?)[\d\s\w%.,()-]{0,120})/i,
-    /estimated[^.]*?([\d,]+(?:\.\d+)?\s*(?:Mt|million tonnes?|Moz|million carats?)[\d\s\w%.,()-]{0,120})/i,
-    /contains?[^.]*?([\d,]+(?:\.\d+)?\s*(?:Mt|million tonnes?|Moz|million carats?)[\d\s\w%.,()-]{0,120})/i,
+    /reserves?[^.]*?([\d,]+(?:\.\d+)?\s*(?:Mt|million tonnes?|million carats?|Moz|billion carats?)(?:[^.]|\.\d){0,120})/i,
+    /resources?[^.]*?([\d,]+(?:\.\d+)?\s*(?:Mt|million tonnes?|Moz|million carats?)(?:[^.]|\.\d){0,120})/i,
+    /estimated[^.]*?([\d,]+(?:\.\d+)?\s*(?:Mt|million tonnes?|Moz|million carats?)(?:[^.]|\.\d){0,120})/i,
+    /contains?[^.]*?([\d,]+(?:\.\d+)?\s*(?:Mt|million tonnes?|Moz|million carats?)(?:[^.]|\.\d){0,120})/i,
   ], extract);
 
   // ── Grade ──
@@ -808,9 +809,9 @@ function parseWikipediaExtract(extract, title){
   const metaFields = [];
   const addMeta = (k,v)=>{ if(v&&String(v).trim()) metaFields.push([k, cleanText(String(v).trim())]); };
   addMeta('Article Title', title);
-  // Owner: use parsed owner only; never show "See parent company" placeholder
   addMeta('Owner / Operator', result.owner||null);
-  addMeta('Parent Company', result.parent);
+  // Parent Company only shown when there's no direct owner — Wikidata operator takes precedence at render time
+  addMeta('Parent Company', (!result.owner && result.parent) ? result.parent : null);
   addMeta('Established / Opened', result.opened);
   if(result.closed) addMeta('Closed', result.closed);
   addMeta('Operational Status', result.status);
@@ -1583,8 +1584,11 @@ async function generateReport(){
       // Key extracted fields — Wikidata operator takes precedence over Wikipedia parsed parent
       const _ovWikidata = (() => { try { const s=localStorage.getItem(WIKI_STORE_KEY); return s?JSON.parse(s)?.wikidata:null; }catch(e){return null;} })();
       const _ovOperator = _ovWikidata?.operatorLabel || _ovWiki.parsed.owner || null;
-      const _ovParent   = _ovWikidata?.fields?.find(([k])=>k==='Parent Organisation')?.[1]
-                        || (_ovWiki.parsed.parent && _ovWiki.parsed.parent !== _ovOperator ? _ovWiki.parsed.parent : null);
+      // Only show parent if Wikidata has no confirmed operator (avoids historical ownership)
+      const _ovParent = !_ovWikidata?.operatorLabel
+        && (_ovWikidata?.fields?.find(([k])=>k==='Parent Organisation')?.[1]
+            || (_ovWiki.parsed.parent && _ovWiki.parsed.parent !== _ovOperator ? _ovWiki.parsed.parent : null))
+        || null;
       const ovFields=[
         ['Owner / Operator', _ovOperator],
         ['Parent Company',   _ovParent],
@@ -1656,7 +1660,8 @@ async function generateReport(){
       // Wikidata operator takes precedence over Wikipedia parsed owner/parent for current ownership
       const _mWdOperator = _mWiki.wikidata?.operatorLabel || null;
       const _mOwner = _mWdOperator || wp.owner || null;
-      const _mParent = wp.parent && wp.parent !== _mOwner ? wp.parent : null;
+      // Only show parent if Wikidata has no confirmed current operator (avoids historical Gold Fields etc.)
+      const _mParent = !_mWdOperator && wp.parent && wp.parent !== _mOwner ? wp.parent : null;
       if(_mOwner) profileRows.push(['Owner / Operator', _mOwner]);
       if(_mParent) profileRows.push(['Parent Company', _mParent]);
       if(wp.opened) profileRows.push(['Established', wp.opened]);
@@ -2119,7 +2124,7 @@ async function generateReport(){
       const ip = _iWiki.parsed;
       const _iWdOperator = _iWiki.wikidata?.operatorLabel || null;
       const _iOwner = _iWdOperator || ip.owner || null;
-      const _iParent = ip.parent && ip.parent !== _iOwner ? ip.parent : null;
+      const _iParent = !_iWdOperator && ip.parent && ip.parent !== _iOwner ? ip.parent : null;
       if(_iOwner)     infraRows.push(['Owner / Operator', _iOwner]);
       if(_iParent)    infraRows.push(['Parent Company', _iParent]);
       if(ip.opened)   infraRows.push(['Established', ip.opened]);
@@ -2184,7 +2189,7 @@ async function generateReport(){
       const rp = _regWiki.parsed;
       const _regWdOperator = _regWiki.wikidata?.operatorLabel || null;
       const _regOwner = _regWdOperator || rp.owner || null;
-      const _regParent = rp.parent && rp.parent !== _regOwner ? rp.parent : null;
+      const _regParent = !_regWdOperator && rp.parent && rp.parent !== _regOwner ? rp.parent : null;
       if(_regOwner)  regRows.push(['Owner / Operator', _regOwner]);
       if(_regParent) regRows.push(['Parent Company', _regParent]);
       if(rp.opened)  regRows.push(['Established', rp.opened]);
